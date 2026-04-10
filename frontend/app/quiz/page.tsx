@@ -10,30 +10,45 @@ const QUIZ_MODES = [
   {
     id: 'random',
     label: 'RANDOM',
-    sub: 'Tous les persos',
-    desc: "Questions aléatoires sur tout le roster SF6. Le mode parfait pour s'entraîner.",
-    color: '#ff2d78',
-    colorAlt: '#9b1fff',
+    sub: 'QCM — Tous les persos',
+    desc: 'Questions à choix multiples sur tout le roster SF6. Le mode parfait pour débuter.',
+    color: '#ff2d78', colorAlt: '#9b1fff',
     href: '/quiz/play?mode=random',
     icon: '🎲',
   },
   {
     id: 'fighter',
     label: 'FIGHTER',
-    sub: 'Focus un perso',
+    sub: 'QCM — Focus un perso',
     desc: 'Choisis un personnage et maîtrise ses frames en profondeur.',
-    color: '#00f0ff',
-    colorAlt: '#0050ff',
+    color: '#00f0ff', colorAlt: '#0050ff',
     href: null,
     icon: '🥊',
   },
   {
+    id: 'input',
+    label: 'INPUT',
+    sub: 'Frappe la valeur exacte',
+    desc: 'Pas de choix multiples — tu dois taper toi-même la valeur exacte du startup. Mode exigeant.',
+    color: '#9b1fff', colorAlt: '#ff2d78',
+    href: '/quiz/play?mode=input',
+    icon: '⌨️',
+  },
+  {
+    id: 'safecheck',
+    label: 'SAFE CHECK',
+    sub: 'Positif ou négatif on block ?',
+    desc: 'Un move apparaît — est-il safe (positif/neutre) ou unsafe (négatif) on block ? Réfléchis vite.',
+    color: '#ffe000', colorAlt: '#ff6a00',
+    href: '/quiz/play?mode=safecheck',
+    icon: '🛡️',
+  },
+  {
     id: 'hardcore',
     label: 'HARDCORE',
-    sub: 'Timer activé',
-    desc: 'Réponds en moins de 5 secondes. Pas de passe. Pour les vrais.',
-    color: '#ffe000',
-    colorAlt: '#ff6a00',
+    sub: 'Timer 5s — Tous les persos',
+    desc: 'Réponds en moins de 5 secondes. Pas de passe. Pour les vrais lab monsters.',
+    color: '#ff6a00', colorAlt: '#ff2d78',
     href: '/quiz/play?mode=hardcore',
     icon: '⚡',
   },
@@ -53,12 +68,8 @@ export default function QuizSelectPage() {
       setShowFighters(true)
       if (fighters.length === 0) {
         setLoadingF(true)
-        try {
-          const data = await getFighters()
-          setFighters(data)
-        } finally {
-          setLoadingF(false)
-        }
+        try { setFighters(await getFighters()) }
+        finally { setLoadingF(false) }
       }
     } else if (mode.href) {
       window.location.href = mode.href
@@ -73,7 +84,7 @@ export default function QuizSelectPage() {
     <>
       <Navbar />
       <div style={{
-        minHeight: 'calc(100vh - 64px)',
+        minHeight: 'calc(100vh - 60px)',
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
         padding: '40px 20px',
@@ -81,35 +92,38 @@ export default function QuizSelectPage() {
 
         {!showFighters ? (
           <>
-            {/* Titre */}
-            <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '40px' }}>
               <h1 style={{
                 fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: 'clamp(2rem, 5vw, 3.5rem)',
+                fontSize: 'clamp(2rem, 5vw, 3rem)',
                 letterSpacing: '8px', color: '#fff',
-                textShadow: `0 0 20px ${current.color}, 0 0 40px ${current.color}66`,
+                textShadow: `0 0 20px ${current.color}`,
                 transition: 'text-shadow 0.4s',
               }}>CHOISIR UN MODE</h1>
               <p style={{
                 fontFamily: "'Share Tech Mono', monospace",
-                fontSize: '0.65rem', letterSpacing: '4px',
-                color: 'rgba(255,255,255,0.3)', marginTop: '8px',
-              }}>STREET FIGHTER 6 // QUIZ</p>
+                fontSize: '0.6rem', letterSpacing: '4px',
+                color: 'rgba(255,255,255,0.25)', marginTop: '6px',
+              }}>STREET FIGHTER 6 // QUIZ — {QUIZ_MODES.length} MODES</p>
             </div>
 
-            {/* Description */}
-            <div style={{ textAlign: 'center', marginBottom: '40px', minHeight: '48px' }}>
+            <div style={{
+              textAlign: 'center', marginBottom: '32px', minHeight: '44px',
+              maxWidth: '480px',
+            }}>
               <p style={{
                 fontFamily: "'Rajdhani', sans-serif",
-                fontSize: '1rem', fontWeight: 500,
-                color: 'rgba(255,255,255,0.5)', letterSpacing: '1px',
+                fontSize: '0.95rem', fontWeight: 500,
+                color: 'rgba(255,255,255,0.45)', letterSpacing: '0.5px',
+                transition: 'all 0.3s',
               }}>{current.desc}</p>
             </div>
 
-            {/* Modes */}
+            {/* Grille de modes */}
             <div style={{
-              display: 'flex', gap: '16px',
-              flexWrap: 'wrap', justifyContent: 'center',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+              gap: '12px',
               width: '100%', maxWidth: '900px',
             }}>
               {QUIZ_MODES.map((mode, i) => {
@@ -120,46 +134,52 @@ export default function QuizSelectPage() {
                     onMouseEnter={() => setActive(i)}
                     onClick={() => handleModeClick(mode)}
                     style={{
-                      flex: isActive ? '0 0 340px' : '0 0 220px',
                       cursor: 'pointer',
-                      padding: isActive ? '32px 28px' : '24px 20px',
+                      padding: '24px 20px',
                       background: isActive
-                        ? `linear-gradient(160deg, ${mode.color}18, ${mode.colorAlt}25)`
+                        ? `linear-gradient(160deg, ${mode.color}15, ${mode.colorAlt}22)`
                         : 'rgba(255,255,255,0.03)',
-                      border: `1px solid ${isActive ? mode.color + '60' : 'rgba(255,255,255,0.08)'}`,
-                      transition: 'all 0.3s ease',
+                      border: `1px solid ${isActive ? mode.color + '55' : 'rgba(255,255,255,0.07)'}`,
+                      transition: 'all 0.25s ease',
                       position: 'relative', overflow: 'hidden',
-                      boxShadow: isActive ? `0 0 30px ${mode.color}22` : 'none',
+                      boxShadow: isActive ? `0 0 24px ${mode.color}18` : 'none',
+                      transform: isActive ? 'translateY(-2px)' : 'none',
                     }}
                   >
                     <div style={{
                       position: 'absolute', top: 0, left: 0, right: 0, height: '2px',
-                      background: isActive ? `linear-gradient(90deg, transparent, ${mode.color}, transparent)` : 'transparent',
-                      transition: 'all 0.3s',
+                      background: isActive
+                        ? `linear-gradient(90deg, transparent, ${mode.color}, transparent)`
+                        : 'transparent',
+                      transition: 'all 0.25s',
                     }} />
-                    <div style={{ fontSize: isActive ? '2.5rem' : '1.8rem', marginBottom: '12px', transition: 'all 0.3s' }}>
-                      {mode.icon}
-                    </div>
+
+                    <div style={{ fontSize: '1.8rem', marginBottom: '10px' }}>{mode.icon}</div>
+
                     <div style={{
                       fontFamily: "'Bebas Neue', sans-serif",
-                      fontSize: isActive ? '2rem' : '1.4rem', letterSpacing: '4px',
-                      color: isActive ? '#fff' : 'rgba(255,255,255,0.35)',
-                      textShadow: isActive ? `0 0 16px ${mode.color}` : 'none',
-                      transition: 'all 0.3s',
+                      fontSize: '1.3rem', letterSpacing: '3px',
+                      color: isActive ? '#fff' : 'rgba(255,255,255,0.4)',
+                      textShadow: isActive ? `0 0 12px ${mode.color}` : 'none',
+                      transition: 'all 0.25s',
                     }}>{mode.label}</div>
+
                     <div style={{
                       fontFamily: "'Share Tech Mono', monospace",
-                      fontSize: '0.6rem', letterSpacing: '3px',
+                      fontSize: '0.55rem', letterSpacing: '2px',
                       color: isActive ? mode.color : 'rgba(255,255,255,0.2)',
-                      marginTop: '6px', transition: 'all 0.3s',
+                      marginTop: '4px', lineHeight: 1.4,
+                      transition: 'all 0.25s',
                     }}>{mode.sub}</div>
+
                     {isActive && (
                       <div style={{
-                        marginTop: '16px',
+                        marginTop: '12px',
                         fontFamily: "'Rajdhani', sans-serif",
-                        fontSize: '0.85rem', fontWeight: 500,
-                        color: 'rgba(255,255,255,0.6)',
-                      }}>APPUYER POUR JOUER →</div>
+                        fontSize: '0.75rem', fontWeight: 700,
+                        color: 'rgba(255,255,255,0.5)',
+                        letterSpacing: '1px',
+                      }}>JOUER →</div>
                     )}
                   </div>
                 )
@@ -167,21 +187,19 @@ export default function QuizSelectPage() {
             </div>
           </>
         ) : (
-          /* ── Sélecteur de perso avec portraits ── */
+          /* Sélecteur de perso */
           <div style={{ width: '100%', maxWidth: '900px' }}>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
               <button onClick={() => setShowFighters(false)} style={{
                 background: 'none', border: '1px solid rgba(255,255,255,0.15)',
                 color: 'rgba(255,255,255,0.5)', cursor: 'pointer',
-                padding: '8px 16px',
-                fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: '0.9rem', letterSpacing: '2px',
+                padding: '8px 16px', fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: '0.85rem', letterSpacing: '2px',
               }}>← RETOUR</button>
               <h2 style={{
                 fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: '2rem', letterSpacing: '6px', color: '#fff',
-                textShadow: '0 0 20px #00f0ff',
+                fontSize: '1.8rem', letterSpacing: '5px', color: '#fff',
+                textShadow: '0 0 16px #00f0ff',
               }}>CHOISIR UN PERSONNAGE</h2>
             </div>
 
@@ -190,12 +208,12 @@ export default function QuizSelectPage() {
               onChange={e => setSearch(e.target.value)}
               placeholder="RECHERCHER..."
               style={{
-                width: '100%', padding: '12px 20px', marginBottom: '24px',
+                width: '100%', padding: '11px 18px', marginBottom: '20px',
                 background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.12)',
+                border: '1px solid rgba(255,255,255,0.1)',
                 color: '#fff', outline: 'none',
                 fontFamily: "'Share Tech Mono', monospace",
-                fontSize: '0.85rem', letterSpacing: '2px',
+                fontSize: '0.8rem', letterSpacing: '2px',
               }}
             />
 
@@ -208,8 +226,8 @@ export default function QuizSelectPage() {
             ) : (
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-                gap: '8px',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))',
+                gap: '6px',
               }}>
                 {filtered.map(fighter => {
                   const portrait = getFighterPortrait(fighter.slug)
@@ -220,59 +238,43 @@ export default function QuizSelectPage() {
                       href={`/quiz/play?mode=fighter&slug=${fighter.slug}`}
                       style={{
                         textDecoration: 'none',
-                        display: 'flex', flexDirection: 'column',
-                        alignItems: 'center',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center',
                         background: 'rgba(255,255,255,0.03)',
-                        border: '1px solid rgba(255,255,255,0.08)',
-                        overflow: 'hidden',
-                        transition: 'all 0.15s',
-                        cursor: 'pointer',
+                        border: '1px solid rgba(255,255,255,0.07)',
+                        overflow: 'hidden', transition: 'all 0.15s', cursor: 'pointer',
                       }}
                       onMouseEnter={e => {
                         const el = e.currentTarget as HTMLElement
                         el.style.borderColor = color
-                        el.style.boxShadow   = `0 0 16px ${color}44`
-                        el.style.background  = `${color}15`
+                        el.style.boxShadow   = `0 0 12px ${color}33`
+                        el.style.background  = `${color}12`
                       }}
                       onMouseLeave={e => {
                         const el = e.currentTarget as HTMLElement
-                        el.style.borderColor = 'rgba(255,255,255,0.08)'
+                        el.style.borderColor = 'rgba(255,255,255,0.07)'
                         el.style.boxShadow   = 'none'
                         el.style.background  = 'rgba(255,255,255,0.03)'
                       }}
                     >
-                      {/* Portrait */}
                       <div style={{
-                        width: '100%', height: '100px',
-                        background: `linear-gradient(180deg, ${color}33, ${color}11)`,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        overflow: 'hidden', position: 'relative',
+                        width: '100%', height: '90px',
+                        background: `linear-gradient(180deg, ${color}28, ${color}0d)`,
+                        overflow: 'hidden',
                       }}>
-                        {portrait ? (
+                        {portrait && (
                           <img
-                            src={portrait}
-                            alt={fighter.name}
-                            style={{
-                              width: '100%', height: '100%',
-                              objectFit: 'cover', objectPosition: 'top center',
-                            }}
-                            onError={e => {
-                              (e.target as HTMLImageElement).style.display = 'none'
-                            }}
+                            src={portrait} alt={fighter.name}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
+                            onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
                           />
-                        ) : (
-                          <span style={{ fontSize: '2rem' }}>🥊</span>
                         )}
                       </div>
-
-                      {/* Nom */}
                       <div style={{
-                        padding: '8px 6px',
+                        padding: '6px 4px',
                         fontFamily: "'Rajdhani', sans-serif",
-                        fontSize: '0.75rem', fontWeight: 700,
-                        letterSpacing: '1px', textTransform: 'uppercase',
-                        color: 'rgba(255,255,255,0.8)',
-                        textAlign: 'center', width: '100%',
+                        fontSize: '0.7rem', fontWeight: 700,
+                        letterSpacing: '0.5px', textTransform: 'uppercase',
+                        color: 'rgba(255,255,255,0.75)', textAlign: 'center',
                       }}>{fighter.name}</div>
                     </Link>
                   )
