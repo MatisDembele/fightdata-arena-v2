@@ -2,8 +2,9 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Fight Data Arena',
-  description: 'Frame data Street Fighter 6 — Quiz & Database',
+  title: 'Fight Data Arena — SF6 Frame Data',
+  description: 'Quiz et base de données de frame data Street Fighter 6. Startup, active, recovery pour tous les personnages.',
+  keywords: 'Street Fighter 6, frame data, quiz, startup, SF6, fighting game',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
