@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import { getFighters } from '@/lib/api'
@@ -86,13 +86,14 @@ export default function QuizSelectPage() {
       <div style={{
         minHeight: 'calc(100vh - 60px)',
         display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        padding: '40px 20px',
+        alignItems: 'center', justifyContent: 'flex-start',
+        padding: '40px 20px 60px',
+        overflowY: 'auto',
       }}>
 
         {!showFighters ? (
           <>
-            <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
               <h1 style={{
                 fontFamily: "'Bebas Neue', sans-serif",
                 fontSize: 'clamp(2rem, 5vw, 3rem)',
@@ -108,7 +109,7 @@ export default function QuizSelectPage() {
             </div>
 
             <div style={{
-              textAlign: 'center', marginBottom: '32px', minHeight: '44px',
+              textAlign: 'center', marginBottom: '28px', minHeight: '44px',
               maxWidth: '480px',
             }}>
               <p style={{
@@ -119,12 +120,12 @@ export default function QuizSelectPage() {
               }}>{current.desc}</p>
             </div>
 
-            {/* Grille de modes */}
+            {/* Grille de modes — 5 colonnes fixes */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-              gap: '12px',
-              width: '100%', maxWidth: '900px',
+              gridTemplateColumns: 'repeat(5, 1fr)',
+              gap: '10px',
+              width: '100%', maxWidth: '960px',
             }}>
               {QUIZ_MODES.map((mode, i) => {
                 const isActive = i === active
@@ -135,7 +136,7 @@ export default function QuizSelectPage() {
                     onClick={() => handleModeClick(mode)}
                     style={{
                       cursor: 'pointer',
-                      padding: '24px 20px',
+                      padding: '20px 14px',
                       background: isActive
                         ? `linear-gradient(160deg, ${mode.color}15, ${mode.colorAlt}22)`
                         : 'rgba(255,255,255,0.03)',
@@ -154,11 +155,11 @@ export default function QuizSelectPage() {
                       transition: 'all 0.25s',
                     }} />
 
-                    <div style={{ fontSize: '1.8rem', marginBottom: '10px' }}>{mode.icon}</div>
+                    <div style={{ fontSize: '1.6rem', marginBottom: '10px' }}>{mode.icon}</div>
 
                     <div style={{
                       fontFamily: "'Bebas Neue', sans-serif",
-                      fontSize: '1.3rem', letterSpacing: '3px',
+                      fontSize: '1.1rem', letterSpacing: '2px',
                       color: isActive ? '#fff' : 'rgba(255,255,255,0.4)',
                       textShadow: isActive ? `0 0 12px ${mode.color}` : 'none',
                       transition: 'all 0.25s',
@@ -166,7 +167,7 @@ export default function QuizSelectPage() {
 
                     <div style={{
                       fontFamily: "'Share Tech Mono', monospace",
-                      fontSize: '0.55rem', letterSpacing: '2px',
+                      fontSize: '0.5rem', letterSpacing: '1px',
                       color: isActive ? mode.color : 'rgba(255,255,255,0.2)',
                       marginTop: '4px', lineHeight: 1.4,
                       transition: 'all 0.25s',
@@ -174,9 +175,9 @@ export default function QuizSelectPage() {
 
                     {isActive && (
                       <div style={{
-                        marginTop: '12px',
+                        marginTop: '10px',
                         fontFamily: "'Rajdhani', sans-serif",
-                        fontSize: '0.75rem', fontWeight: 700,
+                        fontSize: '0.72rem', fontWeight: 700,
                         color: 'rgba(255,255,255,0.5)',
                         letterSpacing: '1px',
                       }}>JOUER →</div>
