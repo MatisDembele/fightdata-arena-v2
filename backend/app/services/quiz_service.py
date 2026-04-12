@@ -12,6 +12,15 @@ def _is_numeric(value: str | None) -> bool:
     return bool(re.match(r"^\d+$", value.strip()))
 
 
+def _parse_on_block(value: str | None) -> int | None:
+    if not value:
+        return None
+    match = re.match(r"^([+-]?\d+)", value.strip())
+    if not match:
+        return None
+    return int(match.group(1))
+
+
 def generate_startup_question(db: Session, slug: str) -> QuizQuestion | None:
     fighter = db.query(Fighter).filter(Fighter.slug == slug).first()
     if not fighter:
@@ -61,6 +70,50 @@ def generate_random_question(db: Session) -> QuizQuestion | None:
     random.shuffle(fighters)
     for fighter in fighters:
         question = generate_startup_question(db, fighter.slug)
+        if question:
+            return question
+    return None
+
+
+def generate_punish_question(db: Session, slug: str) -> QuizQuestion | None:
+    fighter = db.query(Fighter).filter(Fighter.slug == slug).first()
+    if not fighter:
+        return None
+
+    candidates = (
+        db.query(Move)
+        .filter(Move.fighter_id == fighter.id, Move.gif_path.isnot(None))
+        .all()
+    )
+    candidates = [m for m in candidates if _parse_on_block(m.on_block) is not None]
+
+    if not candidates:
+        return None
+
+    correct_move = random.choice(candidates)
+    on_block_num = _parse_on_block(correct_move.on_block)
+    answer = "punissable" if on_block_num < 0 else "safe"
+
+    return QuizQuestion(
+        move_name=correct_move.move_name,
+        section=correct_move.section,
+        gif_url=correct_move.gif_url,
+        gif_path=correct_move.gif_path,
+        question=f"{correct_move.move_name} est-il punissable on block ?",
+        choices=[],
+        answer=answer,
+        fighter_slug=slug,
+        on_block_value=correct_move.on_block,
+    )
+
+
+def generate_random_punish_question(db: Session) -> QuizQuestion | None:
+    fighters = db.query(Fighter).all()
+    if not fighters:
+        return None
+    random.shuffle(fighters)
+    for fighter in fighters:
+        question = generate_punish_question(db, fighter.slug)
         if question:
             return question
     return None

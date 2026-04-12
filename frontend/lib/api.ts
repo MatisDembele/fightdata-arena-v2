@@ -32,3 +32,15 @@ export async function getFighterQuiz(slug: string) {
   if (!res.ok) throw new Error('Erreur quiz fighter')
   return res.json()
 }
+
+export async function getRandomPunish() {
+  const res = await fetch(`${API_URL}/api/quiz/random/punish`)
+  if (!res.ok) throw new Error('Erreur quiz punish')
+  return res.json()
+}
+
+export async function getFighterPunish(slug: string) {
+  const res = await fetch(`${API_URL}/api/quiz/${slug}/punish`)
+  if (!res.ok) throw new Error('Erreur quiz punish fighter')
+  return res.json()
+}

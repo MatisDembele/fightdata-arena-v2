@@ -29,11 +29,12 @@ class MoveOut(BaseModel):
 
 
 class QuizQuestion(BaseModel):
-    move_name:    str
-    section:      str
-    gif_url:      Optional[str] = None
-    gif_path:     Optional[str] = None
-    question:     str
-    choices:      list[str]
-    answer:       str
-    fighter_slug: str
+    move_name:      str
+    section:        str
+    gif_url:        Optional[str] = None
+    gif_path:       Optional[str] = None
+    question:       str
+    choices:        list[str]
+    answer:         str
+    fighter_slug:   str
+    on_block_value: Optional[str] = None

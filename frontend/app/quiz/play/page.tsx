@@ -3,25 +3,10 @@ import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
-import { getRandomQuiz, getFighterQuiz } from '@/lib/api'
+import { getRandomQuiz, getFighterQuiz, getRandomPunish } from '@/lib/api'
 import type { QuizQuestion } from '@/types'
 
 type AnswerState = 'idle' | 'correct' | 'wrong'
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-const parseOnBlock = (val: string | undefined): number | null => {
-  if (!val) return null
-  const match = val.match(/^([+-]?\d+)/)
-  if (!match) return null
-  return parseInt(match[1])
-}
-
-const isSafe = (val: string | undefined): boolean | null => {
-  const n = parseOnBlock(val)
-  if (n === null) return null
-  return n >= 0
-}
 
 // ── Composant principal ───────────────────────────────────────────────────────
 
@@ -42,26 +27,26 @@ function QuizPlay() {
   const timerRef                = useRef<ReturnType<typeof setInterval> | null>(null)
   const inputRef                = useRef<HTMLInputElement>(null)
 
-  const isHardcore  = mode === 'hardcore'
-  const isInput     = mode === 'input'
-  const isSafeCheck = mode === 'safecheck'
+  const isHardcore = mode === 'hardcore'
+  const isInput    = mode === 'input'
+  const isPunish   = mode === 'punish'
 
   const accuracy = total > 0 ? Math.round((score / total) * 100) : 0
 
   const modeColor = {
-    random:    '#ff2d78',
-    fighter:   '#00f0ff',
-    input:     '#9b1fff',
-    safecheck: '#ffe000',
-    hardcore:  '#ff6a00',
+    random:   '#ff2d78',
+    fighter:  '#00f0ff',
+    input:    '#9b1fff',
+    punish:   '#ffe000',
+    hardcore: '#ff6a00',
   }[mode] ?? '#ff2d78'
 
   const modeColorAlt = {
-    random:    '#9b1fff',
-    fighter:   '#0050ff',
-    input:     '#ff2d78',
-    safecheck: '#ff6a00',
-    hardcore:  '#ff2d78',
+    random:   '#9b1fff',
+    fighter:  '#0050ff',
+    input:    '#ff2d78',
+    punish:   '#ff6a00',
+    hardcore: '#ff2d78',
   }[mode] ?? '#9b1fff'
 
   const loadQuestion = useCallback(async () => {
@@ -72,7 +57,9 @@ function QuizPlay() {
     setTimeLeft(5)
     if (timerRef.current) clearInterval(timerRef.current)
     try {
-      const q = (mode === 'fighter' && slug)
+      const q = isPunish
+        ? await getRandomPunish()
+        : (mode === 'fighter' && slug)
         ? await getFighterQuiz(slug)
         : await getRandomQuiz()
       setQuestion(q)
@@ -91,6 +78,13 @@ function QuizPlay() {
       setTimeout(() => inputRef.current?.focus(), 100)
     }
   }, [isInput, loading, state, question])
+
+  // Mode PUNISH FINDER
+  const handlePunish = (userAnswer: 'punissable' | 'safe') => {
+    if (state !== 'idle' || !question) return
+    setSelected(userAnswer)
+    userAnswer === question.answer ? handleCorrect() : handleWrong()
+  }
 
   // Timer hardcore
   useEffect(() => {
@@ -140,14 +134,6 @@ function QuizPlay() {
     setSelected(userVal)
   }
 
-  // Mode SAFE CHECK
-  const handleSafeCheck = (userSafe: boolean) => {
-    if (state !== 'idle' || !question) return
-    const safe = isSafe(question.answer)
-    if (safe === null) { loadQuestion(); return }
-    setSelected(userSafe ? 'safe' : 'unsafe')
-    userSafe === safe ? handleCorrect() : handleWrong()
-  }
 
   // Couleur de choix QCM
   const choiceStyle = (choice: string): React.CSSProperties => {
@@ -169,14 +155,14 @@ function QuizPlay() {
   }
 
   const modeLabel = {
-    random:    'RANDOM MODE',
-    fighter:   `FIGHTER // ${slug.toUpperCase()}`,
-    input:     'INPUT MODE',
-    safecheck: 'SAFE CHECK',
-    hardcore:  'HARDCORE',
+    random:   'RANDOM MODE',
+    fighter:  `FIGHTER // ${slug.toUpperCase()}`,
+    input:    'INPUT MODE',
+    punish:   'PUNISH FINDER',
+    hardcore: 'HARDCORE',
   }[mode] ?? 'QUIZ'
 
-  const safeValue = isSafe(question?.answer ?? '')
+  const isPunishable = question?.answer === 'punissable'
 
   return (
     <>
@@ -296,15 +282,10 @@ function QuizPlay() {
 
             {/* Question */}
             <div style={{ padding: '16px 18px 12px' }}>
-              {isSafeCheck ? (
+              {isPunish ? (
                 <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1rem', fontWeight: 600, lineHeight: 1.4, color: 'rgba(255,255,255,0.9)' }}>
                   <strong style={{ color: '#fff' }}>{question.move_name}</strong> est-il{' '}
-                  <span style={{ color: modeColor }}>safe ou unsafe</span> on block ?
-                  {question.answer && (
-                    <span style={{ display: 'block', marginTop: '4px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)' }}>
-                      On block : {question.answer}
-                    </span>
-                  )}
+                  <span style={{ color: modeColor }}>punissable on block ?</span>
                 </p>
               ) : (
                 <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1rem', fontWeight: 600, lineHeight: 1.4, color: 'rgba(255,255,255,0.9)' }}>
@@ -318,7 +299,7 @@ function QuizPlay() {
             <div style={{ padding: '0 18px' }}>
 
               {/* Mode QCM (random, fighter, hardcore) */}
-              {!isInput && !isSafeCheck && (
+              {!isInput && !isPunish && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {question.choices.map((choice, i) => (
                     <button key={choice} onClick={() => handleChoice(choice)} style={choiceStyle(choice)}>
@@ -376,64 +357,64 @@ function QuizPlay() {
                 </div>
               )}
 
-              {/* Mode SAFE CHECK */}
-              {isSafeCheck && (
+              {/* Mode PUNISH FINDER */}
+              {isPunish && (
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button
-                    onClick={() => handleSafeCheck(true)}
-                    disabled={state !== 'idle'}
-                    style={{
-                      flex: 1, padding: '20px 12px',
-                      background: state === 'idle'
-                        ? 'rgba(74,222,128,0.08)'
-                        : selected === 'safe' && state === 'correct'
-                        ? 'rgba(74,222,128,0.2)'
-                        : safeValue === true && state !== 'idle'
-                        ? 'rgba(74,222,128,0.2)'
-                        : 'rgba(74,222,128,0.04)',
-                      border: `1px solid ${
-                        state === 'idle' ? 'rgba(74,222,128,0.3)'
-                        : safeValue === true ? '#4ade80'
-                        : 'rgba(74,222,128,0.1)'
-                      }`,
-                      cursor: state === 'idle' ? 'pointer' : 'default',
-                      fontFamily: "'Bebas Neue', sans-serif",
-                      fontSize: '1.4rem', letterSpacing: '4px',
-                      color: safeValue === true && state !== 'idle' ? '#4ade80' : 'rgba(74,222,128,0.8)',
-                      transition: 'all 0.2s',
-                      boxShadow: state === 'idle' ? '0 0 12px rgba(74,222,128,0.1)' : safeValue === true && state !== 'idle' ? '0 0 20px rgba(74,222,128,0.3)' : 'none',
-                    }}
-                  >
-                    ✓ SAFE
-                    <div style={{ fontSize: '0.6rem', letterSpacing: '2px', marginTop: '4px', opacity: 0.6 }}>≥ 0 ON BLOCK</div>
-                  </button>
-                  <button
-                    onClick={() => handleSafeCheck(false)}
+                    onClick={() => handlePunish('punissable')}
                     disabled={state !== 'idle'}
                     style={{
                       flex: 1, padding: '20px 12px',
                       background: state === 'idle'
                         ? 'rgba(255,45,120,0.08)'
-                        : selected === 'unsafe' && state === 'correct'
-                        ? 'rgba(255,45,120,0.2)'
-                        : safeValue === false && state !== 'idle'
+                        : isPunishable
                         ? 'rgba(255,45,120,0.2)'
                         : 'rgba(255,45,120,0.04)',
                       border: `1px solid ${
                         state === 'idle' ? 'rgba(255,45,120,0.3)'
-                        : safeValue === false ? '#ff2d78'
+                        : isPunishable ? '#ff2d78'
                         : 'rgba(255,45,120,0.1)'
                       }`,
                       cursor: state === 'idle' ? 'pointer' : 'default',
                       fontFamily: "'Bebas Neue', sans-serif",
                       fontSize: '1.4rem', letterSpacing: '4px',
-                      color: safeValue === false && state !== 'idle' ? '#ff2d78' : 'rgba(255,45,120,0.8)',
+                      color: state !== 'idle' && isPunishable ? '#ff2d78' : 'rgba(255,45,120,0.8)',
                       transition: 'all 0.2s',
-                      boxShadow: state === 'idle' ? '0 0 12px rgba(255,45,120,0.1)' : safeValue === false && state !== 'idle' ? '0 0 20px rgba(255,45,120,0.3)' : 'none',
+                      boxShadow: state === 'idle'
+                        ? '0 0 12px rgba(255,45,120,0.1)'
+                        : isPunishable ? '0 0 20px rgba(255,45,120,0.3)' : 'none',
                     }}
                   >
-                    ✗ UNSAFE
+                    💀 PUNISSABLE
                     <div style={{ fontSize: '0.6rem', letterSpacing: '2px', marginTop: '4px', opacity: 0.6 }}>{'< 0 ON BLOCK'}</div>
+                  </button>
+                  <button
+                    onClick={() => handlePunish('safe')}
+                    disabled={state !== 'idle'}
+                    style={{
+                      flex: 1, padding: '20px 12px',
+                      background: state === 'idle'
+                        ? 'rgba(74,222,128,0.08)'
+                        : !isPunishable
+                        ? 'rgba(74,222,128,0.2)'
+                        : 'rgba(74,222,128,0.04)',
+                      border: `1px solid ${
+                        state === 'idle' ? 'rgba(74,222,128,0.3)'
+                        : !isPunishable ? '#4ade80'
+                        : 'rgba(74,222,128,0.1)'
+                      }`,
+                      cursor: state === 'idle' ? 'pointer' : 'default',
+                      fontFamily: "'Bebas Neue', sans-serif",
+                      fontSize: '1.4rem', letterSpacing: '4px',
+                      color: state !== 'idle' && !isPunishable ? '#4ade80' : 'rgba(74,222,128,0.8)',
+                      transition: 'all 0.2s',
+                      boxShadow: state === 'idle'
+                        ? '0 0 12px rgba(74,222,128,0.1)'
+                        : !isPunishable ? '0 0 20px rgba(74,222,128,0.3)' : 'none',
+                    }}
+                  >
+                    ✓ SAFE
+                    <div style={{ fontSize: '0.6rem', letterSpacing: '2px', marginTop: '4px', opacity: 0.6 }}>≥ 0 ON BLOCK</div>
                   </button>
                 </div>
               )}
@@ -450,10 +431,10 @@ function QuizPlay() {
                   fontSize: '0.9rem', fontWeight: 700,
                   color: state === 'correct' ? '#4ade80' : '#ff2d78',
                 }}>
-                  {isSafeCheck ? (
+                  {isPunish ? (
                     state === 'correct'
-                      ? `✓ Correct ! ${question.move_name} est ${safeValue ? 'SAFE' : 'UNSAFE'} (${question.answer} on block)`
-                      : `✗ Raté ! ${question.move_name} est ${safeValue ? 'SAFE' : 'UNSAFE'} (${question.answer} on block)`
+                      ? `✓ Correct ! ${question.move_name} est ${isPunishable ? 'PUNISSABLE' : 'SAFE'} (on block : ${question.on_block_value})`
+                      : `✗ Raté ! ${question.move_name} est ${isPunishable ? 'PUNISSABLE' : 'SAFE'} (on block : ${question.on_block_value})`
                   ) : isInput ? (
                     state === 'correct'
                       ? `✓ Exact ! Startup : ${question.answer} frames.`

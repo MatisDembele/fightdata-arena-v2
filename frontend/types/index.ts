@@ -35,4 +35,5 @@ export interface QuizQuestion {
   choices: string[]
   answer: string
   fighter_slug: string
+  on_block_value?: string
 }
