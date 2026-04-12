@@ -92,7 +92,8 @@ def generate_punish_question(db: Session, slug: str) -> QuizQuestion | None:
 
     correct_move = random.choice(candidates)
     on_block_num = _parse_on_block(correct_move.on_block)
-    answer = "punissable" if on_block_num < 0 else "safe"
+    # Punishable if -4 or worse (fastest normal in SF6 is 4 frames)
+    answer = "punissable" if on_block_num <= -4 else "safe"
 
     return QuizQuestion(
         move_name=correct_move.move_name,

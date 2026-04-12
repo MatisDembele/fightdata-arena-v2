@@ -38,7 +38,7 @@ const QUIZ_MODES = [
     id: 'punish',
     label: 'PUNISH FINDER',
     sub: 'Punissable ou safe on block ?',
-    desc: 'Un move apparaît — est-il punissable (négatif) ou safe (positif/neutre) on block ? Réfléchis vite.',
+    desc: 'Le move le plus rapide en SF6 est 4 frames. Un move à -4 ou pire est punissable. Entraîne-toi à reconnaître les moves qui se punissent.',
     color: '#ffe000', colorAlt: '#ff6a00',
     href: '/quiz/play?mode=punish',
     icon: '💀',

@@ -359,63 +359,70 @@ function QuizPlay() {
 
               {/* Mode PUNISH FINDER */}
               {isPunish && (
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <button
-                    onClick={() => handlePunish('punissable')}
-                    disabled={state !== 'idle'}
-                    style={{
-                      flex: 1, padding: '20px 12px',
-                      background: state === 'idle'
-                        ? 'rgba(255,45,120,0.08)'
-                        : isPunishable
-                        ? 'rgba(255,45,120,0.2)'
-                        : 'rgba(255,45,120,0.04)',
-                      border: `1px solid ${
-                        state === 'idle' ? 'rgba(255,45,120,0.3)'
-                        : isPunishable ? '#ff2d78'
-                        : 'rgba(255,45,120,0.1)'
-                      }`,
-                      cursor: state === 'idle' ? 'pointer' : 'default',
-                      fontFamily: "'Bebas Neue', sans-serif",
-                      fontSize: '1.4rem', letterSpacing: '4px',
-                      color: state !== 'idle' && isPunishable ? '#ff2d78' : 'rgba(255,45,120,0.8)',
-                      transition: 'all 0.2s',
-                      boxShadow: state === 'idle'
-                        ? '0 0 12px rgba(255,45,120,0.1)'
-                        : isPunishable ? '0 0 20px rgba(255,45,120,0.3)' : 'none',
-                    }}
-                  >
-                    💀 PUNISSABLE
-                    <div style={{ fontSize: '0.6rem', letterSpacing: '2px', marginTop: '4px', opacity: 0.6 }}>{'< 0 ON BLOCK'}</div>
-                  </button>
-                  <button
-                    onClick={() => handlePunish('safe')}
-                    disabled={state !== 'idle'}
-                    style={{
-                      flex: 1, padding: '20px 12px',
-                      background: state === 'idle'
-                        ? 'rgba(74,222,128,0.08)'
-                        : !isPunishable
-                        ? 'rgba(74,222,128,0.2)'
-                        : 'rgba(74,222,128,0.04)',
-                      border: `1px solid ${
-                        state === 'idle' ? 'rgba(74,222,128,0.3)'
-                        : !isPunishable ? '#4ade80'
-                        : 'rgba(74,222,128,0.1)'
-                      }`,
-                      cursor: state === 'idle' ? 'pointer' : 'default',
-                      fontFamily: "'Bebas Neue', sans-serif",
-                      fontSize: '1.4rem', letterSpacing: '4px',
-                      color: state !== 'idle' && !isPunishable ? '#4ade80' : 'rgba(74,222,128,0.8)',
-                      transition: 'all 0.2s',
-                      boxShadow: state === 'idle'
-                        ? '0 0 12px rgba(74,222,128,0.1)'
-                        : !isPunishable ? '0 0 20px rgba(74,222,128,0.3)' : 'none',
-                    }}
-                  >
-                    ✓ SAFE
-                    <div style={{ fontSize: '0.6rem', letterSpacing: '2px', marginTop: '4px', opacity: 0.6 }}>≥ 0 ON BLOCK</div>
-                  </button>
+                <div>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      onClick={() => handlePunish('punissable')}
+                      disabled={state !== 'idle'}
+                      style={{
+                        flex: 1, padding: '20px 12px',
+                        background: state === 'idle'
+                          ? 'rgba(255,45,120,0.08)'
+                          : isPunishable
+                          ? 'rgba(255,45,120,0.2)'
+                          : 'rgba(255,45,120,0.04)',
+                        border: `1px solid ${
+                          state === 'idle' ? 'rgba(255,45,120,0.3)'
+                          : isPunishable ? '#ff2d78'
+                          : 'rgba(255,45,120,0.1)'
+                        }`,
+                        cursor: state === 'idle' ? 'pointer' : 'default',
+                        fontFamily: "'Bebas Neue', sans-serif",
+                        fontSize: '1.4rem', letterSpacing: '4px',
+                        color: state !== 'idle' && isPunishable ? '#ff2d78' : 'rgba(255,45,120,0.8)',
+                        transition: 'all 0.2s',
+                        boxShadow: state === 'idle'
+                          ? '0 0 12px rgba(255,45,120,0.1)'
+                          : isPunishable ? '0 0 20px rgba(255,45,120,0.3)' : 'none',
+                      }}
+                    >
+                      💀 PUNISSABLE
+                      <div style={{ fontSize: '0.6rem', letterSpacing: '2px', marginTop: '4px', opacity: 0.6 }}>{'≤ -4 ON BLOCK'}</div>
+                    </button>
+                    <button
+                      onClick={() => handlePunish('safe')}
+                      disabled={state !== 'idle'}
+                      style={{
+                        flex: 1, padding: '20px 12px',
+                        background: state === 'idle'
+                          ? 'rgba(74,222,128,0.08)'
+                          : !isPunishable
+                          ? 'rgba(74,222,128,0.2)'
+                          : 'rgba(74,222,128,0.04)',
+                        border: `1px solid ${
+                          state === 'idle' ? 'rgba(74,222,128,0.3)'
+                          : !isPunishable ? '#4ade80'
+                          : 'rgba(74,222,128,0.1)'
+                        }`,
+                        cursor: state === 'idle' ? 'pointer' : 'default',
+                        fontFamily: "'Bebas Neue', sans-serif",
+                        fontSize: '1.4rem', letterSpacing: '4px',
+                        color: state !== 'idle' && !isPunishable ? '#4ade80' : 'rgba(74,222,128,0.8)',
+                        transition: 'all 0.2s',
+                        boxShadow: state === 'idle'
+                          ? '0 0 12px rgba(74,222,128,0.1)'
+                          : !isPunishable ? '0 0 20px rgba(74,222,128,0.3)' : 'none',
+                      }}
+                    >
+                      ✓ SAFE
+                      <div style={{ fontSize: '0.6rem', letterSpacing: '2px', marginTop: '4px', opacity: 0.6 }}>{'-3 à +∞ ON BLOCK'}</div>
+                    </button>
+                  </div>
+                  <p style={{
+                    fontFamily: "'Share Tech Mono', monospace",
+                    fontSize: '0.52rem', color: 'rgba(255,255,255,0.18)',
+                    letterSpacing: '1.5px', marginTop: '8px', textAlign: 'center',
+                  }}>HORS CAS DE PUSHBACK EXTRÊME</p>
                 </div>
               )}
             </div>
