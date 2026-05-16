@@ -127,6 +127,13 @@ async def websocket_endpoint(
         db.close()
 
 
+@app.websocket("/ws-test")
+async def ws_test(websocket: WebSocket):
+    await websocket.accept()
+    await websocket.send_json({"type": "ok"})
+    await websocket.close()
+
+
 @app.get("/")
 def root():
     return {"message": "Fight Data Arena API", "status": "ok"}
