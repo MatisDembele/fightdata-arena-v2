@@ -123,34 +123,26 @@ export default function Home() {
         </div>
 
         {/* Modes */}
-        <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+        <div className="home-modes-row">
           <button
+            className="home-arrow-btn"
             onClick={() => setActive(a => (a - 1 + MODES.length) % MODES.length)}
-            style={{
-              width: '56px', background: 'none', border: 'none', cursor: 'pointer',
-              fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.4rem',
-              color: 'rgba(255,255,255,0.35)', marginLeft: '40px',
-              transition: 'color 0.2s',
-            }}
             onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
             onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
           >«</button>
 
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'center', gap: '0' }}>
+          <div className="home-modes-inner">
             {MODES.map((mode, i) => {
               const isActive = i === active
               return (
                 <Link
                   key={mode.id}
                   href={mode.href}
+                  className="home-mode-card"
                   onMouseEnter={() => setActive(i)}
                   style={{
-                    textDecoration: 'none',
-                    flex: isActive ? '0 0 320px' : '0 0 200px',
-                    textAlign: 'center',
+                    flex: isActive ? '0 0 clamp(180px, 40vw, 320px)' : '0 0 clamp(100px, 22vw, 200px)',
                     padding: isActive ? '24px 28px 28px' : '18px 20px 24px',
-                    transition: 'all 0.3s ease',
-                    position: 'relative', overflow: 'hidden',
                   }}
                 >
                   <div style={{
@@ -201,20 +193,15 @@ export default function Home() {
           </div>
 
           <button
+            className="home-arrow-btn"
             onClick={() => setActive(a => (a + 1) % MODES.length)}
-            style={{
-              width: '56px', background: 'none', border: 'none', cursor: 'pointer',
-              fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.4rem',
-              color: 'rgba(255,255,255,0.35)', marginRight: '40px',
-              transition: 'color 0.2s',
-            }}
             onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
             onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
           >»</button>
         </div>
 
         {/* Stats */}
-        <div style={{ display: 'flex', gap: '48px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'clamp(16px, 4vw, 48px)', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', padding: '0 16px' }}>
           {STATS.map((s, i) => (
             <div key={i} style={{ textAlign: 'center' }}>
               <div style={{

@@ -120,13 +120,8 @@ export default function QuizSelectPage() {
               }}>{current.desc}</p>
             </div>
 
-            {/* Grille de modes — 5 colonnes fixes */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(5, 1fr)',
-              gap: '10px',
-              width: '100%', maxWidth: '960px',
-            }}>
+            {/* Grille de modes */}
+            <div className="quiz-modes-grid">
               {QUIZ_MODES.map((mode, i) => {
                 const isActive = i === active
                 return (

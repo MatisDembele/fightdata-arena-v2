@@ -13,9 +13,9 @@ export default function Navbar() {
   const path = usePathname()
 
   return (
-    <nav style={{
+    <nav className="navbar" style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '0 48px', height: '60px',
+      height: '60px',
       background: 'rgba(0,0,0,0.6)',
       backdropFilter: 'blur(20px)',
       borderBottom: '1px solid rgba(255,255,255,0.06)',
@@ -28,10 +28,10 @@ export default function Navbar() {
       }} />
 
       {/* Logo */}
-      <Link href="/" style={{ textDecoration: 'none' }}>
+      <Link href="/" style={{ textDecoration: 'none', flexShrink: 0 }}>
         <span style={{
           fontFamily: "'Bebas Neue', sans-serif",
-          fontSize: '1.4rem', letterSpacing: '5px',
+          fontSize: 'clamp(1rem, 3.5vw, 1.4rem)', letterSpacing: 'clamp(2px, 1vw, 5px)',
           color: '#fff',
           textShadow: '0 0 10px #fff, 0 0 24px rgba(255,255,255,0.6), 0 0 48px rgba(255,255,255,0.3)',
           WebkitTextStroke: '1px rgba(255,255,255,0.3)',
@@ -43,8 +43,7 @@ export default function Navbar() {
         {links.map(link => {
           const isActive = path === link.href || (link.href !== '/' && path.startsWith(link.href))
           return (
-            <Link key={link.href} href={link.href} style={{
-              padding: '8px 20px', textDecoration: 'none',
+            <Link key={link.href} href={link.href} className="nav-link" style={{
               fontFamily: "'Bebas Neue', sans-serif",
               fontSize: '0.85rem', letterSpacing: '3px',
               color: isActive ? 'var(--yellow)' : 'rgba(255,255,255,0.45)',
@@ -59,7 +58,7 @@ export default function Navbar() {
       </div>
 
       {/* Badge */}
-      <div style={{
+      <div className="navbar-badge" style={{
         fontFamily: "'Share Tech Mono', monospace",
         fontSize: '0.6rem', letterSpacing: '2px',
         color: 'rgba(255,255,255,0.25)',

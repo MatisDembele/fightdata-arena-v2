@@ -179,7 +179,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
     )
 
     if ((phase === 'playing' || phase === 'result') && question) return (
-      <div style={{ width: '100%', maxWidth: '500px' }}>
+      <div style={{ width: '100%', maxWidth: '500px', minWidth: 0 }}>
 
         {/* Header */}
         <div style={{ padding: '10px 18px', background: 'rgba(255,224,0,0.06)', borderBottom: `1px solid ${COLOR}28`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -292,16 +292,16 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
           </div>
 
           {/* Scores */}
-          <div style={{ display: 'flex', gap: '0', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+          <div className="gameover-scores">
             {/* Moi */}
-            <div style={{ padding: '24px 36px', background: isWin ? 'rgba(74,222,128,0.06)' : isDraw ? 'rgba(255,224,0,0.06)' : 'rgba(255,255,255,0.03)', borderRight: '1px solid rgba(255,255,255,0.08)' }}>
-              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '3.5rem', letterSpacing: '2px', color: isWin ? COLOR_WIN : isDraw ? COLOR : 'rgba(255,255,255,0.5)', textShadow: isWin ? `0 0 20px ${COLOR_WIN}` : isDraw ? `0 0 20px ${COLOR}` : 'none' }}>{myScore}</div>
+            <div className="gameover-score-cell" style={{ background: isWin ? 'rgba(74,222,128,0.06)' : isDraw ? 'rgba(255,224,0,0.06)' : 'rgba(255,255,255,0.03)', borderRight: '1px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2.5rem, 10vw, 3.5rem)', letterSpacing: '2px', color: isWin ? COLOR_WIN : isDraw ? COLOR : 'rgba(255,255,255,0.5)', textShadow: isWin ? `0 0 20px ${COLOR_WIN}` : isDraw ? `0 0 20px ${COLOR}` : 'none' }}>{myScore}</div>
               <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.4)', marginTop: '6px' }}>TOI</div>
               <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.2)', marginTop: '4px' }}>{accuracy}% PRÉCISION</div>
             </div>
             {/* Adversaire */}
-            <div style={{ padding: '24px 36px', background: !isWin && !isDraw ? 'rgba(74,222,128,0.06)' : 'rgba(255,255,255,0.03)' }}>
-              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '3.5rem', letterSpacing: '2px', color: !isWin && !isDraw ? COLOR_WIN : 'rgba(255,255,255,0.5)', textShadow: !isWin && !isDraw ? `0 0 20px ${COLOR_WIN}` : 'none' }}>{oppScore}</div>
+            <div className="gameover-score-cell" style={{ background: !isWin && !isDraw ? 'rgba(74,222,128,0.06)' : 'rgba(255,255,255,0.03)' }}>
+              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2.5rem, 10vw, 3.5rem)', letterSpacing: '2px', color: !isWin && !isDraw ? COLOR_WIN : 'rgba(255,255,255,0.5)', textShadow: !isWin && !isDraw ? `0 0 20px ${COLOR_WIN}` : 'none' }}>{oppScore}</div>
               <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.4)', marginTop: '6px' }}>{oppName.toUpperCase().slice(0, 8)}</div>
               <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.2)', marginTop: '4px' }}>{Math.round((oppScore / totalQuestions) * 100)}% PRÉCISION</div>
             </div>

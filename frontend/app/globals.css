@@ -160,3 +160,100 @@ body {
 
 /* ── Selection ── */
 ::selection { background: rgba(255,45,120,0.3); color: #fff; }
+
+/* ── Responsive ── */
+
+/* Navbar */
+.navbar { padding: 0 48px; }
+.navbar-badge { display: flex; }
+
+/* Quiz mode grid */
+.quiz-modes-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 960px;
+}
+
+/* Score bar (quiz play) */
+.score-bar {
+  display: flex;
+  gap: 36px;
+  margin-bottom: 24px;
+  padding: 12px 36px;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.07);
+  position: relative;
+  overflow: hidden;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Home page mode cards */
+.home-modes-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.home-arrow-btn {
+  flex-shrink: 0;
+  width: 56px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.4rem;
+  color: rgba(255,255,255,0.35);
+  transition: color 0.2s;
+}
+.home-arrow-btn:first-child { margin-left: 40px; }
+.home-arrow-btn:last-child  { margin-right: 40px; }
+.home-modes-inner {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 0;
+}
+.home-mode-card {
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Gameover score cards */
+.gameover-scores {
+  display: flex;
+  border: 1px solid rgba(255,255,255,0.08);
+  overflow: hidden;
+}
+.gameover-score-cell {
+  padding: 24px 36px;
+}
+
+/* Nav links */
+.nav-link { padding: 8px 20px; text-decoration: none; }
+
+@media (max-width: 640px) {
+  .navbar { padding: 0 14px; }
+  .navbar-badge { display: none; }
+  .nav-link { padding: 8px 10px; }
+
+  .quiz-modes-grid { grid-template-columns: repeat(3, 1fr); }
+
+  .score-bar { gap: 16px; padding: 10px 16px; }
+
+  .home-arrow-btn:first-child { margin-left: 8px; }
+  .home-arrow-btn:last-child  { margin-right: 8px; }
+
+  .gameover-scores { flex-direction: column; }
+  .gameover-score-cell { padding: 16px 24px; border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.08); }
+}
+
+@media (max-width: 400px) {
+  .quiz-modes-grid { grid-template-columns: repeat(2, 1fr); }
+  .score-bar { gap: 12px; padding: 10px 12px; }
+}

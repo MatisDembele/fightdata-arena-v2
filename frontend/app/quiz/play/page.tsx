@@ -173,13 +173,7 @@ function QuizPlay() {
       }}>
 
         {/* Score bar */}
-        <div style={{
-          display: 'flex', gap: '36px', marginBottom: '24px',
-          padding: '12px 36px',
-          background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255,255,255,0.07)',
-          position: 'relative', overflow: 'hidden',
-        }}>
+        <div className="score-bar">
           <div style={{
             position: 'absolute', top: 0, left: 0, right: 0, height: '1px',
             background: `linear-gradient(90deg, transparent, ${modeColor}, transparent)`,
