@@ -2,9 +2,8 @@ import asyncio
 import random
 import string
 from typing import Optional
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
-from sqlalchemy.orm import Session
-from app.database import get_db
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from app.database import SessionLocal
 from app.services.quiz_service import generate_random_question
 
 router = APIRouter()
@@ -111,9 +110,9 @@ async def websocket_endpoint(
     websocket: WebSocket,
     room_code: str,
     player_name: str,
-    db: Session = Depends(get_db),
 ):
     await websocket.accept()
+    db = SessionLocal()
 
     room_code = room_code.upper()
 
@@ -196,3 +195,5 @@ async def websocket_endpoint(
             })
         else:
             rooms.pop(room_code, None)
+    finally:
+        db.close()
