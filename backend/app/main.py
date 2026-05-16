@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine
-from app.routers import fighters, quiz
+from app.routers import fighters, quiz, multi
 
 Base.metadata.create_all(bind=engine)
 
@@ -26,6 +26,7 @@ app.add_middleware(
 
 app.include_router(fighters.router, prefix="/api")
 app.include_router(quiz.router, prefix="/api")
+app.include_router(multi.router, prefix="/api/multi")
 
 
 @app.get("/")
