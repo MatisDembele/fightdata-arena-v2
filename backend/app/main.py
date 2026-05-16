@@ -20,6 +20,8 @@ app.add_middleware(
         "http://localhost:3000",
         "https://fightdata-arena-v2.vercel.app",
         "https://fightdata-arena-v2-git-main-matisdembeles-projects.vercel.app",
+        "https://www.fightdata.app",
+        "https://fightdata.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
