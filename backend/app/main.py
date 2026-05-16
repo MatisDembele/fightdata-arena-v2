@@ -88,20 +88,21 @@ async def websocket_endpoint(
             if data.get("type") == "answer":
                 answer = str(data.get("value", "")).strip()
 
+                all_done = False
                 async with room.lock:
                     if player_name in room.answers:
                         continue
                     room.answers[player_name] = answer
-
-                correct = room.current_question and answer == room.current_question["answer"]
-                if correct:
-                    room.scores[player_name] = room.scores.get(player_name, 0) + 1
+                    correct = room.current_question and answer == room.current_question["answer"]
+                    if correct:
+                        room.scores[player_name] = room.scores.get(player_name, 0) + 1
+                    all_done = room.all_answered()
 
                 opponent = next((n for n in room.players if n != player_name), None)
                 if opponent and opponent in room.players:
                     await _send(room.players[opponent], {"type": "opponent_answered"})
 
-                if room.all_answered():
+                if all_done:
                     await _broadcast(room, {
                         "type": "answer_result",
                         "correct_answer": room.current_question["answer"] if room.current_question else "",
