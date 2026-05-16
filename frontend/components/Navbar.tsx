@@ -28,23 +28,14 @@ export default function Navbar() {
       }} />
 
       {/* Logo */}
-      <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '2px' }}>
+      <Link href="/" style={{ textDecoration: 'none' }}>
         <span style={{
           fontFamily: "'Bebas Neue', sans-serif",
           fontSize: '1.4rem', letterSpacing: '5px',
           color: '#fff',
-        }}>FIGHT </span>
-        <span style={{
-          fontFamily: "'Bebas Neue', sans-serif",
-          fontSize: '1.4rem', letterSpacing: '5px',
-          color: 'var(--yellow)',
-        }}>DATA </span>
-        <span style={{
-          fontFamily: "'Bebas Neue', sans-serif",
-          fontSize: '1.4rem', letterSpacing: '5px',
-          background: 'linear-gradient(90deg, var(--pink), var(--orange))',
-          WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-        }}>ARENA</span>
+          textShadow: '0 0 10px #fff, 0 0 24px rgba(255,255,255,0.6), 0 0 48px rgba(255,255,255,0.3)',
+          WebkitTextStroke: '1px rgba(255,255,255,0.3)',
+        }}>FIGHT DATA ARENA</span>
       </Link>
 
       {/* Navigation */}
