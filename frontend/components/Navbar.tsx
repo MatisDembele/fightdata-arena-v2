@@ -6,6 +6,7 @@ const links = [
   { href: '/',         label: 'ACCUEIL' },
   { href: '/quiz',     label: 'QUIZ' },
   { href: '/fighters', label: 'DATABASE' },
+  { href: '/multi',    label: 'MULTI' },
 ]
 
 export default function Navbar() {

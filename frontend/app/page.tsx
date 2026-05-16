@@ -18,7 +18,7 @@ const MODES = [
   {
     id: 'multi', label: 'MULTI', sub: 'Défie tes amis',
     href: '/multi',
-    color: '#00ff99', colorAlt: '#00bbff',
+    color: '#ffe000', colorAlt: '#ff6a00',
     desc: 'Affronte tes amis en quiz de frame data en temps réel. Qui connaît le mieux SF6 ?',
   },
 ]
