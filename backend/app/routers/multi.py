@@ -3,8 +3,9 @@ import random
 import string
 from typing import Optional
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from sqlalchemy.orm import Session
 from app.database import SessionLocal
-from app.services.quiz_service import generate_random_question
+from app.services.quiz_service import generate_random_question, generate_random_punish_question
 
 # WebSocket endpoint is registered directly on the main app (main.py)
 # to work around FastAPI's router prefix + WebSocket routing issue.
@@ -12,6 +13,7 @@ from app.services.quiz_service import generate_random_question
 router = APIRouter()
 
 MAX_QUESTIONS = 5
+GAME_MODES = ("startup", "punish")
 
 
 def _make_code() -> str:
@@ -19,8 +21,9 @@ def _make_code() -> str:
 
 
 class Room:
-    def __init__(self, code: str):
+    def __init__(self, code: str, game_mode: str = "startup"):
         self.code = code
+        self.game_mode = game_mode if game_mode in GAME_MODES else "startup"
         self.players: dict[str, WebSocket] = {}
         self.scores: dict[str, int] = {}
         self.current_question: Optional[dict] = None
@@ -64,17 +67,19 @@ async def _next_question(room: Room, db: Session):
     room.answers = {}
 
     if room.question_number > MAX_QUESTIONS:
-        winner = max(room.scores, key=lambda n: room.scores[n])
-        if list(room.scores.values()).count(room.scores[winner]) > 1:
-            winner = "draw"
+        scores = room.scores
+        max_score = max(scores.values()) if scores else 0
+        leaders = [n for n, s in scores.items() if s == max_score]
+        winner = leaders[0] if len(leaders) == 1 else "draw"
         await _broadcast(room, {
             "type": "game_over",
-            "scores": room.scores,
+            "scores": scores,
             "winner": winner,
+            "game_mode": room.game_mode,
         })
         return
 
-    q = generate_random_question(db)
+    q = generate_random_punish_question(db) if room.game_mode == "punish" else generate_random_question(db)
     if not q:
         await _broadcast(room, {"type": "error", "message": "Impossible de générer une question."})
         return
@@ -88,6 +93,8 @@ async def _next_question(room: Room, db: Session):
         "choices": q.choices,
         "answer": q.answer,
         "fighter_slug": q.fighter_slug,
+        "on_block_value": getattr(q, "on_block_value", None),
+        "game_mode": room.game_mode,
     }
 
     await _broadcast(room, {
@@ -95,108 +102,16 @@ async def _next_question(room: Room, db: Session):
         "question": {k: v for k, v in room.current_question.items() if k != "answer"},
         "question_number": room.question_number,
         "total": MAX_QUESTIONS,
+        "game_mode": room.game_mode,
     })
 
 
 @router.post("/rooms")
-def create_room():
+def create_room(game_mode: str = "startup"):
+    mode = game_mode if game_mode in GAME_MODES else "startup"
     for _ in range(10):
         code = _make_code()
         if code not in rooms:
-            rooms[code] = Room(code)
-            return {"room_code": code}
+            rooms[code] = Room(code, mode)
+            return {"room_code": code, "game_mode": mode}
     return {"error": "Impossible de créer une room"}, 500
-
-
-@router.websocket("/ws/{room_code}/{player_name}")
-async def websocket_endpoint(
-    websocket: WebSocket,
-    room_code: str,
-    player_name: str,
-):
-    await websocket.accept()
-    db = SessionLocal()
-
-    room_code = room_code.upper()
-
-    if room_code not in rooms:
-        await _send(websocket, {"type": "error", "message": "Room introuvable."})
-        await websocket.close()
-        return
-
-    room = rooms[room_code]
-
-    if room.is_full() and player_name not in room.players:
-        await _send(websocket, {"type": "error", "message": "Room pleine."})
-        await websocket.close()
-        return
-
-    async with room.lock:
-        room.players[player_name] = websocket
-        room.scores.setdefault(player_name, 0)
-
-    player_list = list(room.players.keys())
-
-    await _send(websocket, {
-        "type": "room_joined",
-        "room_code": room_code,
-        "players": player_list,
-    })
-
-    await _broadcast(room, {
-        "type": "player_joined",
-        "players": player_list,
-    })
-
-    if not room.is_ready():
-        await _send(websocket, {"type": "waiting", "message": "En attente d'un adversaire..."})
-    else:
-        await asyncio.sleep(0.5)
-        await _next_question(room, db)
-
-    try:
-        while True:
-            data = await websocket.receive_json()
-
-            if data.get("type") == "answer":
-                answer = str(data.get("value", "")).strip()
-
-                async with room.lock:
-                    if player_name in room.answers:
-                        continue
-                    room.answers[player_name] = answer
-
-                correct = room.current_question and answer == room.current_question["answer"]
-                if correct:
-                    room.scores[player_name] = room.scores.get(player_name, 0) + 1
-
-                opponent = next((n for n in room.players if n != player_name), None)
-                if opponent and opponent in room.players:
-                    await _send(room.players[opponent], {
-                        "type": "opponent_answered",
-                    })
-
-                if room.all_answered():
-                    await _broadcast(room, {
-                        "type": "answer_result",
-                        "correct_answer": room.current_question["answer"] if room.current_question else "",
-                        "player_answers": room.answers,
-                        "scores": room.scores,
-                    })
-                    await asyncio.sleep(2.5)
-                    await _next_question(room, db)
-
-    except WebSocketDisconnect:
-        async with room.lock:
-            room.players.pop(player_name, None)
-
-        if room.players:
-            await _broadcast(room, {
-                "type": "player_left",
-                "player": player_name,
-                "players": list(room.players.keys()),
-            })
-        else:
-            rooms.pop(room_code, None)
-    finally:
-        db.close()

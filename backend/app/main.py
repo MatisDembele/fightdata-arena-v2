@@ -107,6 +107,8 @@ async def websocket_endpoint(
                         "correct_answer": room.current_question["answer"] if room.current_question else "",
                         "player_answers": room.answers,
                         "scores": room.scores,
+                        "on_block_value": room.current_question.get("on_block_value") if room.current_question else None,
+                        "game_mode": room.game_mode,
                     })
                     await asyncio.sleep(2.5)
                     await _next_question(room, db)
