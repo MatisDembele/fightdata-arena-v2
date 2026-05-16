@@ -6,6 +6,9 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from app.database import SessionLocal
 from app.services.quiz_service import generate_random_question
 
+# WebSocket endpoint is registered directly on the main app (main.py)
+# to work around FastAPI's router prefix + WebSocket routing issue.
+
 router = APIRouter()
 
 MAX_QUESTIONS = 5
