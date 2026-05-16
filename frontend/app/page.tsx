@@ -16,10 +16,10 @@ const MODES = [
     desc: 'Accède aux données de frame de tous les personnages SF6. Startup, active, recovery et plus.',
   },
   {
-    id: 'compare', label: 'COMPARE', sub: 'Comparaison de persos',
-    href: '/compare',
-    color: '#ffe000', colorAlt: '#ff6a00',
-    desc: 'Compare les statistiques et les moves de deux personnages côte à côte.',
+    id: 'multi', label: 'MULTI', sub: 'Défie tes amis',
+    href: '/multi',
+    color: '#00ff99', colorAlt: '#00bbff',
+    desc: 'Affronte tes amis en quiz de frame data en temps réel. Qui connaît le mieux SF6 ?',
   },
 ]
 
