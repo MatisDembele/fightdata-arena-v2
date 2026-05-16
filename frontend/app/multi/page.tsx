@@ -11,19 +11,25 @@ export default function MultiLobby() {
   const [code, setCode] = useState('')
   const [mode, setMode] = useState<'idle' | 'create' | 'join'>('idle')
   const [loading, setLoading] = useState(false)
+  const [slowLoad, setSlowLoad] = useState(false)
   const [error, setError] = useState('')
 
   async function handleCreate() {
     if (!name.trim()) return setError('Entre ton pseudo.')
     setLoading(true)
+    setSlowLoad(false)
     setError('')
+    const timer = setTimeout(() => setSlowLoad(true), 4000)
     try {
       const res = await fetch(`${API_URL}/api/multi/rooms`, { method: 'POST' })
       const data = await res.json()
+      clearTimeout(timer)
       router.push(`/multi/${data.room_code}?name=${encodeURIComponent(name.trim())}`)
     } catch {
+      clearTimeout(timer)
       setError('Erreur réseau.')
       setLoading(false)
+      setSlowLoad(false)
     }
   }
 
@@ -126,7 +132,7 @@ export default function MultiLobby() {
               onClick={handleCreate}
               disabled={loading}
             >
-              {loading ? 'CRÉATION...' : 'CRÉER LA ROOM'}
+              {loading ? (slowLoad ? 'RÉVEIL DU SERVEUR...' : 'CRÉATION...') : 'CRÉER LA ROOM'}
             </button>
           )}
 
