@@ -138,13 +138,9 @@ export default function Home() {
                 <Link
                   key={mode.id}
                   href={mode.href}
-                  className="home-mode-card"
+                  className={`home-mode-card ${isActive ? 'home-mode-active' : 'home-mode-inactive'}`}
                   onMouseEnter={() => setActive(i)}
                   onClick={(e) => { if (i !== active) { e.preventDefault(); setActive(i) } }}
-                  style={{
-                    flex: isActive ? '0 0 clamp(180px, 40vw, 320px)' : '0 0 clamp(100px, 22vw, 200px)',
-                    padding: isActive ? '24px 28px 28px' : '18px 20px 24px',
-                  }}
                 >
                   <div style={{
                     position: 'absolute', inset: 0,
