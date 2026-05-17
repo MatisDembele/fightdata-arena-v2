@@ -29,7 +29,6 @@ class MoveOut(BaseModel):
 
 
 class QuizQuestion(BaseModel):
-    move_id:        int
     move_name:      str
     section:        str
     gif_url:        Optional[str] = None
@@ -38,5 +37,4 @@ class QuizQuestion(BaseModel):
     choices:        list[str]
     answer:         str
     fighter_slug:   str
-    question_type:  str = "startup"
     on_block_value: Optional[str] = None
