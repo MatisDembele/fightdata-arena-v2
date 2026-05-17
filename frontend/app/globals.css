@@ -248,8 +248,9 @@ body {
 
   .score-bar { gap: 16px; padding: 10px 16px; }
 
-  .home-arrow-btn:first-child { margin-left: 8px; }
-  .home-arrow-btn:last-child  { margin-right: 8px; }
+  .home-arrow-btn { width: 48px; font-size: 2rem; }
+  .home-arrow-btn:first-child { margin-left: 4px; }
+  .home-arrow-btn:last-child  { margin-right: 4px; }
 
   .home-modes-inner { overflow: hidden; }
   .home-mode-active   { flex: 1 1 0; padding: 20px 16px 24px; }
