@@ -24,8 +24,9 @@ function QuizPlay() {
   const [loading, setLoading]   = useState(true)
   const [timeLeft, setTimeLeft] = useState(5)
   const [inputVal, setInputVal] = useState('')
-  const timerRef                = useRef<ReturnType<typeof setInterval> | null>(null)
-  const inputRef                = useRef<HTMLInputElement>(null)
+  const timerRef        = useRef<ReturnType<typeof setInterval> | null>(null)
+  const inputRef        = useRef<HTMLInputElement>(null)
+  const usedMoveIdsRef  = useRef<number[]>([])  // tracks move IDs shown this session
 
   const [sessionPhase, setSessionPhase]   = useState<'selector' | 'playing' | 'finished'>('selector')
   const [sessionLength, setSessionLength] = useState<number>(10)
@@ -61,12 +62,14 @@ function QuizPlay() {
     setTimeLeft(5)
     if (timerRef.current) clearInterval(timerRef.current)
     try {
+      const exclude = usedMoveIdsRef.current
       const q = isPunish
-        ? await getRandomPunish()
+        ? await getRandomPunish(exclude)
         : (mode === 'fighter' && slug)
-        ? await getFighterQuiz(slug)
-        : await getRandomQuiz()
+        ? await getFighterQuiz(slug, exclude)
+        : await getRandomQuiz(exclude, mode === 'input')
       setQuestion(q)
+      if (q?.move_id) usedMoveIdsRef.current = [...exclude, q.move_id]
     } catch (e) {
       console.error(e)
     } finally {
@@ -159,12 +162,14 @@ function QuizPlay() {
   }
 
   function startSession() {
+    usedMoveIdsRef.current = []
     setScore(0); setCombo(0); setMaxCombo(0); setTotal(0)
     setLoading(true); setQuestion(null)
     setSessionPhase('playing')
   }
 
   function restartSession() {
+    usedMoveIdsRef.current = []
     setScore(0); setCombo(0); setMaxCombo(0); setTotal(0)
     setState('idle'); setSelected(null); setQuestion(null); setLoading(true)
     setSessionPhase('playing')
@@ -440,7 +445,7 @@ function QuizPlay() {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         border: '1px solid rgba(255,255,255,0.18)', fontSize: '0.62rem',
                       }}>{String.fromCharCode(65 + i)}</span>
-                      {choice} frames
+                      {choice}{question.question_type === 'startup' ? ' frames' : ''}
                     </button>
                   ))}
                 </div>
@@ -578,13 +583,15 @@ function QuizPlay() {
                     state === 'correct'
                       ? `✓ Exact ! Startup : ${question.answer} frames.`
                       : `✗ Raté ! La réponse était ${question.answer} frames (tu as mis : ${selected}).`
-                  ) : (
-                    state === 'correct'
-                      ? `✓ Correct ! Startup : ${question.answer} frames.`
+                  ) : (() => {
+                    const label  = question.question_type === 'on_block' ? 'On block' : question.question_type === 'on_hit' ? 'On hit' : 'Startup'
+                    const suffix = question.question_type === 'startup' ? ' frames' : ''
+                    return state === 'correct'
+                      ? `✓ Correct ! ${label} : ${question.answer}${suffix}.`
                       : timeLeft === 0
-                      ? `⏱ Temps écoulé ! Réponse : ${question.answer} frames.`
-                      : `✗ Raté ! Réponse : ${question.answer} frames.`
-                  )}
+                      ? `⏱ Temps écoulé ! ${label} : ${question.answer}${suffix}.`
+                      : `✗ Raté ! ${label} : ${question.answer}${suffix}.`
+                  })()}
                 </div>
               )}
               <button onClick={() => isSessionOver ? setSessionPhase('finished') : loadQuestion()} style={{

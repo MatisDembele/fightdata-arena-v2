@@ -14,6 +14,7 @@ interface Question {
   question: string
   choices: string[]
   fighter_slug: string
+  question_type: string
   on_block_value?: string
   game_mode: string
 }
@@ -145,7 +146,10 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
       const ob = onBlockValue ? ` (on block : ${onBlockValue})` : ''
       return correct ? `✓ Correct ! ${question?.move_name} est ${label}${ob}` : `✗ Raté ! ${question?.move_name} est ${label}${ob}`
     }
-    return correct ? `✓ Correct ! Startup : ${correctAnswer} frames.` : `✗ Raté ! Réponse : ${correctAnswer} frames.`
+    const qtype  = question?.question_type ?? 'startup'
+    const label  = qtype === 'on_block' ? 'On block' : qtype === 'on_hit' ? 'On hit' : 'Startup'
+    const suffix = qtype === 'startup' ? ' frames' : ''
+    return correct ? `✓ Correct ! ${label} : ${correctAnswer}${suffix}.` : `✗ Raté ! ${label} : ${correctAnswer}${suffix}.`
   }
 
   // ── Rendu par phase ─────────────────────────────────────────────────────────
@@ -225,7 +229,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
               {question.choices.map((choice, i) => (
                 <button key={choice} onClick={() => sendAnswer(choice)} style={choiceStyle(choice)}>
                   <span style={{ width: '20px', height: '20px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.18)', fontSize: '0.62rem' }}>{String.fromCharCode(65 + i)}</span>
-                  {choice} frames
+                  {choice}{(question.question_type ?? 'startup') === 'startup' ? ' frames' : ''}
                 </button>
               ))}
             </div>

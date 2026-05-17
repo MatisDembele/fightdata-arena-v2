@@ -27,6 +27,7 @@ export interface Move {
 }
 
 export interface QuizQuestion {
+  move_id: number
   move_name: string
   section: string
   gif_url?: string
@@ -35,5 +36,6 @@ export interface QuizQuestion {
   choices: string[]
   answer: string
   fighter_slug: string
+  question_type: string   // "startup" | "on_block" | "on_hit" | "punish"
   on_block_value?: string
 }

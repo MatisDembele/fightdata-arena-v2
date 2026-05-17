@@ -21,20 +21,27 @@ export async function getFighterMoves(slug: string, section?: string) {
   return res.json()
 }
 
-export async function getRandomQuiz() {
-  const res = await fetch(`${API_URL}/api/quiz/random`)
+export async function getRandomQuiz(excludeIds: number[] = [], forceStartup = false) {
+  const params = new URLSearchParams()
+  if (excludeIds.length) params.set('exclude', excludeIds.join(','))
+  if (forceStartup) params.set('force_type', 'startup')
+  const res = await fetch(`${API_URL}/api/quiz/random?${params}`)
   if (!res.ok) throw new Error('Erreur quiz')
   return res.json()
 }
 
-export async function getFighterQuiz(slug: string) {
-  const res = await fetch(`${API_URL}/api/quiz/${slug}/startup`)
+export async function getFighterQuiz(slug: string, excludeIds: number[] = []) {
+  const params = new URLSearchParams()
+  if (excludeIds.length) params.set('exclude', excludeIds.join(','))
+  const res = await fetch(`${API_URL}/api/quiz/${slug}/startup?${params}`)
   if (!res.ok) throw new Error('Erreur quiz fighter')
   return res.json()
 }
 
-export async function getRandomPunish() {
-  const res = await fetch(`${API_URL}/api/quiz/random/punish`)
+export async function getRandomPunish(excludeIds: number[] = []) {
+  const params = new URLSearchParams()
+  if (excludeIds.length) params.set('exclude', excludeIds.join(','))
+  const res = await fetch(`${API_URL}/api/quiz/random/punish?${params}`)
   if (!res.ok) throw new Error('Erreur quiz punish')
   return res.json()
 }
