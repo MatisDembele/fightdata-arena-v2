@@ -167,7 +167,7 @@ def _generate_startup_question_rng(
 def generate_daily_questions(db: Session, date_str: str) -> list[QuizQuestion]:
     rng = random.Random(date_str)
     fighters = db.query(Fighter).all()
-    fighters_copy = list(fighters)
+    fighters_copy = list(fighters)  # copy so rng.shuffle doesn't mutate the ORM result
     rng.shuffle(fighters_copy)
 
     questions: list[QuizQuestion] = []

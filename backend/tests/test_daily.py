@@ -1,4 +1,3 @@
-import pytest
 from unittest.mock import MagicMock
 from app.services.quiz_service import generate_daily_questions
 
