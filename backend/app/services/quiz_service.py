@@ -118,3 +118,64 @@ def generate_random_punish_question(db: Session) -> QuizQuestion | None:
         if question:
             return question
     return None
+
+
+def _generate_startup_question_rng(
+    db: Session, slug: str, rng: random.Random
+) -> QuizQuestion | None:
+    fighter = db.query(Fighter).filter(Fighter.slug == slug).first()
+    if not fighter:
+        return None
+
+    candidates = (
+        db.query(Move)
+        .filter(Move.fighter_id == fighter.id, Move.gif_path.isnot(None))
+        .all()
+    )
+    candidates = [m for m in candidates if _is_numeric(m.startup)]
+
+    if len(candidates) < 4:
+        return None
+
+    correct_move = rng.choice(candidates)
+    correct_answer = correct_move.startup
+
+    other_startups = list({
+        m.startup for m in candidates
+        if m.startup != correct_answer and _is_numeric(m.startup)
+    })
+
+    if len(other_startups) < 3:
+        return None
+
+    wrong_answers = rng.sample(other_startups, 3)
+    choices = wrong_answers + [correct_answer]
+    rng.shuffle(choices)
+
+    return QuizQuestion(
+        move_name=correct_move.move_name,
+        section=correct_move.section,
+        gif_url=correct_move.gif_url,
+        gif_path=correct_move.gif_path,
+        question=f"Quel est le startup de {correct_move.move_name} ?",
+        choices=choices,
+        answer=correct_answer,
+        fighter_slug=slug,
+    )
+
+
+def generate_daily_questions(db: Session, date_str: str) -> list[QuizQuestion]:
+    rng = random.Random(date_str)
+    fighters = db.query(Fighter).all()
+    fighters_copy = list(fighters)
+    rng.shuffle(fighters_copy)
+
+    questions: list[QuizQuestion] = []
+    for fighter in fighters_copy:
+        if len(questions) >= 10:
+            break
+        q = _generate_startup_question_rng(db, fighter.slug, rng)
+        if q:
+            questions.append(q)
+
+    return questions
