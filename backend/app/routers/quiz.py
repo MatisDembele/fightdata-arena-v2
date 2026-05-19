@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -22,6 +24,14 @@ def random_punish_question(db: Session = Depends(get_db)):
     if not question:
         raise HTTPException(status_code=404, detail="Pas assez de données pour générer un quiz punish")
     return question
+
+
+@router.get("/daily", response_model=list[QuizQuestion])
+def daily_questions(db: Session = Depends(get_db)):
+    questions = quiz_service.generate_daily_questions(db, str(date.today()))
+    if not questions:
+        raise HTTPException(status_code=404, detail="Impossible de générer le daily challenge")
+    return questions
 
 
 @router.get("/{slug}/startup", response_model=QuizQuestion)

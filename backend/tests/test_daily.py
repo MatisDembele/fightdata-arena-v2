@@ -86,3 +86,38 @@ def test_generate_daily_questions_each_has_4_choices():
     for q in questions:
         assert len(q.choices) == 4
         assert q.answer in q.choices
+
+
+from fastapi.testclient import TestClient
+from app.main import app
+from app.database import get_db
+
+
+def test_daily_endpoint_returns_10_questions(monkeypatch):
+    from app.services import quiz_service
+
+    def mock_generate(db, date_str):
+        from app.schemas.move import QuizQuestion
+        return [
+            QuizQuestion(
+                move_name=f"move_{i}",
+                section="normals",
+                gif_url=f"http://x.com/{i}.gif",
+                gif_path=f"{i}.gif",
+                question=f"Startup de move_{i} ?",
+                choices=["4", "5", "6", "7"],
+                answer="5",
+                fighter_slug=f"fighter_{i}",
+            )
+            for i in range(10)
+        ]
+
+    monkeypatch.setattr(quiz_service, "generate_daily_questions", mock_generate)
+
+    client = TestClient(app)
+    response = client.get("/api/quiz/daily")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 10
+    assert data[0]["move_name"] == "move_0"
+    assert len(data[0]["choices"]) == 4
