@@ -21,12 +21,18 @@ const MODES = [
     color: '#ffe000', colorAlt: '#ff6a00',
     desc: 'Affronte tes amis en quiz de frame data en temps réel. Qui connaît le mieux SF6 ?',
   },
+  {
+    id: 'daily', label: 'DAILY', sub: 'Un challenge par jour',
+    href: '/quiz/daily',
+    color: '#00ff88', colorAlt: '#00b894',
+    desc: 'Chaque jour, 10 questions identiques pour tous. Partage ton score style Wordle.',
+  },
 ]
 
 const STATS = [
   { val: '29',   label: 'PERSOS' },
   { val: '1418', label: 'MOVES' },
-  { val: '3',    label: 'MODES' },
+  { val: '4',    label: 'MODES' },
 ]
 
 export default function Home() {
