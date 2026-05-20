@@ -44,3 +44,9 @@ export async function getFighterPunish(slug: string) {
   if (!res.ok) throw new Error('Erreur quiz punish fighter')
   return res.json()
 }
+
+export async function getDailyQuiz(): Promise<import('@/types').QuizQuestion[]> {
+  const res = await fetch(`${API_URL}/api/quiz/daily`)
+  if (!res.ok) throw new Error('Erreur daily quiz')
+  return res.json()
+}
