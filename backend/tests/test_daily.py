@@ -1,5 +1,8 @@
 from unittest.mock import MagicMock
-from app.services.quiz_service import generate_daily_questions
+from fastapi.testclient import TestClient
+from app.main import app
+from app.schemas.move import QuizQuestion
+from app.services import quiz_service
 
 
 def _make_fighter(id, slug):
@@ -58,6 +61,7 @@ def _build_db(n_fighters=15, moves_per_fighter=10):
 
 def test_generate_daily_questions_returns_10():
     db, _ = _build_db()
+    from app.services.quiz_service import generate_daily_questions
     questions = generate_daily_questions(db, "2026-05-19")
     assert len(questions) == 10
 
@@ -65,6 +69,7 @@ def test_generate_daily_questions_returns_10():
 def test_generate_daily_questions_deterministic():
     db1, _ = _build_db()
     db2, _ = _build_db()
+    from app.services.quiz_service import generate_daily_questions
     q1 = generate_daily_questions(db1, "2026-05-19")
     q2 = generate_daily_questions(db2, "2026-05-19")
     assert [q.move_name for q in q1] == [q.move_name for q in q2]
@@ -73,6 +78,7 @@ def test_generate_daily_questions_deterministic():
 def test_generate_daily_questions_different_per_day():
     db1, _ = _build_db()
     db2, _ = _build_db()
+    from app.services.quiz_service import generate_daily_questions
     q1 = generate_daily_questions(db1, "2026-05-19")
     q2 = generate_daily_questions(db2, "2026-05-20")
     fighter_order_1 = [q.fighter_slug for q in q1]
@@ -82,22 +88,15 @@ def test_generate_daily_questions_different_per_day():
 
 def test_generate_daily_questions_each_has_4_choices():
     db, _ = _build_db()
+    from app.services.quiz_service import generate_daily_questions
     questions = generate_daily_questions(db, "2026-05-19")
     for q in questions:
         assert len(q.choices) == 4
         assert q.answer in q.choices
 
 
-from fastapi.testclient import TestClient
-from app.main import app
-from app.database import get_db
-
-
 def test_daily_endpoint_returns_10_questions(monkeypatch):
-    from app.services import quiz_service
-
     def mock_generate(db, date_str):
-        from app.schemas.move import QuizQuestion
         return [
             QuizQuestion(
                 move_name=f"move_{i}",
@@ -121,3 +120,10 @@ def test_daily_endpoint_returns_10_questions(monkeypatch):
     assert len(data) == 10
     assert data[0]["move_name"] == "move_0"
     assert len(data[0]["choices"]) == 4
+
+
+def test_daily_endpoint_404_when_no_questions(monkeypatch):
+    monkeypatch.setattr(quiz_service, "generate_daily_questions", lambda db, date_str: [])
+    client = TestClient(app)
+    response = client.get("/api/quiz/daily")
+    assert response.status_code == 404

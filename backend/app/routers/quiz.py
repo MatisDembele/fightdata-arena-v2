@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -28,7 +28,8 @@ def random_punish_question(db: Session = Depends(get_db)):
 
 @router.get("/daily", response_model=list[QuizQuestion])
 def daily_questions(db: Session = Depends(get_db)):
-    questions = quiz_service.generate_daily_questions(db, str(date.today()))
+    today = datetime.now(timezone.utc).date()
+    questions = quiz_service.generate_daily_questions(db, str(today))
     if not questions:
         raise HTTPException(status_code=404, detail="Impossible de générer le daily challenge")
     return questions
