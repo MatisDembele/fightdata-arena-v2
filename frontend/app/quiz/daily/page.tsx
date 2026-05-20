@@ -71,7 +71,7 @@ function saveResultAndStreak(answers: boolean[], score: number): DailyStreak {
   return streakData
 }
 
-function buildWordleText(answers: boolean[], score: number, streak: number): string {
+function buildShareText(answers: boolean[], score: number, streak: number): string {
   const emojis = answers.map(a => a ? '✅' : '❌').join('')
   const date   = formatDate()
   const lines  = [
@@ -156,7 +156,7 @@ function DailyPage() {
   }
 
   const copyResult = async () => {
-    const text = buildWordleText(answers, score, streak)
+    const text = buildShareText(answers, score, streak)
     try {
       await navigator.clipboard.writeText(text)
       setCopied(true)

@@ -25,7 +25,7 @@ const MODES = [
     id: 'daily', label: 'DAILY', sub: 'Un challenge par jour',
     href: '/quiz/daily',
     color: '#00ff88', colorAlt: '#00b894',
-    desc: 'Chaque jour, 10 questions identiques pour tous. Partage ton score style Wordle.',
+    desc: 'Chaque jour, 10 questions identiques pour tous. Partage ton score avec la communauté.',
   },
 ]
 
