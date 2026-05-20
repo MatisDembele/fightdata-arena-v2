@@ -110,6 +110,14 @@ function DailyPage() {
     }
   }, [])
 
+  useEffect(() => {
+    const next = questions[idx + 1]
+    if (next?.gif_url) {
+      const img = new Image()
+      img.src = next.gif_url
+    }
+  }, [idx, questions])
+
   const loadQuestions = useCallback(async () => {
     setLoading(true)
     setLoadError(false)
