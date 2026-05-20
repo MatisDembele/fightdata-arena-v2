@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import { getDailyQuiz } from '@/lib/api'
@@ -94,11 +94,14 @@ function DailyPage() {
   const [streak, setStreak]       = useState(0)
   const [copied, setCopied]       = useState(false)
   const [loading, setLoading]     = useState(false)
+  const [loadError, setLoadError] = useState(false)
   const [alreadyPlayed, setAlreadyPlayed] = useState<DailyResult | null>(null)
+  const answersRef = useRef<boolean[]>([])
 
   useEffect(() => {
     const result = getStoredResult()
     if (result?.date === todayStr()) {
+      answersRef.current = result.answers
       setAlreadyPlayed(result)
       setAnswers(result.answers)
       setScore(result.score)
@@ -109,11 +112,13 @@ function DailyPage() {
 
   const loadQuestions = useCallback(async () => {
     setLoading(true)
+    setLoadError(false)
     try {
       const qs = await getDailyQuiz()
       setQuestions(qs)
     } catch (e) {
       console.error(e)
+      setLoadError(true)
     } finally {
       setLoading(false)
     }
@@ -129,16 +134,19 @@ function DailyPage() {
     const correct = choice === questions[idx]?.answer
     setSelected(choice)
     setState(correct ? 'correct' : 'wrong')
-    setAnswers(prev => [...prev, correct])
+    const next = [...answersRef.current, correct]
+    answersRef.current = next
+    setAnswers(next)
     if (correct) setScore(s => s + 1)
   }
 
   const handleNext = () => {
     if (idx + 1 >= questions.length) {
-      const finalAnswers = [...answers]
-      const finalScore   = score
+      const finalAnswers = answersRef.current
+      const finalScore   = finalAnswers.filter(Boolean).length
       const streakData   = saveResultAndStreak(finalAnswers, finalScore)
       setStreak(streakData.streak)
+      setScore(finalScore)
       setPhase('finished')
     } else {
       setIdx(i => i + 1)
@@ -288,7 +296,7 @@ function DailyPage() {
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: `linear-gradient(90deg, transparent, ${COLOR}, transparent)` }} />
           {[
             { val: score,           label: 'SCORE' },
-            { val: `${idx + 1}/10`, label: 'QUESTION' },
+            { val: `${idx + 1}/${questions.length}`, label: 'QUESTION' },
             { val: `${answers.filter(Boolean).length}/${answers.length || 0}`, label: 'CORRECT' },
           ].map(s => (
             <div key={s.label} style={{ textAlign: 'center' }}>
@@ -302,7 +310,18 @@ function DailyPage() {
           ))}
         </div>
 
-        {loading || !question ? (
+        {loading ? (
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.3)', letterSpacing: '4px' }}>
+            CHARGEMENT...
+          </div>
+        ) : loadError ? (
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", color: '#ff2d78', letterSpacing: '3px', textAlign: 'center' }}>
+            ERREUR DE CHARGEMENT<br />
+            <button onClick={loadQuestions} style={{ marginTop: '12px', background: 'none', border: '1px solid #ff2d78', color: '#ff2d78', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '3px', padding: '8px 20px', cursor: 'pointer' }}>
+              RÉESSAYER
+            </button>
+          </div>
+        ) : !question ? (
           <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.3)', letterSpacing: '4px' }}>
             CHARGEMENT...
           </div>
@@ -375,7 +394,7 @@ function DailyPage() {
                   color: state !== 'idle' ? '#000' : 'rgba(255,255,255,0.2)',
                   transition: 'all 0.2s',
                 }}>
-                {idx + 1 >= 10 && state !== 'idle' ? 'VOIR LES RÉSULTATS →' : 'QUESTION SUIVANTE →'}
+                {idx + 1 >= questions.length && state !== 'idle' ? 'VOIR LES RÉSULTATS →' : 'QUESTION SUIVANTE →'}
               </button>
             </div>
           </div>

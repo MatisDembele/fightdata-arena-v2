@@ -1,3 +1,5 @@
+import type { QuizQuestion } from '@/types'
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 export async function getFighters() {
@@ -45,7 +47,7 @@ export async function getFighterPunish(slug: string) {
   return res.json()
 }
 
-export async function getDailyQuiz(): Promise<import('@/types').QuizQuestion[]> {
+export async function getDailyQuiz(): Promise<QuizQuestion[]> {
   const res = await fetch(`${API_URL}/api/quiz/daily`)
   if (!res.ok) throw new Error('Erreur daily quiz')
   return res.json()
