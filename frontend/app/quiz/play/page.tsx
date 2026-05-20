@@ -28,6 +28,7 @@ function QuizPlay() {
   const inputRef                = useRef<HTMLInputElement>(null)
   const nextQuestionRef  = useRef<QuizQuestion | null>(null)
   const prefetchingRef   = useRef<boolean>(false)
+  const prefetchTokenRef = useRef<number>(0)
 
   const [sessionPhase, setSessionPhase]   = useState<'selector' | 'playing' | 'finished'>('selector')
   const [sessionLength, setSessionLength] = useState<number>(10)
@@ -58,6 +59,7 @@ function QuizPlay() {
   const loadQuestion = useCallback(async () => {
     nextQuestionRef.current = null
     prefetchingRef.current  = false
+    prefetchTokenRef.current++
     setLoading(true)
     setSelected(null)
     setState('idle')
@@ -81,21 +83,26 @@ function QuizPlay() {
   const prefetchNext = useCallback(async () => {
     if (prefetchingRef.current) return
     prefetchingRef.current = true
+    const myToken = prefetchTokenRef.current
     try {
       const q = isPunish
         ? await getRandomPunish()
         : (mode === 'fighter' && slug)
         ? await getFighterQuiz(slug)
         : await getRandomQuiz()
-      nextQuestionRef.current = q
-      if (q.gif_url) {
-        const img = new Image()
-        img.src = q.gif_url
+      if (prefetchTokenRef.current === myToken) {
+        nextQuestionRef.current = q
+        if (q.gif_url) {
+          const img = new Image()
+          img.src = q.gif_url
+        }
       }
     } catch {
       // silent — handleNextQuestion falls back to loadQuestion
     } finally {
-      prefetchingRef.current = false
+      if (prefetchTokenRef.current === myToken) {
+        prefetchingRef.current = false
+      }
     }
   }, [mode, slug, isPunish])
 
