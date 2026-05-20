@@ -26,6 +26,8 @@ function QuizPlay() {
   const [inputVal, setInputVal] = useState('')
   const timerRef                = useRef<ReturnType<typeof setInterval> | null>(null)
   const inputRef                = useRef<HTMLInputElement>(null)
+  const nextQuestionRef  = useRef<QuizQuestion | null>(null)
+  const prefetchingRef   = useRef<boolean>(false)
 
   const [sessionPhase, setSessionPhase]   = useState<'selector' | 'playing' | 'finished'>('selector')
   const [sessionLength, setSessionLength] = useState<number>(10)
@@ -54,6 +56,8 @@ function QuizPlay() {
   }[mode] ?? '#9b1fff'
 
   const loadQuestion = useCallback(async () => {
+    nextQuestionRef.current = null
+    prefetchingRef.current  = false
     setLoading(true)
     setSelected(null)
     setState('idle')
@@ -74,7 +78,32 @@ function QuizPlay() {
     }
   }, [mode, slug])
 
+  const prefetchNext = useCallback(async () => {
+    if (prefetchingRef.current) return
+    prefetchingRef.current = true
+    try {
+      const q = isPunish
+        ? await getRandomPunish()
+        : (mode === 'fighter' && slug)
+        ? await getFighterQuiz(slug)
+        : await getRandomQuiz()
+      nextQuestionRef.current = q
+      if (q.gif_url) {
+        const img = new Image()
+        img.src = q.gif_url
+      }
+    } catch {
+      // silent — handleNextQuestion falls back to loadQuestion
+    } finally {
+      prefetchingRef.current = false
+    }
+  }, [mode, slug, isPunish])
+
   useEffect(() => { if (sessionPhase === 'playing') loadQuestion() }, [loadQuestion, sessionPhase])
+
+  useEffect(() => {
+    if (state !== 'idle') prefetchNext()
+  }, [state, prefetchNext])
 
   // Focus input en mode INPUT
   useEffect(() => {
@@ -181,6 +210,23 @@ function QuizPlay() {
   const isPunishable = question?.answer === 'punissable'
 
   const isSessionOver = sessionLength !== Infinity && total >= sessionLength
+
+  const handleNextQuestion = useCallback(() => {
+    if (isSessionOver) { setSessionPhase('finished'); return }
+    if (nextQuestionRef.current) {
+      const q = nextQuestionRef.current
+      nextQuestionRef.current = null
+      prefetchingRef.current  = false
+      setQuestion(q)
+      setSelected(null)
+      setState('idle')
+      setInputVal('')
+      setTimeLeft(5)
+      if (timerRef.current) clearInterval(timerRef.current)
+    } else {
+      loadQuestion()
+    }
+  }, [isSessionOver, loadQuestion])
 
   // ── SELECTOR ────────────────────────────────────────────────────────────────
   if (sessionPhase === 'selector') return (
@@ -587,7 +633,7 @@ function QuizPlay() {
                   )}
                 </div>
               )}
-              <button onClick={() => isSessionOver ? setSessionPhase('finished') : loadQuestion()} style={{
+              <button onClick={handleNextQuestion} style={{
                 width: '100%', padding: '13px',
                 background: isSessionOver && state !== 'idle'
                   ? `linear-gradient(90deg, ${modeColor}, ${modeColorAlt})`
