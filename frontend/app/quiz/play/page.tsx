@@ -168,6 +168,25 @@ function QuizPlay() {
   }
 
 
+  const isSessionOver = sessionLength !== Infinity && total >= sessionLength
+
+  const handleNextQuestion = useCallback(() => {
+    if (isSessionOver) { setSessionPhase('finished'); return }
+    if (nextQuestionRef.current) {
+      const q = nextQuestionRef.current
+      nextQuestionRef.current = null
+      prefetchingRef.current  = false
+      setQuestion(q)
+      setSelected(null)
+      setState('idle')
+      setInputVal('')
+      setTimeLeft(5)
+      if (timerRef.current) clearInterval(timerRef.current)
+    } else {
+      loadQuestion()
+    }
+  }, [isSessionOver, loadQuestion])
+
   // Couleur de choix QCM
   const choiceStyle = (choice: string): React.CSSProperties => {
     const base: React.CSSProperties = {
@@ -208,25 +227,6 @@ function QuizPlay() {
   }[mode] ?? 'QUIZ'
 
   const isPunishable = question?.answer === 'punissable'
-
-  const isSessionOver = sessionLength !== Infinity && total >= sessionLength
-
-  const handleNextQuestion = useCallback(() => {
-    if (isSessionOver) { setSessionPhase('finished'); return }
-    if (nextQuestionRef.current) {
-      const q = nextQuestionRef.current
-      nextQuestionRef.current = null
-      prefetchingRef.current  = false
-      setQuestion(q)
-      setSelected(null)
-      setState('idle')
-      setInputVal('')
-      setTimeLeft(5)
-      if (timerRef.current) clearInterval(timerRef.current)
-    } else {
-      loadQuestion()
-    }
-  }, [isSessionOver, loadQuestion])
 
   // ── SELECTOR ────────────────────────────────────────────────────────────────
   if (sessionPhase === 'selector') return (
