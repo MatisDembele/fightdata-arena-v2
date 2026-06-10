@@ -52,6 +52,7 @@ function QuizPlay() {
   const isHardcore = mode === 'hardcore'
   const isInput    = mode === 'input'
   const isPunish   = mode === 'punish'
+  const isSurvival = mode === 'survival'
 
   const accuracy = total > 0 ? Math.round((score / total) * 100) : 0
 
@@ -61,6 +62,7 @@ function QuizPlay() {
     input:    '#9b1fff',
     punish:   '#ffe000',
     hardcore: '#ff6a00',
+    survival: '#4ade80',
   }[mode] ?? '#ff2d78'
 
   const modeColorAlt = {
@@ -69,6 +71,7 @@ function QuizPlay() {
     input:    '#ff2d78',
     punish:   '#ff6a00',
     hardcore: '#ff2d78',
+    survival: '#00f0ff',
   }[mode] ?? '#9b1fff'
 
   const loadQuestion = useCallback(async () => {
@@ -137,18 +140,29 @@ function QuizPlay() {
   // Records localStorage — s'exécute une fois en entrant dans 'finished'
   useEffect(() => {
     if (sessionPhase !== 'finished') return
-    const key = `fda_best_${mode}${mode === 'fighter' ? `_${slug}` : ''}`
-    const stored = localStorage.getItem(key)
-    const prev: { bestScore: number; bestAccuracy: number; totalGames: number } = stored
-      ? JSON.parse(stored)
-      : { bestScore: -1, bestAccuracy: -1, totalGames: 0 }
-    const newRecord = score > prev.bestScore || accuracy > prev.bestAccuracy
-    setIsNewRecord(newRecord)
-    localStorage.setItem(key, JSON.stringify({
-      bestScore:    Math.max(score, prev.bestScore),
-      bestAccuracy: Math.max(accuracy, prev.bestAccuracy),
-      totalGames:   prev.totalGames + 1,
-    }))
+    if (isSurvival) {
+      const stored = localStorage.getItem('fda_survival_best')
+      const prev: { best: number; totalGames: number } = stored
+        ? JSON.parse(stored)
+        : { best: -1, totalGames: 0 }
+      setIsNewRecord(score > prev.best)
+      localStorage.setItem('fda_survival_best', JSON.stringify({
+        best:       Math.max(score, prev.best),
+        totalGames: prev.totalGames + 1,
+      }))
+    } else {
+      const key = `fda_best_${mode}${mode === 'fighter' ? `_${slug}` : ''}`
+      const stored = localStorage.getItem(key)
+      const prev: { bestScore: number; bestAccuracy: number; totalGames: number } = stored
+        ? JSON.parse(stored)
+        : { bestScore: -1, bestAccuracy: -1, totalGames: 0 }
+      setIsNewRecord(score > prev.bestScore || accuracy > prev.bestAccuracy)
+      localStorage.setItem(key, JSON.stringify({
+        bestScore:    Math.max(score, prev.bestScore),
+        bestAccuracy: Math.max(accuracy, prev.bestAccuracy),
+        totalGames:   prev.totalGames + 1,
+      }))
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionPhase])
 
@@ -207,7 +221,7 @@ function QuizPlay() {
     setSelected(userVal)
   }
 
-  const isSessionOver = sessionLength !== Infinity && total >= sessionLength
+  const isSessionOver = (sessionLength !== Infinity && total >= sessionLength) || (isSurvival && state === 'wrong')
 
   const handleNextQuestion = useCallback(() => {
     if (isSessionOver) { setSessionPhase('finished'); return }
@@ -227,22 +241,34 @@ function QuizPlay() {
   }, [isSessionOver, loadQuestion])
 
   const handleShare = useCallback(async () => {
-    const labels: Record<string, string> = {
-      random:   'RANDOM',
-      fighter:  slug.toUpperCase(),
-      input:    'INPUT',
-      punish:   'PUNISH FINDER',
-      hardcore: 'HARDCORE',
+    let text: string
+    if (isSurvival) {
+      const stored = localStorage.getItem('fda_survival_best')
+      const best = stored ? JSON.parse(stored).best : score
+      text = [
+        `Fight Data Arena 🥊 — Mode SURVIE`,
+        `J'ai survécu ${score} question${score > 1 ? 's' : ''} 💀`,
+        `Record : ${best} questions`,
+        `fightdata.app`,
+      ].join('\n')
+    } else {
+      const labels: Record<string, string> = {
+        random:   'RANDOM',
+        fighter:  slug.toUpperCase(),
+        input:    'INPUT',
+        punish:   'PUNISH FINDER',
+        hardcore: 'HARDCORE',
+      }
+      const label    = labels[mode] ?? mode.toUpperCase()
+      const rank     = getRank(accuracy)
+      const scoreStr = sessionLength !== Infinity ? `${score}/${sessionLength}` : String(score)
+      text = [
+        `Fight Data Arena 🥊 — Mode ${label}`,
+        `Score : ${scoreStr} (${accuracy}%) — Rang ${rank.label}`,
+        `Combo max : ${maxCombo}🔥`,
+        `fightdata.app`,
+      ].join('\n')
     }
-    const label    = labels[mode] ?? mode.toUpperCase()
-    const rank     = getRank(accuracy)
-    const scoreStr = sessionLength !== Infinity ? `${score}/${sessionLength}` : String(score)
-    const text = [
-      `Fight Data Arena 🥊 — Mode ${label}`,
-      `Score : ${scoreStr} (${accuracy}%) — Rang ${rank.label}`,
-      `Combo max : ${maxCombo}🔥`,
-      `fightdata.app`,
-    ].join('\n')
     try {
       await navigator.clipboard.writeText(text)
       setCopied(true)
@@ -250,7 +276,7 @@ function QuizPlay() {
     } catch {
       // clipboard non disponible
     }
-  }, [mode, slug, score, sessionLength, accuracy, maxCombo])
+  }, [mode, slug, score, sessionLength, accuracy, maxCombo, isSurvival])
 
   // Couleur de choix QCM
   const choiceStyle = (choice: string): React.CSSProperties => {
@@ -290,7 +316,17 @@ function QuizPlay() {
     input:    'INPUT MODE',
     punish:   'PUNISH FINDER',
     hardcore: 'HARDCORE',
+    survival: 'MODE SURVIE',
   }[mode] ?? 'QUIZ'
+
+  // Auto-start en mode survie — pas de sélecteur de longueur
+  useEffect(() => {
+    if (isSurvival && sessionPhase === 'selector') {
+      setScore(0); setCombo(0); setMaxCombo(0); setTotal(0)
+      setIsNewRecord(false); setLoading(true); setQuestion(null)
+      setSessionPhase('playing')
+    }
+  }, [isSurvival, sessionPhase])
 
   const isPunishable = question?.answer === 'punissable'
 
@@ -364,6 +400,81 @@ function QuizPlay() {
 
   // ── FINISHED ────────────────────────────────────────────────────────────────
   if (sessionPhase === 'finished') {
+    const buttons = (
+      <div style={{ display: 'flex', gap: '10px', width: '100%', flexWrap: 'wrap' }}>
+        <button onClick={restartSession} style={{
+          flex: '1 1 0', padding: '13px 12px',
+          background: `linear-gradient(90deg, ${modeColorAlt}, ${modeColor})`,
+          border: 'none', cursor: 'pointer',
+          fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '3px', color: '#fff',
+          boxShadow: `0 0 16px ${modeColor}33`, transition: 'all 0.2s',
+        }}>REJOUER</button>
+        <Link href="/quiz" style={{
+          flex: '1 1 0', padding: '13px 12px',
+          background: 'none', border: '1px solid rgba(255,255,255,0.12)',
+          color: 'rgba(255,255,255,0.45)',
+          fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '3px',
+          textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>MODES</Link>
+        <button onClick={handleShare} style={{
+          flex: '1 1 0', padding: '13px 12px',
+          background: 'none',
+          border: `1px solid ${copied ? '#4ade80' : 'rgba(255,255,255,0.12)'}`,
+          color: copied ? '#4ade80' : 'rgba(255,255,255,0.45)',
+          fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '3px',
+          cursor: 'pointer', transition: 'all 0.3s',
+        }}>{copied ? '✓ COPIÉ !' : 'PARTAGER'}</button>
+      </div>
+    )
+
+    // ── Écran survie ──
+    if (isSurvival) {
+      const stored   = typeof window !== 'undefined' ? localStorage.getItem('fda_survival_best') : null
+      const bestEver = stored ? (JSON.parse(stored) as { best: number }).best : score
+      return (
+        <>
+          <Navbar />
+          <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', minHeight: 'calc(100vh - 60px)' }}>
+            <div className="animate-fadeInUp" style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center', textAlign: 'center' }}>
+
+              <div>
+                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(3rem, 12vw, 5rem)', letterSpacing: '6px', lineHeight: 1, color: '#ff2d78', textShadow: '0 0 24px #ff2d7888' }}>
+                  💀 GAME OVER
+                </div>
+                <div style={{ marginTop: '16px', fontFamily: "'Rajdhani', sans-serif", fontSize: '1.1rem', fontWeight: 600, color: 'rgba(255,255,255,0.6)', letterSpacing: '1px' }}>
+                  Tu as survécu <span style={{ color: modeColor, fontWeight: 700 }}>{score} question{score > 1 ? 's' : ''}</span>
+                </div>
+                {isNewRecord && (
+                  <div style={{ marginTop: '12px', fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.1rem', letterSpacing: '4px', color: '#ffd700', textShadow: '0 0 16px #ffd70088', animation: 'glowPulse 2s ease-in-out infinite' }}>
+                    🏆 NOUVEAU RECORD !
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+                {[
+                  { val: String(score), label: 'QUESTIONS SURVÉCUES' },
+                  { val: String(bestEver), label: 'RECORD PERSO' },
+                ].map((s, i) => (
+                  <div key={i} style={{ padding: '20px 12px', background: 'rgba(0,0,0,0.3)', borderRight: i === 0 ? '1px solid rgba(255,255,255,0.08)' : 'none', textAlign: 'center' }}>
+                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2rem, 8vw, 3rem)', letterSpacing: '2px', color: modeColor, textShadow: `0 0 12px ${modeColor}88` }}>
+                      {s.val}
+                    </div>
+                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.3)', marginTop: '6px' }}>
+                      {s.label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {buttons}
+            </div>
+          </main>
+        </>
+      )
+    }
+
+    // ── Écran normal ──
     const rank = getRank(accuracy)
     return (
       <>
@@ -371,7 +482,6 @@ function QuizPlay() {
         <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', minHeight: 'calc(100vh - 60px)' }}>
           <div className="animate-fadeInUp" style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center', textAlign: 'center' }}>
 
-            {/* Rang */}
             <div>
               <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.3)', marginBottom: '14px' }}>
                 RANG FINAL
@@ -387,19 +497,12 @@ function QuizPlay() {
                 {rank.label}
               </div>
               {isNewRecord && (
-                <div style={{
-                  marginTop: '14px',
-                  fontFamily: "'Bebas Neue', sans-serif",
-                  fontSize: '1.1rem', letterSpacing: '4px',
-                  color: '#ffd700', textShadow: '0 0 16px #ffd70088',
-                  animation: 'glowPulse 2s ease-in-out infinite',
-                }}>
+                <div style={{ marginTop: '14px', fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.1rem', letterSpacing: '4px', color: '#ffd700', textShadow: '0 0 16px #ffd70088', animation: 'glowPulse 2s ease-in-out infinite' }}>
                   🏆 NOUVEAU RECORD !
                 </div>
               )}
             </div>
 
-            {/* Stats */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', width: '100%', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
               {[
                 { val: sessionLength !== Infinity ? `${score}/${sessionLength}` : String(score), label: 'SCORE' },
@@ -417,38 +520,11 @@ function QuizPlay() {
               ))}
             </div>
 
-            {/* Mode info */}
             <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)' }}>
               {modeLabel} — {sessionLength === Infinity ? '∞' : sessionLength} QUESTIONS
             </div>
 
-            {/* Boutons */}
-            <div style={{ display: 'flex', gap: '10px', width: '100%', flexWrap: 'wrap' }}>
-              <button onClick={restartSession} style={{
-                flex: '1 1 0', padding: '13px 12px',
-                background: `linear-gradient(90deg, ${modeColorAlt}, ${modeColor})`,
-                border: 'none', cursor: 'pointer',
-                fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '3px', color: '#fff',
-                boxShadow: `0 0 16px ${modeColor}33`, transition: 'all 0.2s',
-              }}>REJOUER</button>
-              <Link href="/quiz" style={{
-                flex: '1 1 0', padding: '13px 12px',
-                background: 'none', border: '1px solid rgba(255,255,255,0.12)',
-                color: 'rgba(255,255,255,0.45)',
-                fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '3px',
-                textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                transition: 'all 0.2s',
-              }}>MODES</Link>
-              <button onClick={handleShare} style={{
-                flex: '1 1 0', padding: '13px 12px',
-                background: 'none',
-                border: `1px solid ${copied ? '#4ade80' : 'rgba(255,255,255,0.12)'}`,
-                color: copied ? '#4ade80' : 'rgba(255,255,255,0.45)',
-                fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '3px',
-                cursor: 'pointer', transition: 'all 0.3s',
-              }}>{copied ? '✓ COPIÉ !' : 'PARTAGER'}</button>
-            </div>
-
+            {buttons}
           </div>
         </main>
       </>
@@ -504,7 +580,7 @@ function QuizPlay() {
             {/* Header */}
             <div style={{
               padding: '11px 18px',
-              background: `rgba(${modeColor === '#ff2d78' ? '255,45,120' : modeColor === '#00f0ff' ? '0,240,255' : modeColor === '#9b1fff' ? '155,31,255' : modeColor === '#ffe000' ? '255,224,0' : '255,106,0'}, 0.07)`,
+              background: `rgba(${modeColor === '#ff2d78' ? '255,45,120' : modeColor === '#00f0ff' ? '0,240,255' : modeColor === '#9b1fff' ? '155,31,255' : modeColor === '#ffe000' ? '255,224,0' : modeColor === '#4ade80' ? '74,222,128' : '255,106,0'}, 0.07)`,
               borderBottom: `1px solid ${modeColor}28`,
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>

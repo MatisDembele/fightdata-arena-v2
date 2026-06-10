@@ -41,7 +41,7 @@ const QUIZ_MODES = [
     desc: 'Le move le plus rapide en SF6 est 4 frames. Un move à -4 ou pire est punissable. Entraîne-toi à reconnaître les moves qui se punissent.',
     color: '#ffe000', colorAlt: '#ff6a00',
     href: '/quiz/play?mode=punish',
-    icon: '💀',
+    icon: '🎯',
   },
   {
     id: 'hardcore',
@@ -51,6 +51,15 @@ const QUIZ_MODES = [
     color: '#ff6a00', colorAlt: '#ff2d78',
     href: '/quiz/play?mode=hardcore',
     icon: '⚡',
+  },
+  {
+    id: 'survival',
+    label: 'SURVIE',
+    sub: '1 erreur = fin',
+    desc: 'Une seule vie. Réponds correctement le plus longtemps possible — la première erreur met fin à ta série.',
+    color: '#4ade80', colorAlt: '#00f0ff',
+    href: '/quiz/play?mode=survival',
+    icon: '💀',
   },
 ]
 
