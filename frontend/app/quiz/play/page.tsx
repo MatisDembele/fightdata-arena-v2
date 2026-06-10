@@ -12,10 +12,13 @@ type Rank = { label: string; color: string; colorAlt: string }
 
 function getRank(acc: number): Rank {
   if (acc === 100) return { label: 'MASTER',   color: '#cc44ff', colorAlt: '#9b1fff' }
-  if (acc >= 80)   return { label: 'DIAMOND',  color: '#00ccff', colorAlt: '#0077ff' }
-  if (acc >= 60)   return { label: 'PLATINUM', color: '#88bbee', colorAlt: '#4477cc' }
-  if (acc >= 40)   return { label: 'GOLD',     color: '#ffd700', colorAlt: '#f0a800' }
-  return                  { label: 'SILVER',   color: '#d8dde8', colorAlt: '#b0b8c8' }
+  if (acc >= 88)   return { label: 'DIAMOND',  color: '#00ccff', colorAlt: '#0077ff' }
+  if (acc >= 75)   return { label: 'PLATINUM', color: '#88bbee', colorAlt: '#4477cc' }
+  if (acc >= 62)   return { label: 'GOLD',     color: '#ffd700', colorAlt: '#f0a800' }
+  if (acc >= 50)   return { label: 'SILVER',   color: '#d8dde8', colorAlt: '#b0b8c8' }
+  if (acc >= 37)   return { label: 'BRONZE',   color: '#cd7f32', colorAlt: '#a05020' }
+  if (acc >= 25)   return { label: 'IRON',     color: '#8b7355', colorAlt: '#6b5a45' }
+  return                  { label: 'ROOKIE',   color: '#c0c0c0', colorAlt: '#888888' }
 }
 
 // ── Composant principal ───────────────────────────────────────────────────────
