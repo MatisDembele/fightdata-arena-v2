@@ -8,6 +8,16 @@ import type { QuizQuestion } from '@/types'
 
 type AnswerState = 'idle' | 'correct' | 'wrong'
 
+type Rank = { label: string; color: string; colorAlt: string }
+
+function getRank(acc: number): Rank {
+  if (acc === 100) return { label: 'MASTER',   color: '#ff2d78', colorAlt: '#ffd700' }
+  if (acc >= 80)   return { label: 'DIAMOND',  color: '#00f0ff', colorAlt: '#0055ff' }
+  if (acc >= 60)   return { label: 'PLATINUM', color: '#c0d4ff', colorAlt: '#8899ee' }
+  if (acc >= 40)   return { label: 'GOLD',     color: '#ffd700', colorAlt: '#ff9500' }
+  return                  { label: 'SILVER',   color: '#c0c0c0', colorAlt: '#888888' }
+}
+
 // ── Composant principal ───────────────────────────────────────────────────────
 
 function QuizPlay() {
@@ -33,6 +43,8 @@ function QuizPlay() {
   const [sessionPhase, setSessionPhase]   = useState<'selector' | 'playing' | 'finished'>('selector')
   const [sessionLength, setSessionLength] = useState<number>(10)
   const [maxCombo, setMaxCombo]           = useState(0)
+  const [copied, setCopied]               = useState(false)
+  const [isNewRecord, setIsNewRecord]     = useState(false)
 
   const isHardcore = mode === 'hardcore'
   const isInput    = mode === 'input'
@@ -78,7 +90,7 @@ function QuizPlay() {
     } finally {
       setLoading(false)
     }
-  }, [mode, slug])
+  }, [mode, slug, isPunish])
 
   const prefetchNext = useCallback(async () => {
     if (prefetchingRef.current) return
@@ -119,11 +131,29 @@ function QuizPlay() {
     }
   }, [isInput, loading, state, question])
 
+  // Records localStorage — s'exécute une fois en entrant dans 'finished'
+  useEffect(() => {
+    if (sessionPhase !== 'finished') return
+    const key = `fda_best_${mode}${mode === 'fighter' ? `_${slug}` : ''}`
+    const stored = localStorage.getItem(key)
+    const prev: { bestScore: number; bestAccuracy: number; totalGames: number } = stored
+      ? JSON.parse(stored)
+      : { bestScore: -1, bestAccuracy: -1, totalGames: 0 }
+    const newRecord = score > prev.bestScore || accuracy > prev.bestAccuracy
+    setIsNewRecord(newRecord)
+    localStorage.setItem(key, JSON.stringify({
+      bestScore:    Math.max(score, prev.bestScore),
+      bestAccuracy: Math.max(accuracy, prev.bestAccuracy),
+      totalGames:   prev.totalGames + 1,
+    }))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionPhase])
+
   // Mode PUNISH FINDER
   const handlePunish = (userAnswer: 'punissable' | 'safe') => {
     if (state !== 'idle' || !question) return
     setSelected(userAnswer)
-    userAnswer === question.answer ? handleCorrect() : handleWrong()
+    if (userAnswer === question.answer) handleCorrect(); else handleWrong()
   }
 
   // Timer hardcore
@@ -162,7 +192,7 @@ function QuizPlay() {
     if (state !== 'idle') return
     if (timerRef.current) clearInterval(timerRef.current)
     setSelected(choice)
-    choice === question?.answer ? handleCorrect() : handleWrong()
+    if (choice === question?.answer) handleCorrect(); else handleWrong()
   }
 
   // Mode INPUT — soumission
@@ -170,10 +200,9 @@ function QuizPlay() {
     if (state !== 'idle' || !inputVal.trim()) return
     const userVal  = inputVal.trim()
     const correct  = question?.answer ?? ''
-    userVal === correct ? handleCorrect() : handleWrong()
+    if (userVal === correct) handleCorrect(); else handleWrong()
     setSelected(userVal)
   }
-
 
   const isSessionOver = sessionLength !== Infinity && total >= sessionLength
 
@@ -193,6 +222,32 @@ function QuizPlay() {
       loadQuestion()
     }
   }, [isSessionOver, loadQuestion])
+
+  const handleShare = useCallback(async () => {
+    const labels: Record<string, string> = {
+      random:   'RANDOM',
+      fighter:  slug.toUpperCase(),
+      input:    'INPUT',
+      punish:   'PUNISH FINDER',
+      hardcore: 'HARDCORE',
+    }
+    const label    = labels[mode] ?? mode.toUpperCase()
+    const rank     = getRank(accuracy)
+    const scoreStr = sessionLength !== Infinity ? `${score}/${sessionLength}` : String(score)
+    const text = [
+      `Fight Data Arena 🥊 — Mode ${label}`,
+      `Score : ${scoreStr} (${accuracy}%) — Rang ${rank.label}`,
+      `Combo max : ${maxCombo}🔥`,
+      `fightdata.app`,
+    ].join('\n')
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // clipboard non disponible
+    }
+  }, [mode, slug, score, sessionLength, accuracy, maxCombo])
 
   // Couleur de choix QCM
   const choiceStyle = (choice: string): React.CSSProperties => {
@@ -215,13 +270,14 @@ function QuizPlay() {
 
   function startSession() {
     setScore(0); setCombo(0); setMaxCombo(0); setTotal(0)
-    setLoading(true); setQuestion(null)
+    setIsNewRecord(false); setLoading(true); setQuestion(null)
     setSessionPhase('playing')
   }
 
   function restartSession() {
     setScore(0); setCombo(0); setMaxCombo(0); setTotal(0)
     setState('idle'); setSelected(null); setQuestion(null); setLoading(true)
+    setIsNewRecord(false)
     setSessionPhase('playing')
   }
 
@@ -304,55 +360,97 @@ function QuizPlay() {
   )
 
   // ── FINISHED ────────────────────────────────────────────────────────────────
-  if (sessionPhase === 'finished') return (
-    <>
-      <Navbar />
-      <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', minHeight: 'calc(100vh - 60px)' }}>
-        <div style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '28px', alignItems: 'center', textAlign: 'center' }}>
+  if (sessionPhase === 'finished') {
+    const rank = getRank(accuracy)
+    return (
+      <>
+        <Navbar />
+        <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', minHeight: 'calc(100vh - 60px)' }}>
+          <div className="animate-fadeInUp" style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center', textAlign: 'center' }}>
 
-          <div>
-            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2.5rem, 8vw, 4rem)', letterSpacing: '8px', color: modeColor, textShadow: `0 0 20px ${modeColor}, 0 0 50px ${modeColor}55`, lineHeight: 1 }}>
-              SESSION TERMINÉE
+            {/* Rang */}
+            <div>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.3)', marginBottom: '14px' }}>
+                RANG FINAL
+              </div>
+              <div style={{
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: 'clamp(3.5rem, 14vw, 5.5rem)',
+                letterSpacing: '8px', lineHeight: 1,
+                background: `linear-gradient(135deg, ${rank.color}, ${rank.colorAlt})`,
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                filter: `drop-shadow(0 0 18px ${rank.color}66)`,
+              }}>
+                {rank.label}
+              </div>
+              {isNewRecord && (
+                <div style={{
+                  marginTop: '14px',
+                  fontFamily: "'Bebas Neue', sans-serif",
+                  fontSize: '1.1rem', letterSpacing: '4px',
+                  color: '#ffd700', textShadow: '0 0 16px #ffd70088',
+                  animation: 'glowPulse 2s ease-in-out infinite',
+                }}>
+                  🏆 NOUVEAU RECORD !
+                </div>
+              )}
             </div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.25)', marginTop: '10px' }}>
+
+            {/* Stats */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', width: '100%', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+              {[
+                { val: sessionLength !== Infinity ? `${score}/${sessionLength}` : String(score), label: 'SCORE' },
+                { val: `${accuracy}%`, label: 'PRÉCISION' },
+                { val: `${maxCombo}🔥`, label: 'COMBO MAX' },
+              ].map((s, i) => (
+                <div key={i} style={{ padding: '20px 12px', background: 'rgba(0,0,0,0.3)', borderRight: i < 2 ? '1px solid rgba(255,255,255,0.08)' : 'none', textAlign: 'center' }}>
+                  <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(1.6rem, 5vw, 2.4rem)', letterSpacing: '2px', color: rank.color, textShadow: `0 0 12px ${rank.color}88` }}>
+                    {s.val}
+                  </div>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.3)', marginTop: '6px' }}>
+                    {s.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Mode info */}
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)' }}>
               {modeLabel} — {sessionLength === Infinity ? '∞' : sessionLength} QUESTIONS
             </div>
-          </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', width: '100%', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-            {[
-              { val: `${score}${sessionLength !== Infinity ? `/${sessionLength}` : ''}`, label: 'SCORE' },
-              { val: `${accuracy}%`, label: 'PRÉCISION' },
-              { val: maxCombo, label: 'COMBO MAX' },
-            ].map((s, i) => (
-              <div key={i} style={{ padding: '20px 12px', background: 'rgba(0,0,0,0.3)', borderRight: i < 2 ? '1px solid rgba(255,255,255,0.08)' : 'none', textAlign: 'center' }}>
-                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(1.6rem, 5vw, 2.4rem)', letterSpacing: '2px', color: modeColor, textShadow: `0 0 12px ${modeColor}88` }}>
-                  {s.val}
-                </div>
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.3)', marginTop: '6px' }}>
-                  {s.label}
-                </div>
-              </div>
-            ))}
-          </div>
+            {/* Boutons */}
+            <div style={{ display: 'flex', gap: '10px', width: '100%', flexWrap: 'wrap' }}>
+              <button onClick={restartSession} style={{
+                flex: '1 1 0', padding: '13px 12px',
+                background: `linear-gradient(90deg, ${modeColorAlt}, ${modeColor})`,
+                border: 'none', cursor: 'pointer',
+                fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '3px', color: '#fff',
+                boxShadow: `0 0 16px ${modeColor}33`, transition: 'all 0.2s',
+              }}>REJOUER</button>
+              <Link href="/quiz" style={{
+                flex: '1 1 0', padding: '13px 12px',
+                background: 'none', border: '1px solid rgba(255,255,255,0.12)',
+                color: 'rgba(255,255,255,0.45)',
+                fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '3px',
+                textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'all 0.2s',
+              }}>MODES</Link>
+              <button onClick={handleShare} style={{
+                flex: '1 1 0', padding: '13px 12px',
+                background: 'none',
+                border: `1px solid ${copied ? '#4ade80' : 'rgba(255,255,255,0.12)'}`,
+                color: copied ? '#4ade80' : 'rgba(255,255,255,0.45)',
+                fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '3px',
+                cursor: 'pointer', transition: 'all 0.3s',
+              }}>{copied ? '✓ COPIÉ !' : 'PARTAGER'}</button>
+            </div>
 
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button onClick={restartSession} style={{
-              background: 'none', border: `1px solid ${modeColor}`, color: modeColor,
-              fontFamily: "'Bebas Neue', sans-serif", fontSize: '1rem', letterSpacing: '4px',
-              padding: '12px 28px', cursor: 'pointer', textShadow: `0 0 8px ${modeColor}55`,
-            }}>REJOUER</button>
-            <Link href="/quiz" style={{
-              background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.4)',
-              fontFamily: "'Bebas Neue', sans-serif", fontSize: '1rem', letterSpacing: '4px',
-              padding: '12px 20px', textDecoration: 'none',
-            }}>MODES</Link>
           </div>
-
-        </div>
-      </main>
-    </>
-  )
+        </main>
+      </>
+    )
+  }
 
   // ── PLAYING ─────────────────────────────────────────────────────────────────
   return (
