@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import { getDailyQuiz } from '@/lib/api'
 import type { QuizQuestion } from '@/types'
+import { track } from '@vercel/analytics'
 
 const COLOR     = '#00ff88'
 const COLOR_ALT = '#00b894'
@@ -153,6 +154,7 @@ function DailyPage() {
       const finalAnswers = answersRef.current
       const finalScore   = finalAnswers.filter(Boolean).length
       const streakData   = saveResultAndStreak(finalAnswers, finalScore)
+      track('daily_played', { score: finalScore, accuracy: Math.round(finalScore / finalAnswers.length * 100) })
       setStreak(streakData.streak)
       setScore(finalScore)
       setPhase('finished')

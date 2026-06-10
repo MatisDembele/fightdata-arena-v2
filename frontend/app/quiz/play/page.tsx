@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import { getRandomQuiz, getFighterQuiz, getRandomPunish } from '@/lib/api'
 import type { QuizQuestion } from '@/types'
+import { track } from '@vercel/analytics'
 
 type AnswerState = 'idle' | 'correct' | 'wrong'
 
@@ -140,6 +141,7 @@ function QuizPlay() {
   // Records localStorage — s'exécute une fois en entrant dans 'finished'
   useEffect(() => {
     if (sessionPhase !== 'finished') return
+    track('quiz_completed', { mode, score, accuracy })
     if (isSurvival) {
       const stored = localStorage.getItem('fda_survival_best')
       const prev: { best: number; totalGames: number } = stored
@@ -298,12 +300,14 @@ function QuizPlay() {
   }
 
   function startSession() {
+    track('quiz_started', { mode })
     setScore(0); setCombo(0); setMaxCombo(0); setTotal(0)
     setIsNewRecord(false); setLoading(true); setQuestion(null)
     setSessionPhase('playing')
   }
 
   function restartSession() {
+    track('quiz_started', { mode })
     setScore(0); setCombo(0); setMaxCombo(0); setTotal(0)
     setState('idle'); setSelected(null); setQuestion(null); setLoading(true)
     setIsNewRecord(false)

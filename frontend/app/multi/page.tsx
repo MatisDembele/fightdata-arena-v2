@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
+import { track } from '@vercel/analytics'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -28,6 +29,7 @@ export default function MultiLobby() {
       const res = await fetch(`${API_URL}/api/multi/rooms?game_mode=${gameMode}`, { method: 'POST' })
       const data = await res.json()
       clearTimeout(timer)
+      track('multi_game_created', { mode: gameMode })
       router.push(`/multi/${data.room_code}?name=${encodeURIComponent(name.trim())}&mode=${gameMode}`)
     } catch {
       clearTimeout(timer)
@@ -39,6 +41,7 @@ export default function MultiLobby() {
   function handleJoin() {
     if (!name.trim()) return setError('Entre ton pseudo.')
     if (!code.trim()) return setError('Entre un code de room.')
+    track('multi_game_joined')
     router.push(`/multi/${code.trim().toUpperCase()}?name=${encodeURIComponent(name.trim())}`)
   }
 
