@@ -11,11 +11,11 @@ type AnswerState = 'idle' | 'correct' | 'wrong'
 type Rank = { label: string; color: string; colorAlt: string }
 
 function getRank(acc: number): Rank {
-  if (acc === 100) return { label: 'MASTER',   color: '#ff2d78', colorAlt: '#ffd700' }
-  if (acc >= 80)   return { label: 'DIAMOND',  color: '#00f0ff', colorAlt: '#0055ff' }
-  if (acc >= 60)   return { label: 'PLATINUM', color: '#c0d4ff', colorAlt: '#8899ee' }
-  if (acc >= 40)   return { label: 'GOLD',     color: '#ffd700', colorAlt: '#ff9500' }
-  return                  { label: 'SILVER',   color: '#c0c0c0', colorAlt: '#888888' }
+  if (acc === 100) return { label: 'MASTER',   color: '#cc44ff', colorAlt: '#9b1fff' }
+  if (acc >= 80)   return { label: 'DIAMOND',  color: '#00ccff', colorAlt: '#0077ff' }
+  if (acc >= 60)   return { label: 'PLATINUM', color: '#88bbee', colorAlt: '#4477cc' }
+  if (acc >= 40)   return { label: 'GOLD',     color: '#ffd700', colorAlt: '#f0a800' }
+  return                  { label: 'SILVER',   color: '#d8dde8', colorAlt: '#b0b8c8' }
 }
 
 // ── Composant principal ───────────────────────────────────────────────────────
