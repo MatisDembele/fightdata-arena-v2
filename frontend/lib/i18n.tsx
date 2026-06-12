@@ -164,6 +164,7 @@ const en = {
   'room.on_block_prefix':         'on block: ',
   'room.feedback_correct_punish': '✓ Correct! {move} is {label}{ob}',
   'room.feedback_wrong_punish':   '✗ Wrong! {move} is {label}{ob}',
+  'room.leaderboard':             'LEADERBOARD',
 
   // fighters
   'fighters.title':       'DATABASE',
@@ -334,6 +335,7 @@ const fr: Record<DictKey, string> = {
   'room.on_block_prefix':         'on block : ',
   'room.feedback_correct_punish': '✓ Correct ! {move} est {label}{ob}',
   'room.feedback_wrong_punish':   '✗ Raté ! {move} est {label}{ob}',
+  'room.leaderboard':             'CLASSEMENT',
 
   // fighters
   'fighters.title':       'BASE DE DONNÉES',

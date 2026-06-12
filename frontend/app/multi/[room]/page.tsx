@@ -7,7 +7,7 @@ import { getFighterPortrait } from '@/lib/portraits'
 
 const WS_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/^http/, 'ws')
 
-type Phase = 'connecting' | 'waiting' | 'vs' | 'playing' | 'result' | 'gameover' | 'error'
+type Phase = 'connecting' | 'waiting' | 'vs' | 'playing' | 'result' | 'leaderboard' | 'gameover' | 'error'
 
 interface Question {
   move_name: string
@@ -34,7 +34,8 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
   const playerAvatar = searchParams.get('avatar') || 'ryu'
   const { t } = useLanguage()
 
-  const wsRef = useRef<WebSocket | null>(null)
+  const wsRef           = useRef<WebSocket | null>(null)
+  const leaderboardTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const [phase, setPhase]                       = useState<Phase>('connecting')
   const [players, setPlayers]                   = useState<string[]>([])
@@ -73,6 +74,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         setPhase('vs')
       }
       if (msg.type === 'question') {
+        if (leaderboardTimer.current) { clearTimeout(leaderboardTimer.current); leaderboardTimer.current = null }
         setQuestion(msg.question)
         setGameMode(msg.game_mode || msg.question.game_mode || 'startup')
         setQuestionNumber(msg.question_number)
@@ -90,6 +92,8 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         setOnBlockValue(msg.on_block_value ?? null)
         setGameMode(msg.game_mode || gameMode)
         setPhase('result')
+        if (leaderboardTimer.current) clearTimeout(leaderboardTimer.current)
+        leaderboardTimer.current = setTimeout(() => setPhase('leaderboard'), 1500)
       }
       if (msg.type === 'game_over') {
         setScores(msg.scores)
@@ -108,7 +112,10 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
 
     ws.onerror  = () => { setError(t('room.ws_failed')); setPhase('error') }
     ws.onopen   = () => setPhase('waiting')
-    return () => ws.close()
+    return () => {
+      ws.close()
+      if (leaderboardTimer.current) clearTimeout(leaderboardTimer.current)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [room, playerName])
 
@@ -352,6 +359,51 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         </div>
       </div>
     )
+
+    if (phase === 'leaderboard') {
+      const sorted = Object.entries(scores).sort(([,a],[,b]) => b - a)
+      const leader = sorted[0]?.[0]
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', width: '100%', maxWidth: '360px' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '5px', color: 'rgba(255,255,255,0.3)' }}>
+            Q{questionNumber}/{totalQuestions} — {t('room.leaderboard')}
+          </div>
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {sorted.map(([name, score], rank) => {
+              const isLeader = name === leader
+              const isMe     = name === playerName
+              const slug     = avatars[name] || 'ryu'
+              const portrait = getFighterPortrait(slug)
+              const pts      = pointsEarned[name] ?? 0
+              return (
+                <div key={name} style={{
+                  display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px',
+                  background: isLeader ? 'rgba(255,224,0,0.1)' : 'rgba(255,255,255,0.03)',
+                  border: `1px solid ${isLeader ? 'rgba(255,224,0,0.4)' : 'rgba(255,255,255,0.07)'}`,
+                  transition: 'all 0.3s',
+                }}>
+                  <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.1rem', color: isLeader ? COLOR : 'rgba(255,255,255,0.25)', width: '20px', textAlign: 'center' }}>
+                    {rank + 1}
+                  </div>
+                  <div style={{ width: '36px', height: '36px', overflow: 'hidden', border: `2px solid ${isLeader ? COLOR : 'rgba(255,255,255,0.15)'}`, flexShrink: 0 }}>
+                    {portrait ? <img src={portrait} alt={slug} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '2px', color: isLeader ? COLOR : isMe ? '#fff' : 'rgba(255,255,255,0.6)', textShadow: isLeader ? `0 0 10px ${COLOR}` : 'none' }}>
+                      {isMe ? t('room.you') : name.toUpperCase().slice(0, 12)}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.4rem', letterSpacing: '2px', color: isLeader ? COLOR : 'rgba(255,255,255,0.5)', textShadow: isLeader ? `0 0 12px ${COLOR}` : 'none' }}>{score}</div>
+                    {pts > 0 && <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: 'rgba(255,224,0,0.5)' }}>+{pts}</div>}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )
+    }
 
     if (phase === 'gameover') {
       const myScore  = scores[playerName] ?? 0
