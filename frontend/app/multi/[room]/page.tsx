@@ -46,6 +46,8 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
   const [scores, setScores]                     = useState<Scores>({})
   const [winner, setWinner]                     = useState<string | null>(null)
   const [opponentAnswered, setOpponentAnswered] = useState(false)
+  const [pointsEarned, setPointsEarned]         = useState<Record<string, number>>({})
+  const [correctCounts, setCorrectCounts]       = useState<Record<string, number>>({})
   const [error, setError]                       = useState('')
   const [gameMode, setGameMode]                 = useState('startup')
 
@@ -67,13 +69,14 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         setTotalQuestions(msg.total)
         setSelected(null); setCorrectAnswer(null)
         setOnBlockValue(null); setPlayerAnswers({})
-        setOpponentAnswered(false); setPhase('playing')
+        setPointsEarned({}); setOpponentAnswered(false); setPhase('playing')
       }
       if (msg.type === 'opponent_answered') setOpponentAnswered(true)
       if (msg.type === 'answer_result') {
         setCorrectAnswer(msg.correct_answer)
         setPlayerAnswers(msg.player_answers)
         setScores(msg.scores)
+        setPointsEarned(msg.points_earned ?? {})
         setOnBlockValue(msg.on_block_value ?? null)
         setGameMode(msg.game_mode || gameMode)
         setPhase('result')
@@ -81,6 +84,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
       if (msg.type === 'game_over') {
         setScores(msg.scores)
         setWinner(msg.winner)
+        setCorrectCounts(msg.correct_counts ?? {})
         setPhase('gameover')
       }
       if (msg.type === 'player_left') {
@@ -255,11 +259,32 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
               }
             </div>
           )}
-          {phase === 'result' && correctAnswer && (
-            <div style={{ padding: '9px 14px', background: selected === correctAnswer ? 'rgba(74,222,128,0.1)' : 'rgba(255,45,120,0.1)', border: `1px solid ${selected === correctAnswer ? '#4ade80' : '#ff2d78'}`, fontFamily: "'Rajdhani', sans-serif", fontSize: '0.9rem', fontWeight: 700, color: selected === correctAnswer ? '#4ade80' : '#ff2d78' }}>
-              {feedbackText()}
-            </div>
-          )}
+          {phase === 'result' && correctAnswer && (() => {
+            const myPts = pointsEarned[playerName] ?? 0
+            const isCorrect = selected === correctAnswer
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', padding: '6px 14px 0' }}>
+                  <span style={{
+                    fontFamily: "'Bebas Neue', sans-serif",
+                    fontSize: '1.6rem', letterSpacing: '3px',
+                    color: isCorrect ? COLOR : 'rgba(255,255,255,0.2)',
+                    textShadow: isCorrect ? `0 0 16px ${COLOR}` : 'none',
+                  }}>
+                    {isCorrect ? `+${myPts}` : '0'} PTS
+                  </span>
+                  {isCorrect && (
+                    <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '2px', color: 'rgba(255,224,0,0.5)' }}>
+                      {myPts === 1000 ? 'PERFECT' : myPts >= 800 ? 'FAST!' : myPts >= 500 ? 'GOOD' : 'SLOW'}
+                    </span>
+                  )}
+                </div>
+                <div style={{ padding: '9px 14px', background: isCorrect ? 'rgba(74,222,128,0.1)' : 'rgba(255,45,120,0.1)', border: `1px solid ${isCorrect ? '#4ade80' : '#ff2d78'}`, fontFamily: "'Rajdhani', sans-serif", fontSize: '0.9rem', fontWeight: 700, color: isCorrect ? '#4ade80' : '#ff2d78' }}>
+                  {feedbackText()}
+                </div>
+              </div>
+            )
+          })()}
         </div>
       </div>
     )
@@ -269,9 +294,12 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
       const oppEntry = Object.entries(scores).find(([n]) => n !== playerName)
       const oppName  = oppEntry?.[0] ?? 'Adversaire'
       const oppScore = oppEntry?.[1] ?? 0
-      const isWin    = winner === playerName
-      const isDraw   = winner === 'draw'
-      const accuracy = Math.round((myScore / totalQuestions) * 100)
+      const isWin       = winner === playerName
+      const isDraw      = winner === 'draw'
+      const myCorrect   = correctCounts[playerName] ?? 0
+      const oppCorrect  = correctCounts[oppName] ?? 0
+      const accuracy    = Math.round((myCorrect / totalQuestions) * 100)
+      const oppAccuracy = Math.round((oppCorrect / totalQuestions) * 100)
 
       return (
         <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '28px', alignItems: 'center' }}>
@@ -300,7 +328,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
             <div className="gameover-score-cell" style={{ background: !isWin && !isDraw ? 'rgba(74,222,128,0.06)' : 'rgba(255,255,255,0.03)' }}>
               <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2.5rem, 10vw, 3.5rem)', letterSpacing: '2px', color: !isWin && !isDraw ? COLOR_WIN : 'rgba(255,255,255,0.5)', textShadow: !isWin && !isDraw ? `0 0 20px ${COLOR_WIN}` : 'none' }}>{oppScore}</div>
               <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.4)', marginTop: '6px' }}>{oppName.toUpperCase().slice(0, 8)}</div>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.2)', marginTop: '4px' }}>{Math.round((oppScore / totalQuestions) * 100)}% {t('room.precision')}</div>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.2)', marginTop: '4px' }}>{oppAccuracy}% {t('room.precision')}</div>
             </div>
           </div>
 

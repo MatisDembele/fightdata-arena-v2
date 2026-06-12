@@ -1,4 +1,5 @@
 import asyncio
+import time
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -92,10 +93,14 @@ async def websocket_endpoint(
                 async with room.lock:
                     if player_name in room.answers:
                         continue
+                    elapsed_ms = (time.time() - room.question_sent_at) * 1000
                     room.answers[player_name] = answer
-                    correct = room.current_question and answer == room.current_question["answer"]
+                    correct = bool(room.current_question and answer == room.current_question["answer"])
+                    pts = max(100, int(1000 - elapsed_ms / 10)) if correct else 0
+                    room.scores[player_name] = room.scores.get(player_name, 0) + pts
+                    room.points_this_round[player_name] = pts
                     if correct:
-                        room.scores[player_name] = room.scores.get(player_name, 0) + 1
+                        room.correct_counts[player_name] = room.correct_counts.get(player_name, 0) + 1
                     all_done = room.all_answered()
 
                 opponent = next((n for n in room.players if n != player_name), None)
@@ -108,6 +113,7 @@ async def websocket_endpoint(
                         "correct_answer": room.current_question["answer"] if room.current_question else "",
                         "player_answers": room.answers,
                         "scores": room.scores,
+                        "points_earned": dict(room.points_this_round),
                         "on_block_value": room.current_question.get("on_block_value") if room.current_question else None,
                         "game_mode": room.game_mode,
                     })

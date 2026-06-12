@@ -1,6 +1,7 @@
 import asyncio
 import random
 import string
+import time
 from typing import Optional
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
@@ -29,6 +30,9 @@ class Room:
         self.current_question: Optional[dict] = None
         self.answers: dict[str, str] = {}
         self.question_number: int = 0
+        self.question_sent_at: float = 0.0
+        self.points_this_round: dict[str, int] = {}
+        self.correct_counts: dict[str, int] = {}
         self.lock = asyncio.Lock()
 
     def is_full(self) -> bool:
@@ -65,6 +69,7 @@ async def _send(ws: WebSocket, message: dict):
 async def _next_question(room: Room, db: Session):
     room.question_number += 1
     room.answers = {}
+    room.points_this_round = {}
 
     if room.question_number > MAX_QUESTIONS:
         scores = room.scores
@@ -76,6 +81,8 @@ async def _next_question(room: Room, db: Session):
             "scores": scores,
             "winner": winner,
             "game_mode": room.game_mode,
+            "correct_counts": dict(room.correct_counts),
+            "total": MAX_QUESTIONS,
         })
         return
 
@@ -104,6 +111,7 @@ async def _next_question(room: Room, db: Session):
         "total": MAX_QUESTIONS,
         "game_mode": room.game_mode,
     })
+    room.question_sent_at = time.time()
 
 
 @router.post("/rooms")
