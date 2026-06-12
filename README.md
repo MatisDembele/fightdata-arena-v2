@@ -177,8 +177,8 @@ py scripts/update_patch.py --db-url "postgresql://..."
 
 ## Credits
 
-- Frame data sourced from **[ultimateframedata.com](https://ultimateframedata.com)** — the reference SF6 frame data resource
-- Hitbox GIFs and character assets © **Capcom** — Street Fighter 6
+- Hitbox GIFs sourced from **[ultimateframedata.com](https://ultimateframedata.com)** — the reference SF6 frame data resource
+- Frame data and character assets © **Capcom** — Street Fighter 6
 
 > This is an independent fan project, not affiliated with or endorsed by Capcom.
 
