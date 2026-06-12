@@ -34,6 +34,7 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
 import time
 from datetime import date
@@ -315,62 +316,32 @@ def write_diff_report(diff: dict, path: Path) -> None:
 # ══════════════════════════════════════════════════════════════
 
 def run_seed(db_url: str, fighters: dict[str, dict]) -> None:
-    """Vide et re-remplit les tables fighters/moves (idempotent)."""
-    # Import des modèles du backend
-    sys.path.insert(0, str(ROOT / "backend"))
-    os.environ["DATABASE_URL"] = db_url
+    """Lance seed_db.py via le venv backend (évite les conflits de dépendances)."""
+    seed_script = ROOT / "backend" / "scripts" / "seed_db.py"
 
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import sessionmaker
-    from app.database import Base
-    from app.models.fighter import Fighter
-    from app.models.move import Move
+    # Cherche le Python du venv backend (Windows puis Unix)
+    for candidate in [
+        ROOT / "backend" / "venv" / "Scripts" / "python.exe",
+        ROOT / "backend" / "venv" / "bin" / "python",
+    ]:
+        if candidate.exists():
+            python = str(candidate)
+            break
+    else:
+        python = sys.executable  # fallback : Python courant
 
-    engine = create_engine(db_url)
-    Base.metadata.create_all(bind=engine)
-    Session = sessionmaker(bind=engine)
-    session = Session()
-
-    try:
-        print("💾 Vidage des tables existantes...")
-        session.query(Move).delete()
-        session.query(Fighter).delete()
-        session.commit()
-
-        print("💾 Insertion des nouvelles données...")
-        total_moves = 0
-        for slug, f in fighters.items():
-            fighter = Fighter(name=f["name"], slug=slug)
-            session.add(fighter)
-            session.flush()  # récupère fighter.id
-
-            for m in f.get("moves", []):
-                session.add(Move(
-                    fighter_id=fighter.id,
-                    section=m.get("section") or "normals",
-                    move_name=m["move_name"],
-                    startup=m.get("startup"),
-                    active=m.get("active"),
-                    recovery=m.get("recovery"),
-                    total_frames=m.get("total_frames"),
-                    on_hit=m.get("on_hit"),
-                    on_block=m.get("on_block"),
-                    damage=m.get("damage"),
-                    guard=m.get("guard"),
-                    cancel=m.get("cancel"),
-                    notes=m.get("notes"),
-                    gif_url=m.get("gif_url"),
-                    gif_path=m.get("gif_path"),
-                ))
-                total_moves += 1
-
-        session.commit()
-        print(f"✅ Seed terminé : {len(fighters)} persos, {total_moves} moves")
-    except Exception:
-        session.rollback()
-        raise
-    finally:
-        session.close()
+    env = {**os.environ, "DATABASE_URL": db_url, "PYTHONUTF8": "1"}
+    proc = subprocess.Popen(
+        [python, str(seed_script), "--reset"],
+        env=env,
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        text=True, encoding="utf-8",
+    )
+    for line in proc.stdout:
+        print(" ", line, end="")
+    proc.wait()
+    if proc.returncode != 0:
+        raise RuntimeError(f"seed_db.py a échoué (code {proc.returncode})")
 
 
 # ══════════════════════════════════════════════════════════════
@@ -472,8 +443,7 @@ def main() -> None:
         backup.write_text(OLD_JSON.read_text(encoding="utf-8"), encoding="utf-8")
         print(f"💾 Backup : {backup.relative_to(ROOT)}")
     OLD_JSON.write_text(
-        json.dumps({"fighters": new_fighters, "scraped_at": str(date.today())},
-                   ensure_ascii=False, indent=2),
+        json.dumps(new_fighters, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
     print(f"💾 {OLD_JSON.relative_to(ROOT)} mis à jour")
