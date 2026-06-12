@@ -239,6 +239,34 @@ body {
 /* Nav links */
 .nav-link { padding: 8px 20px; text-decoration: none; }
 
+/* SF6-style nav items */
+.nav-item {
+  position: relative;
+  display: flex; align-items: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.82rem; letter-spacing: 3px;
+  text-decoration: none;
+  padding: 0 22px;
+  transition: color 0.2s;
+  overflow: hidden;
+  color: rgba(255,255,255,0.38);
+}
+.nav-item:hover { color: rgba(255,255,255,0.72); }
+.nav-item.active { color: #fff; }
+
+.nav-lang-btn {
+  position: relative;
+  background: none; border: none; cursor: pointer;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.78rem; letter-spacing: 3px;
+  color: rgba(255,255,255,0.28);
+  padding: 5px 12px;
+  transition: color 0.2s;
+  overflow: hidden;
+}
+.nav-lang-btn:hover { color: rgba(255,255,255,0.65); }
+.nav-lang-btn.active { color: var(--yellow); }
+
 @media (max-width: 640px) {
   .navbar { padding: 0 14px; }
   .navbar-badge { display: none; }
