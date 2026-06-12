@@ -49,7 +49,7 @@ Additional features:
 
 ### Data
 - 1418 moves scraped from [ultimateframedata.com](https://ultimateframedata.com)
-- 29 characters, full SF6 roster (patch March 2026)
+- 30 characters, full SF6 roster (patch June 2026)
 - Hitbox GIFs served via CDN
 
 ### Deployment

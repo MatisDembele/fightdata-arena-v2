@@ -30,8 +30,8 @@ const MODES = [
 ]
 
 const STATS = [
-  { val: '29',   label: 'PERSOS' },
-  { val: '1418', label: 'MOVES' },
+  { val: '30',   label: 'PERSOS' },
+  { val: '1562', label: 'MOVES' },
   { val: '4',    label: 'MODES' },
 ]
 
@@ -225,7 +225,7 @@ export default function Home() {
             fontFamily: "'Share Tech Mono', monospace",
             fontSize: '0.55rem', letterSpacing: '3px',
             color: 'rgba(255,255,255,0.15)',
-          }}>PATCH MARCH 2026</div>
+          }}>PATCH JUNE 2026</div>
         </div>
 
       </div>
