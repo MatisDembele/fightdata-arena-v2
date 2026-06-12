@@ -77,7 +77,7 @@ def get_fighter_slugs() -> list[str]:
     # Les liens persos sont de la forme /sf6/{slug} (hors pages utilitaires)
     excluded = {"", "stats", "hitboxes", "glossary", "about"}
     for a in soup.find_all("a", href=True):
-        m = re.match(r"^/sf6/([a-z0-9]+)/?$", a["href"])
+        m = re.match(r"^/sf6/([a-z0-9][a-z0-9-]*)/?$", a["href"])
         if m:
             slug = m.group(1)
             if slug not in excluded and slug not in slugs:
@@ -92,13 +92,15 @@ def get_fighter_slugs() -> list[str]:
     return slugs
 
 
+_EMPTY = {"", "--", "**", "N/A", "-"}
+
 def _txt(container, cls: str) -> str | None:
-    """Texte d'un div.{cls} dans un movecontainer, ou None."""
+    """Texte d'un div.{cls} dans un movecontainer, ou None si absent/vide."""
     el = container.find("div", class_=cls)
     if el is None:
         return None
-    val = el.get_text(strip=True)
-    return val if val else None
+    val = re.sub(r"\s+", " ", el.get_text().strip())
+    return None if val in _EMPTY else val
 
 
 def scrape_fighter(slug: str) -> dict:
