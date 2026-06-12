@@ -7,7 +7,7 @@ import { getFighterPortrait } from '@/lib/portraits'
 
 const WS_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/^http/, 'ws')
 
-type Phase = 'connecting' | 'waiting' | 'playing' | 'result' | 'gameover' | 'error'
+type Phase = 'connecting' | 'waiting' | 'vs' | 'playing' | 'result' | 'gameover' | 'error'
 
 interface Question {
   move_name: string
@@ -51,6 +51,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
   const [pointsEarned, setPointsEarned]         = useState<Record<string, number>>({})
   const [correctCounts, setCorrectCounts]       = useState<Record<string, number>>({})
   const [avatars, setAvatars]                   = useState<Record<string, string>>({})
+  const [vsPlayers, setVsPlayers]               = useState<string[]>([])
   const [error, setError]                       = useState('')
   const [gameMode, setGameMode]                 = useState('startup')
 
@@ -65,7 +66,12 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         setPlayers(msg.players)
         if (msg.avatars) setAvatars(msg.avatars)
       }
-      if (msg.type === 'waiting')  setPhase('waiting')
+      if (msg.type === 'waiting') setPhase('waiting')
+      if (msg.type === 'vs') {
+        setVsPlayers(msg.players)
+        if (msg.avatars) setAvatars(msg.avatars)
+        setPhase('vs')
+      }
       if (msg.type === 'question') {
         setQuestion(msg.question)
         setGameMode(msg.game_mode || msg.question.game_mode || 'startup')
@@ -188,6 +194,59 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         <Players players={players} playerName={playerName} avatars={avatars} color={COLOR} youLabel={t('room.you')} />
       </div>
     )
+
+    if (phase === 'vs') {
+      const p1 = vsPlayers[0] ?? ''
+      const p2 = vsPlayers[1] ?? ''
+      const slug1 = avatars[p1] || 'ryu'
+      const slug2 = avatars[p2] || 'ryu'
+      const portrait1 = getFighterPortrait(slug1)
+      const portrait2 = getFighterPortrait(slug2)
+      return (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 50,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(4,0,12,0.97)',
+          overflow: 'hidden',
+        }}>
+          {/* Diagonal split background */}
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg, rgba(255,45,120,0.12) 0%, transparent 50%, rgba(0,240,255,0.1) 100%)' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(-55deg, transparent, transparent 20px, rgba(255,255,255,0.012) 20px, rgba(255,255,255,0.012) 21px)' }} />
+
+          {/* Player 1 */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', position: 'relative', zIndex: 1 }}>
+            <div style={{ width: '120px', height: '120px', overflow: 'hidden', border: '3px solid #ff2d78', boxShadow: '0 0 30px rgba(255,45,120,0.5)', background: 'rgba(0,0,0,0.5)' }}>
+              {portrait1 ? <img src={portrait1} alt={slug1} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
+            </div>
+            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.2rem', letterSpacing: '4px', color: p1 === playerName ? '#ff2d78' : '#fff', textShadow: p1 === playerName ? '0 0 12px #ff2d78' : 'none' }}>
+              {p1 === playerName ? t('room.you') : p1.toUpperCase().slice(0, 10)}
+            </div>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.3)' }}>
+              {slug1.toUpperCase()}
+            </div>
+          </div>
+
+          {/* VS */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', position: 'relative', zIndex: 1, flexShrink: 0, padding: '0 16px' }}>
+            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(4rem, 12vw, 7rem)', letterSpacing: '8px', color: '#ffe000', textShadow: '0 0 30px #ffe000, 0 0 60px rgba(255,224,0,0.4)', lineHeight: 1 }}>VS</div>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.2)' }}>ROOM {room}</div>
+          </div>
+
+          {/* Player 2 */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', position: 'relative', zIndex: 1 }}>
+            <div style={{ width: '120px', height: '120px', overflow: 'hidden', border: '3px solid #00f0ff', boxShadow: '0 0 30px rgba(0,240,255,0.5)', background: 'rgba(0,0,0,0.5)' }}>
+              {portrait2 ? <img src={portrait2} alt={slug2} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
+            </div>
+            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.2rem', letterSpacing: '4px', color: p2 === playerName ? '#00f0ff' : '#fff', textShadow: p2 === playerName ? '0 0 12px #00f0ff' : 'none' }}>
+              {p2 === playerName ? t('room.you') : p2.toUpperCase().slice(0, 10)}
+            </div>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.3)' }}>
+              {slug2.toUpperCase()}
+            </div>
+          </div>
+        </div>
+      )
+    }
 
     if ((phase === 'playing' || phase === 'result') && question) return (
       <div style={{ width: '100%', maxWidth: '500px', minWidth: 0 }}>

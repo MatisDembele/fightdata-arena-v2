@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine, SessionLocal
 from app.routers import fighters, quiz, multi
-from app.routers.multi import rooms, Room, _broadcast, _send, _next_question
+from app.routers.multi import rooms, _broadcast, _send, _next_question
 
 Base.metadata.create_all(bind=engine)
 
@@ -84,7 +84,14 @@ async def websocket_endpoint(
     if not room.is_ready():
         await _send(websocket, {"type": "waiting", "message": "En attente d'un adversaire..."})
     else:
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(0.3)
+        await _broadcast(room, {
+            "type": "vs",
+            "players": list(room.players.keys()),
+            "avatars": dict(room.player_avatars),
+            "game_mode": room.game_mode,
+        })
+        await asyncio.sleep(2.5)
         await _next_question(room, db)
 
     try:
