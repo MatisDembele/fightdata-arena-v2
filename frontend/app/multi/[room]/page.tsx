@@ -53,6 +53,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
   const [correctCounts, setCorrectCounts]       = useState<Record<string, number>>({})
   const [avatars, setAvatars]                   = useState<Record<string, string>>({})
   const [vsPlayers, setVsPlayers]               = useState<string[]>([])
+  const [linkCopied, setLinkCopied]             = useState(false)
   const [error, setError]                       = useState('')
   const [gameMode, setGameMode]                 = useState('startup')
 
@@ -212,6 +213,25 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         </div>
         <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.4)', marginTop: '4px' }}>{t('room.waiting')}</div>
         <Players players={players} playerName={playerName} avatars={avatars} color={COLOR} youLabel={t('room.you')} />
+        {/* Copy invite link */}
+        <button
+          onClick={() => {
+            const url = `https://www.fightdata.app/multi?room=${room}`
+            navigator.clipboard.writeText(url).then(() => {
+              setLinkCopied(true)
+              setTimeout(() => setLinkCopied(false), 2000)
+            })
+          }}
+          style={{
+            marginTop: '4px', background: 'none',
+            border: `1px solid ${linkCopied ? '#4ade80' : 'rgba(255,255,255,0.15)'}`,
+            color: linkCopied ? '#4ade80' : 'rgba(255,255,255,0.45)',
+            fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px',
+            padding: '8px 20px', cursor: 'pointer', transition: 'all 0.2s',
+          }}
+        >
+          {linkCopied ? t('room.link_copied') : t('room.copy_link')}
+        </button>
       </div>
     )
 

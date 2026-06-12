@@ -166,6 +166,8 @@ const en = {
   'room.feedback_correct_punish': '✓ Correct! {move} is {label}{ob}',
   'room.feedback_wrong_punish':   '✗ Wrong! {move} is {label}{ob}',
   'room.leaderboard':             'LEADERBOARD',
+  'room.copy_link':               'COPY INVITE LINK',
+  'room.link_copied':             '✓ COPIED!',
 
   // fighters
   'fighters.title':       'DATABASE',
@@ -338,6 +340,8 @@ const fr: Record<DictKey, string> = {
   'room.feedback_correct_punish': '✓ Correct ! {move} est {label}{ob}',
   'room.feedback_wrong_punish':   '✗ Raté ! {move} est {label}{ob}',
   'room.leaderboard':             'CLASSEMENT',
+  'room.copy_link':               'COPIER LE LIEN',
+  'room.link_copied':             '✓ COPIÉ !',
 
   // fighters
   'fighters.title':       'BASE DE DONNÉES',
