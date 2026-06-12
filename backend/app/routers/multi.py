@@ -14,6 +14,7 @@ from app.services.quiz_service import generate_random_question, generate_random_
 router = APIRouter()
 
 MAX_QUESTIONS = 5
+VALID_QUESTIONS = (5, 10, 15)
 GAME_MODES = ("startup", "punish")
 
 
@@ -22,7 +23,7 @@ def _make_code() -> str:
 
 
 class Room:
-    def __init__(self, code: str, game_mode: str = "startup"):
+    def __init__(self, code: str, game_mode: str = "startup", max_questions: int = MAX_QUESTIONS):
         self.code = code
         self.game_mode = game_mode if game_mode in GAME_MODES else "startup"
         self.players: dict[str, WebSocket] = {}
@@ -34,6 +35,7 @@ class Room:
         self.points_this_round: dict[str, int] = {}
         self.correct_counts: dict[str, int] = {}
         self.player_avatars: dict[str, str] = {}
+        self.max_questions: int = max_questions if max_questions in VALID_QUESTIONS else MAX_QUESTIONS
         self.lock = asyncio.Lock()
 
     def is_full(self) -> bool:
@@ -72,7 +74,7 @@ async def _next_question(room: Room, db: Session):
     room.answers = {}
     room.points_this_round = {}
 
-    if room.question_number > MAX_QUESTIONS:
+    if room.question_number > room.max_questions:
         scores = room.scores
         max_score = max(scores.values()) if scores else 0
         leaders = [n for n, s in scores.items() if s == max_score]
@@ -83,7 +85,7 @@ async def _next_question(room: Room, db: Session):
             "winner": winner,
             "game_mode": room.game_mode,
             "correct_counts": dict(room.correct_counts),
-            "total": MAX_QUESTIONS,
+            "total": room.max_questions,
             "avatars": dict(room.player_avatars),
         })
         return
@@ -110,18 +112,19 @@ async def _next_question(room: Room, db: Session):
         "type": "question",
         "question": {k: v for k, v in room.current_question.items() if k != "answer"},
         "question_number": room.question_number,
-        "total": MAX_QUESTIONS,
+        "total": room.max_questions,
         "game_mode": room.game_mode,
     })
     room.question_sent_at = time.time()
 
 
 @router.post("/rooms")
-def create_room(game_mode: str = "startup"):
+def create_room(game_mode: str = "startup", questions: int = MAX_QUESTIONS):
     mode = game_mode if game_mode in GAME_MODES else "startup"
+    nq   = questions if questions in VALID_QUESTIONS else MAX_QUESTIONS
     for _ in range(10):
         code = _make_code()
         if code not in rooms:
-            rooms[code] = Room(code, mode)
-            return {"room_code": code, "game_mode": mode}
+            rooms[code] = Room(code, mode, nq)
+            return {"room_code": code, "game_mode": mode, "max_questions": nq}
     return {"error": "Impossible de créer une room"}, 500

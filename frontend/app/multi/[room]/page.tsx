@@ -66,6 +66,10 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
       if (msg.type === 'room_joined' || msg.type === 'player_joined') {
         setPlayers(msg.players)
         if (msg.avatars) setAvatars(msg.avatars)
+        if (msg.type === 'room_joined') {
+          if (msg.game_mode)     setGameMode(msg.game_mode)
+          if (msg.max_questions) setTotalQuestions(msg.max_questions)
+        }
       }
       if (msg.type === 'waiting') setPhase('waiting')
       if (msg.type === 'vs') {
@@ -197,7 +201,16 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
           ROOM — <span style={{ color: COLOR, textShadow: `0 0 12px ${COLOR}` }}>{room}</span>
         </div>
         <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.3)' }}>{t('room.give_code')}</div>
-        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.4)', marginTop: '8px' }}>{t('room.waiting')}</div>
+        {/* Room options badge */}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', padding: '4px 10px', border: '1px solid rgba(255,255,255,0.08)' }}>
+            {totalQuestions} Q
+          </div>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: gameMode === 'punish' ? '#ffe000' : '#ff2d78', padding: '4px 10px', border: `1px solid ${gameMode === 'punish' ? 'rgba(255,224,0,0.2)' : 'rgba(255,45,120,0.2)'}` }}>
+            {gameMode.toUpperCase()}
+          </div>
+        </div>
+        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.4)', marginTop: '4px' }}>{t('room.waiting')}</div>
         <Players players={players} playerName={playerName} avatars={avatars} color={COLOR} youLabel={t('room.you')} />
       </div>
     )

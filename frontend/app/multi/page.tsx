@@ -22,8 +22,9 @@ export default function MultiLobby() {
   const [name, setName]         = useState('')
   const [avatar, setAvatar]     = useState('ryu')
   const [code, setCode]         = useState('')
-  const [step, setStep]         = useState<'idle' | 'create' | 'join'>('idle')
-  const [gameMode, setGameMode] = useState('startup')
+  const [step, setStep]           = useState<'idle' | 'create' | 'join'>('idle')
+  const [gameMode, setGameMode]   = useState('startup')
+  const [numQuestions, setNumQ]   = useState(5)
   const [loading, setLoading]   = useState(false)
   const [slowLoad, setSlowLoad] = useState(false)
   const [error, setError]       = useState('')
@@ -55,7 +56,7 @@ export default function MultiLobby() {
     setLoading(true); setSlowLoad(false); setError('')
     const timer = setTimeout(() => setSlowLoad(true), 4000)
     try {
-      const res = await fetch(`${API_URL}/api/multi/rooms?game_mode=${gameMode}`, { method: 'POST' })
+      const res = await fetch(`${API_URL}/api/multi/rooms?game_mode=${gameMode}&questions=${numQuestions}`, { method: 'POST' })
       const data = await res.json()
       clearTimeout(timer)
       track('multi_game_created', { mode: gameMode })
@@ -166,6 +167,16 @@ export default function MultiLobby() {
               </div>
               <div style={{ fontFamily: "'Rajdhani', monospace", fontSize: '0.78rem', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.5px' }}>
                 {activeMode.desc}
+              </div>
+
+              {/* Question count */}
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.25)', marginTop: '4px' }}>{t('multi.num_questions')}</div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {[5, 10, 15].map(n => (
+                  <button key={n} onClick={() => setNumQ(n)} style={btnStyle('#00f0ff', numQuestions === n)}>
+                    {n}
+                  </button>
+                ))}
               </div>
             </div>
           )}

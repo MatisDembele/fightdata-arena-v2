@@ -73,6 +73,8 @@ async def websocket_endpoint(
         "room_code": room_code,
         "players": player_list,
         "avatars": avatars,
+        "game_mode": room.game_mode,
+        "max_questions": room.max_questions,
     })
 
     await _broadcast(room, {
