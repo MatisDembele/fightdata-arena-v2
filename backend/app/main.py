@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine, SessionLocal
 from app.routers import fighters, quiz, multi
-from app.routers.multi import rooms, _broadcast, _send, _next_question
+from app.routers.multi import rooms, _broadcast, _send, _next_question, _reset_room
 
 Base.metadata.create_all(bind=engine)
 
@@ -132,6 +132,33 @@ async def websocket_endpoint(
                         "game_mode": room.game_mode,
                     })
                     await asyncio.sleep(3.5)
+                    await _next_question(room, db)
+
+            elif data.get("type") == "rematch":
+                all_voted = False
+                async with room.lock:
+                    room.rematch_votes.add(player_name)
+                    all_voted = len(room.rematch_votes) == len(room.players)
+
+                if not all_voted:
+                    opponent = next((n for n in room.players if n != player_name), None)
+                    if opponent and opponent in room.players:
+                        await _send(room.players[opponent], {"type": "rematch_requested", "player": player_name})
+                else:
+                    _reset_room(room)
+                    await _broadcast(room, {
+                        "type": "rematch_start",
+                        "players": list(room.players.keys()),
+                        "avatars": dict(room.player_avatars),
+                    })
+                    await asyncio.sleep(0.3)
+                    await _broadcast(room, {
+                        "type": "vs",
+                        "players": list(room.players.keys()),
+                        "avatars": dict(room.player_avatars),
+                        "game_mode": room.game_mode,
+                    })
+                    await asyncio.sleep(2.5)
                     await _next_question(room, db)
 
     except WebSocketDisconnect:

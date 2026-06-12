@@ -56,6 +56,8 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
   const [linkCopied, setLinkCopied]             = useState(false)
   const [error, setError]                       = useState('')
   const [gameMode, setGameMode]                 = useState('startup')
+  const [rematchWaiting, setRematchWaiting]     = useState(false)
+  const [rematchRequested, setRematchRequested] = useState<string | null>(null)
 
   useEffect(() => {
     const ws = new WebSocket(`${WS_URL}/api/multi/ws/${room}/${encodeURIComponent(playerName)}?avatar=${playerAvatar}`)
@@ -107,6 +109,25 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         if (msg.avatars) setAvatars(msg.avatars)
         setPhase('gameover')
       }
+      if (msg.type === 'rematch_requested') {
+        setRematchRequested(msg.player)
+      }
+      if (msg.type === 'rematch_start') {
+        setScores({})
+        setCorrectCounts({})
+        setPointsEarned({})
+        setWinner(null)
+        setSelected(null)
+        setCorrectAnswer(null)
+        setOnBlockValue(null)
+        setPlayerAnswers({})
+        setOpponentAnswered(false)
+        setQuestionNumber(0)
+        setRematchWaiting(false)
+        setRematchRequested(null)
+        if (msg.avatars) setAvatars(msg.avatars)
+        if (msg.players) setPlayers(msg.players)
+      }
       if (msg.type === 'player_left') {
         setPlayers(msg.players)
         setError(t('room.opponent_left'))
@@ -128,6 +149,13 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
     if (selected || !wsRef.current) return
     setSelected(value)
     wsRef.current.send(JSON.stringify({ type: 'answer', value }))
+  }
+
+  function sendRematch() {
+    if (!wsRef.current) return
+    setRematchWaiting(true)
+    setRematchRequested(null)
+    wsRef.current.send(JSON.stringify({ type: 'rematch' }))
   }
 
   const opponent = players.find(p => p !== playerName)
@@ -485,9 +513,31 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
             {t('room.questions_mode', { n: totalQuestions, mode: gameMode.toUpperCase() })}
           </div>
 
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button onClick={() => router.push('/multi')} style={backBtnStyle}>{t('room.replay')}</button>
-            <button onClick={() => router.push('/')} style={{ ...backBtnStyle, border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.4)', textShadow: 'none' }}>{t('room.home')}</button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center' }}>
+            {!rematchWaiting && !rematchRequested && (
+              <button onClick={sendRematch} style={{ ...backBtnStyle, border: '1px solid #00f0ff', color: '#00f0ff', textShadow: '0 0 8px rgba(0,240,255,0.4)', padding: '12px 40px', fontSize: '1.1rem' }}>
+                {t('room.rematch')}
+              </button>
+            )}
+            {rematchWaiting && (
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.35)' }}>
+                {t('room.rematch_waiting')}
+              </div>
+            )}
+            {rematchRequested && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: '#00f0ff', textShadow: '0 0 10px rgba(0,240,255,0.5)' }}>
+                  {t('room.rematch_challenge', { name: rematchRequested.toUpperCase().slice(0, 12) })}
+                </div>
+                <button onClick={sendRematch} style={{ ...backBtnStyle, border: '1px solid #00f0ff', color: '#00f0ff', textShadow: '0 0 8px rgba(0,240,255,0.4)' }}>
+                  {t('room.accept')}
+                </button>
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
+              <button onClick={() => router.push('/multi')} style={backBtnStyle}>{t('room.lobby')}</button>
+              <button onClick={() => router.push('/')} style={{ ...backBtnStyle, border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.4)', textShadow: 'none' }}>{t('room.home')}</button>
+            </div>
           </div>
 
         </div>

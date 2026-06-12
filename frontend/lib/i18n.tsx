@@ -168,6 +168,10 @@ const en = {
   'room.leaderboard':             'LEADERBOARD',
   'room.copy_link':               'COPY INVITE LINK',
   'room.link_copied':             '✓ COPIED!',
+  'room.rematch':                 'REMATCH',
+  'room.rematch_waiting':         'WAITING FOR OPPONENT...',
+  'room.rematch_challenge':       '{name} WANTS A REMATCH!',
+  'room.accept':                  'ACCEPT',
 
   // fighters
   'fighters.title':       'DATABASE',
@@ -342,6 +346,10 @@ const fr: Record<DictKey, string> = {
   'room.leaderboard':             'CLASSEMENT',
   'room.copy_link':               'COPIER LE LIEN',
   'room.link_copied':             '✓ COPIÉ !',
+  'room.rematch':                 'REVANCHE',
+  'room.rematch_waiting':         "EN ATTENTE DE L'ADVERSAIRE...",
+  'room.rematch_challenge':       '{name} VEUT UNE REVANCHE !',
+  'room.accept':                  'ACCEPTER',
 
   // fighters
   'fighters.title':       'BASE DE DONNÉES',

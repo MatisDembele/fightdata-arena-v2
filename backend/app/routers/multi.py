@@ -36,6 +36,7 @@ class Room:
         self.correct_counts: dict[str, int] = {}
         self.player_avatars: dict[str, str] = {}
         self.max_questions: int = max_questions if max_questions in VALID_QUESTIONS else MAX_QUESTIONS
+        self.rematch_votes: set[str] = set()
         self.lock = asyncio.Lock()
 
     def is_full(self) -> bool:
@@ -67,6 +68,18 @@ async def _send(ws: WebSocket, message: dict):
         await ws.send_json(message)
     except Exception:
         pass
+
+
+def _reset_room(room: Room):
+    """Reset game state for a rematch, keeping players/avatars/settings."""
+    room.scores = {p: 0 for p in room.players}
+    room.correct_counts = {}
+    room.points_this_round = {}
+    room.answers = {}
+    room.question_number = 0
+    room.current_question = None
+    room.question_sent_at = 0.0
+    room.rematch_votes = set()
 
 
 async def _next_question(room: Room, db: Session):
