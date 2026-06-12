@@ -6,7 +6,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)
 
-An interactive frame data quiz for Street Fighter 6. Test your knowledge of startups, punish windows, and frame advantage — across all 29 characters and 1418 moves.
+An interactive frame data quiz for Street Fighter 6. Test your knowledge of startups, punish windows, and frame advantage — across all 30 characters and 1562 moves.
 
 **Live at [fightdata.app](https://fightdata.app)**
 
@@ -15,44 +15,50 @@ An interactive frame data quiz for Street Fighter 6. Test your knowledge of star
 ## Features
 
 | Mode | Description |
-|------|-------------|
+| --- | --- |
 | 🎲 **Random** | Multiple-choice startup questions across the full SF6 roster |
 | 🥊 **Fighter** | Focus on a single character and master their frame data |
 | ⌨️ **Input** | No choices — type the exact startup value from memory |
-| 🎯 **Punish Finder** | Is this move punishable on block? Train your -4 instinct |
+| 🎯 **Punish Finder** | Is this move punishable on block? Train your −4 instinct |
 | ⚡ **Hardcore** | 5-second timer, no skip, one answer per question |
 | 💀 **Survival** | One life — answer correctly as long as you can |
 | 📅 **Daily** | 10 identical questions for everyone, refreshed each day |
 | 👥 **Multiplayer** | Real-time 1v1 quiz via WebSocket — first to 5 wins |
 
 Additional features:
+
 - SF6-style rank system (Rookie → Iron → Bronze → Silver → Gold → Platinum → Diamond → Master)
 - Session end screen with score, accuracy, combo max, and sharable result text
 - Personal records saved to `localStorage`
-- Smarter distractors: wrong answers stay within ±3 frames of the correct value
+- Smarter distractors — wrong answers stay within ±3 frames of the correct value
+- Vercel Analytics custom events (`quiz_started`, `quiz_completed`, `daily_played`, …)
 
 ---
 
 ## Tech Stack
 
 ### Frontend
+
 - **Next.js 16** (App Router) + **React 19** + **TypeScript**
-- **Vercel Analytics** with custom events (`quiz_started`, `quiz_completed`, `daily_played`, `multi_game_created`, `multi_game_joined`)
+- **Vercel Analytics** with custom events
 - CSS-in-JS (inline styles) + global CSS for responsive breakpoints
 - Fonts: Bebas Neue, Rajdhani, Share Tech Mono
 
 ### Backend
+
 - **FastAPI** 0.135 + **SQLAlchemy** 2.0 + **PostgreSQL**
 - **Alembic** for migrations
 - **WebSockets** (Starlette) for real-time multiplayer rooms
 - **Pydantic** v2 for schema validation
 
 ### Data
-- 1418 moves scraped from [ultimateframedata.com](https://ultimateframedata.com)
+
+- 1562 moves scraped from [ultimateframedata.com](https://ultimateframedata.com)
 - 30 characters, full SF6 roster (patch June 2026)
-- Hitbox GIFs served via CDN
+- Automated patch pipeline: scrape → diff → seed → portrait download
 
 ### Deployment
+
 - **Frontend**: Vercel (auto-deploy on `main`)
 - **Backend**: Render (free tier, spins up on first request)
 - **Database**: Render PostgreSQL
@@ -61,7 +67,7 @@ Additional features:
 
 ## Architecture
 
-```
+```text
 fight-data-arena/
 ├── frontend/                  # Next.js app
 │   ├── app/
@@ -71,12 +77,13 @@ fight-data-arena/
 │   │   │   ├── page.tsx       # Quiz mode picker
 │   │   │   ├── play/page.tsx  # Quiz engine (all modes)
 │   │   │   └── daily/page.tsx # Daily challenge
-│   │   ├── fighters/          # Frame data database
+│   │   ├── fighters/          # Frame data browser
 │   │   └── multi/             # Multiplayer lobby + room
 │   ├── components/
 │   │   └── Navbar.tsx
 │   ├── lib/
-│   │   └── api.ts             # API client functions
+│   │   ├── api.ts             # API client functions
+│   │   └── portraits.ts       # Slug → portrait URL mapping
 │   └── types/index.ts
 │
 ├── backend/                   # FastAPI app
@@ -91,8 +98,13 @@ fight-data-arena/
 │   │   └── schemas/           # Pydantic schemas
 │   └── requirements.txt
 │
-└── data/                      # Scraping scripts + raw JSON
-    └── scrape_sf6.py
+├── data/                      # Raw JSON data
+│   └── json/all_fighters.json # 30 fighters, 1562 moves
+│
+└── scripts/                   # Maintenance tooling
+    ├── update_patch.py        # Full patch update pipeline
+    ├── scrape_sf6.py          # SF6 frame data scraper
+    └── download_portraits.py  # Character portrait downloader
 ```
 
 ---
@@ -100,6 +112,7 @@ fight-data-arena/
 ## Local Setup
 
 ### Prerequisites
+
 - Node.js 18+
 - Python 3.11+
 - PostgreSQL 15+
@@ -112,13 +125,9 @@ python -m venv venv
 source venv/bin/activate      # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
-# Copy and fill in environment variables
-cp .env.example .env
+cp .env.example .env          # fill in DATABASE_URL
 
-# Run migrations
 alembic upgrade head
-
-# Start the server
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -128,23 +137,31 @@ uvicorn app.main:app --reload --port 8000
 cd frontend
 npm install
 
-# Copy and fill in environment variables
-cp .env.local.example .env.local
+cp .env.local.example .env.local   # fill in NEXT_PUBLIC_API_URL
 
 npm run dev
 # → http://localhost:3000
 ```
 
-### Environment Variables
+### Environment variables
 
-**backend/.env**
-```
+**`backend/.env`**
+
+```env
 DATABASE_URL=postgresql://user:password@localhost:5432/fda
 ```
 
-**frontend/.env.local**
-```
+**`frontend/.env.local`**
+
+```env
 NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+### Patch update (after a new SF6 patch)
+
+```bash
+py scripts/update_patch.py --dry-run      # preview changes
+py scripts/update_patch.py --db-url "postgresql://..."
 ```
 
 ---
@@ -154,7 +171,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 - [ ] **Punish Calculator** — input the on-block value of any move and get the fastest punish options per character
 - [ ] **SuperCombo scraping** — import `atkRange` (attack range / hitbox extension data) for each move
 - [ ] **REFramework data mining** — extract pushback values on block to improve punish accuracy
-- [ ] **Enriched Database page** — sortable/filterable frame data table with hitbox GIFs inline, section filters, and comparison mode
+- [ ] **Enriched Database page** — sortable/filterable frame data table with hitbox GIFs inline
 
 ---
 
