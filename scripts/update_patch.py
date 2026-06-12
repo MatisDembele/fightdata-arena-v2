@@ -127,7 +127,17 @@ def scrape_fighter(slug: str) -> dict:
             move_name = _txt(el, "movename")
             if not move_name:
                 continue
-            gif_slug = re.sub(r"[^a-z0-9]+", "", move_name.lower())
+
+            # GIF : lire le vrai src de l'img (pas d'URL heuristique)
+            gif_url = gif_path = None
+            hitbox_div = el.find(class_="hitbox")
+            if hitbox_div:
+                img = hitbox_div.find("img")
+                if img and img.get("src"):
+                    src = img["src"].lstrip("/").lower()
+                    gif_url  = f"{BASE_URL}/sf6/" + src
+                    gif_path = f"gifs/{slug}/" + src.split("/")[-1]
+
             moves.append({
                 "section":      current_section,
                 "move_name":    move_name,
@@ -141,8 +151,8 @@ def scrape_fighter(slug: str) -> dict:
                 "guard":        _txt(el, "attacktype"),
                 "cancel":       _txt(el, "cancellable"),
                 "notes":        _txt(el, "notes"),
-                "gif_url":      f"{BASE_URL}/sf6/hitboxes/{slug}/{slug}-{gif_slug}.gif",
-                "gif_path":     f"{slug}/{slug}-{gif_slug}.gif",
+                "gif_url":      gif_url,
+                "gif_path":     gif_path,
             })
 
     return {"name": name, "slug": slug, "moves": moves}
@@ -345,21 +355,111 @@ def run_seed(db_url: str, fighters: dict[str, dict]) -> None:
 
 
 # ══════════════════════════════════════════════════════════════
-# ÉTAPE 5 — CHECKLIST
+# ÉTAPE 5 — PORTRAITS NOUVEAUX PERSOS
 # ══════════════════════════════════════════════════════════════
 
-def print_checklist(new_fighters: list[str]) -> None:
+PORTRAITS_TS  = ROOT / "frontend" / "lib" / "portraits.ts"
+PORTRAITS_DIR = ROOT / "frontend" / "public" / "portraits"
+
+_PORTRAIT_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                  "(KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "Accept": "image/webp,image/apng,image/*,*/*",
+    "Referer": "https://www.streetfighter.com/6/en-us/character",
+    "sec-fetch-dest": "image",
+    "sec-fetch-mode": "no-cors",
+    "sec-fetch-site": "same-origin",
+}
+_CAPCOM_PORTRAIT = "https://www.streetfighter.com/6/assets/images/character/select_character{n}_over.png"
+
+
+def _read_portrait_map() -> dict[str, int]:
+    """Lit le PORTRAIT_MAP existant depuis portraits.ts."""
+    src = PORTRAITS_TS.read_text(encoding="utf-8")
+    return {m.group(1): int(m.group(2))
+            for m in re.finditer(r"(\w[\w-]*):\s*(\d+)", src)
+            if "PORTRAIT_MAP" not in m.group(0)}
+
+
+def _download_portrait(n: int) -> bytes | None:
+    url = _CAPCOM_PORTRAIT.format(n=n)
+    try:
+        r = requests.get(url, headers=_PORTRAIT_HEADERS, timeout=15)
+        if r.status_code == 200 and r.headers.get("content-type", "").startswith("image"):
+            return r.content
+    except requests.RequestException:
+        pass
+    return None
+
+
+def handle_new_portraits(new_slugs: list[str]) -> list[str]:
+    """Télécharge le portrait et met à jour portraits.ts pour chaque nouveau perso."""
+    if not new_slugs:
+        return []
+
+    portrait_map = _read_portrait_map()
+    last_n = max(portrait_map.values()) if portrait_map else 29
+    failed: list[str] = []
+
+    for slug in new_slugs:
+        if slug in portrait_map:
+            print(f"  ✅ Portrait de {slug} déjà présent (n°{portrait_map[slug]})")
+            continue
+
+        # Cherche le prochain numéro valide
+        found_n: int | None = None
+        for n in range(last_n + 1, last_n + 10):
+            data = _download_portrait(n)
+            if data:
+                found_n = n
+                last_n  = n
+                break
+
+        if found_n is None:
+            print(f"  ⚠️  Portrait introuvable pour {slug} (testé n°{last_n+1}–{last_n+9})")
+            failed.append(slug)
+            continue
+
+        # Sauvegarde locale
+        dest = PORTRAITS_DIR / f"character_{found_n}.png"
+        PORTRAITS_DIR.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(data)
+        print(f"  🖼  Portrait {slug} → character_{found_n}.png ({len(data)//1024} KB)")
+
+        # Mise à jour de portraits.ts
+        src = PORTRAITS_TS.read_text(encoding="utf-8")
+        # Insère juste avant la ligne `}` qui ferme PORTRAIT_MAP
+        new_entry = f"  {slug}:     {found_n},"
+        src = re.sub(
+            r"(  \w[\w-]*:\s*\d+,\n)(})",
+            lambda m: m.group(1) + new_entry + "\n" + m.group(2),
+            src,
+            count=1,
+        )
+        PORTRAITS_TS.write_text(src, encoding="utf-8")
+        print(f"  📝 portraits.ts mis à jour : {slug} → {found_n}")
+
+        portrait_map[slug] = found_n
+
+    return failed
+
+
+# ══════════════════════════════════════════════════════════════
+# ÉTAPE 6 — CHECKLIST
+# ══════════════════════════════════════════════════════════════
+
+def print_checklist(new_fighters: list[str], portrait_failures: list[str]) -> None:
     print("\n" + "═" * 60)
     print("✅ PIPELINE TERMINÉ — Actions manuelles restantes :")
     print("═" * 60)
+    if portrait_failures:
+        for slug in portrait_failures:
+            print(f"  [ ] Portrait de '{slug}' introuvable — ajoute manuellement dans")
+            print(f"      frontend/lib/portraits.ts + frontend/public/portraits/")
     if new_fighters:
-        for slug in new_fighters:
-            print(f"  [ ] Ajouter le portrait de '{slug}' dans frontend/lib/portraits.ts")
-            print(f"      → teste https://www.streetfighter.com/6/assets/images/"
-                  f"character/select_character{{N}}_over.png")
         print(f"  [ ] Mettre à jour le compteur de persos sur l'accueil "
               f"(frontend/app/page.tsx, STATS)")
-    print(f"  [ ] Mettre à jour le texte \"PATCH {{MOIS}} {{ANNÉE}}\" sur l'accueil")
+    print(f"  [ ] Mettre à jour le texte \"PATCH MOIS ANNÉE\" sur l'accueil")
     print(f"  [ ] git add -A && git commit -m \"patch update\" && git push")
     print(f"  [ ] Vérifier le déploiement Vercel + Render")
     print("═" * 60)
@@ -377,6 +477,8 @@ def main() -> None:
                         help="Réutilise all_fighters_new.json existant")
     parser.add_argument("--db-url", default=None,
                         help="URL PostgreSQL (sinon variable DATABASE_URL)")
+    parser.add_argument("--force", action="store_true",
+                        help="Applique même si aucun changement détecté dans le diff")
     args = parser.parse_args()
 
     # ── Chargement de l'ancien JSON ──
@@ -427,7 +529,7 @@ def main() -> None:
         print("\n🏁 Mode --dry-run : arrêt ici, rien n'a été modifié.")
         return
 
-    if sum(s.values()) == 0:
+    if sum(s.values()) == 0 and not args.force:
         print("\n✅ Aucun changement détecté — rien à appliquer.")
         return
 
@@ -461,8 +563,14 @@ def main() -> None:
 
     run_seed(db_url, new_fighters)
 
-    # ── ÉTAPE 5 : Checklist ──
-    print_checklist(diff["new_fighters"])
+    # ── ÉTAPE 5 : Portraits nouveaux persos ──
+    portrait_failures: list[str] = []
+    if diff["new_fighters"]:
+        print("\n🖼  Téléchargement des portraits...")
+        portrait_failures = handle_new_portraits(diff["new_fighters"])
+
+    # ── ÉTAPE 6 : Checklist ──
+    print_checklist(diff["new_fighters"], portrait_failures)
 
 
 if __name__ == "__main__":

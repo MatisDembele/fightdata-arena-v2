@@ -31,6 +31,7 @@ const PORTRAIT_MAP: Record<string, number> = {
   sagat:    27,
   cviper:   28,
   alex:     29,
+  ingrid:     30,
 }
 
 export const getFighterPortrait = (slug: string): string => {
