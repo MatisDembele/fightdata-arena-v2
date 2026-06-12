@@ -355,7 +355,6 @@ function getInitialLang(): Lang {
   if (typeof window === 'undefined') return 'en'
   const stored = localStorage.getItem('fda_lang')
   if (stored === 'en' || stored === 'fr') return stored as Lang
-  if (navigator.language?.startsWith('fr')) return 'fr'
   return 'en'
 }
 

@@ -5,7 +5,7 @@ import { useLanguage } from '@/lib/i18n'
 
 export default function Home() {
   const [active, setActive] = useState(0)
-  const { t } = useLanguage()
+  const { t, lang, setLang } = useLanguage()
 
   const MODES = [
     {
@@ -44,6 +44,28 @@ export default function Home() {
 
   return (
     <div style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
+
+      {/* Lang toggle */}
+      <div style={{ position: 'fixed', top: '16px', right: '20px', zIndex: 100, display: 'flex', gap: '0' }}>
+        {(['en', 'fr'] as const).map(l => (
+          <button
+            key={l}
+            onClick={() => setLang(l)}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontFamily: "'Bebas Neue', sans-serif",
+              fontSize: '0.85rem', letterSpacing: '3px',
+              color: lang === l ? 'var(--yellow)' : 'rgba(255,255,255,0.35)',
+              borderBottom: lang === l ? '2px solid var(--yellow)' : '2px solid transparent',
+              textShadow: lang === l ? '0 0 12px rgba(255,224,0,0.5)' : 'none',
+              padding: '4px 8px',
+              transition: 'all 0.2s',
+            }}
+          >
+            {l.toUpperCase()}
+          </button>
+        ))}
+      </div>
 
       {/* BG dynamique */}
       <div style={{

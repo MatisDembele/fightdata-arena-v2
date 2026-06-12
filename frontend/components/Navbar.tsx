@@ -39,7 +39,7 @@ export default function Navbar() {
         }}>FIGHT DATA ARENA</span>
       </Link>
 
-      {/* Navigation */}
+      {/* Nav links */}
       <div style={{ display: 'flex', gap: '0' }}>
         {links.map(link => {
           const isActive = path === link.href || (link.href !== '/' && path.startsWith(link.href))
@@ -58,41 +58,26 @@ export default function Navbar() {
         })}
       </div>
 
-      {/* Right side: lang toggle + badge */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-        <div style={{
-          fontFamily: "'Share Tech Mono', monospace",
-          fontSize: '0.6rem', letterSpacing: '2px',
-          display: 'flex', alignItems: 'center', gap: '4px',
-        }}>
-          {(['en', 'fr'] as const).map((l, i) => (
-            <span key={l}>
-              {i > 0 && <span style={{ color: 'rgba(255,255,255,0.15)' }}>|</span>}
-              <button
-                onClick={() => setLang(l)}
-                style={{
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  fontFamily: "'Share Tech Mono', monospace",
-                  fontSize: '0.6rem', letterSpacing: '2px',
-                  color: lang === l ? 'var(--yellow)' : 'rgba(255,255,255,0.3)',
-                  textShadow: lang === l ? '0 0 8px rgba(255,224,0,0.5)' : 'none',
-                  padding: '0 4px',
-                  transition: 'all 0.2s',
-                }}
-              >
-                {l.toUpperCase()}
-              </button>
-            </span>
-          ))}
-        </div>
-
-        <div className="navbar-badge" style={{
-          fontFamily: "'Share Tech Mono', monospace",
-          fontSize: '0.6rem', letterSpacing: '2px',
-          color: 'rgba(255,255,255,0.25)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          padding: '4px 10px',
-        }}>SF6 // 2026</div>
+      {/* Lang toggle */}
+      <div style={{ display: 'flex', gap: '0', flexShrink: 0 }}>
+        {(['en', 'fr'] as const).map(l => (
+          <button
+            key={l}
+            onClick={() => setLang(l)}
+            className="nav-link"
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontFamily: "'Bebas Neue', sans-serif",
+              fontSize: '0.85rem', letterSpacing: '3px',
+              color: lang === l ? 'var(--yellow)' : 'rgba(255,255,255,0.35)',
+              borderBottom: lang === l ? '2px solid var(--yellow)' : '2px solid transparent',
+              textShadow: lang === l ? '0 0 12px rgba(255,224,0,0.5)' : 'none',
+              transition: 'all 0.2s',
+            }}
+          >
+            {l.toUpperCase()}
+          </button>
+        ))}
       </div>
     </nav>
   )
