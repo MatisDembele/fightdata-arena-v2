@@ -42,6 +42,7 @@ async def websocket_endpoint(
 ):
     await websocket.accept()
     db = SessionLocal()
+    avatar = websocket.query_params.get("avatar", "ryu")
 
     room_code = room_code.upper()
 
@@ -62,18 +63,22 @@ async def websocket_endpoint(
     async with room.lock:
         room.players[player_name] = websocket
         room.scores.setdefault(player_name, 0)
+        room.player_avatars[player_name] = avatar
 
     player_list = list(room.players.keys())
+    avatars = dict(room.player_avatars)
 
     await _send(websocket, {
         "type": "room_joined",
         "room_code": room_code,
         "players": player_list,
+        "avatars": avatars,
     })
 
     await _broadcast(room, {
         "type": "player_joined",
         "players": player_list,
+        "avatars": avatars,
     })
 
     if not room.is_ready():
@@ -129,6 +134,7 @@ async def websocket_endpoint(
                 "type": "player_left",
                 "player": player_name,
                 "players": list(room.players.keys()),
+                "avatars": dict(room.player_avatars),
             })
         else:
             rooms.pop(room_code, None)

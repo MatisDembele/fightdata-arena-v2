@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, use } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import { useLanguage } from '@/lib/i18n'
+import { getFighterPortrait } from '@/lib/portraits'
 
 const WS_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/^http/, 'ws')
 
@@ -30,6 +31,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
   const searchParams = useSearchParams()
   const router       = useRouter()
   const playerName   = searchParams.get('name') || 'Joueur'
+  const playerAvatar = searchParams.get('avatar') || 'ryu'
   const { t } = useLanguage()
 
   const wsRef = useRef<WebSocket | null>(null)
@@ -48,11 +50,12 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
   const [opponentAnswered, setOpponentAnswered] = useState(false)
   const [pointsEarned, setPointsEarned]         = useState<Record<string, number>>({})
   const [correctCounts, setCorrectCounts]       = useState<Record<string, number>>({})
+  const [avatars, setAvatars]                   = useState<Record<string, string>>({})
   const [error, setError]                       = useState('')
   const [gameMode, setGameMode]                 = useState('startup')
 
   useEffect(() => {
-    const ws = new WebSocket(`${WS_URL}/api/multi/ws/${room}/${encodeURIComponent(playerName)}`)
+    const ws = new WebSocket(`${WS_URL}/api/multi/ws/${room}/${encodeURIComponent(playerName)}?avatar=${playerAvatar}`)
     wsRef.current = ws
 
     ws.onmessage = (e) => {
@@ -60,6 +63,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
 
       if (msg.type === 'room_joined' || msg.type === 'player_joined') {
         setPlayers(msg.players)
+        if (msg.avatars) setAvatars(msg.avatars)
       }
       if (msg.type === 'waiting')  setPhase('waiting')
       if (msg.type === 'question') {
@@ -85,6 +89,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         setScores(msg.scores)
         setWinner(msg.winner)
         setCorrectCounts(msg.correct_counts ?? {})
+        if (msg.avatars) setAvatars(msg.avatars)
         setPhase('gameover')
       }
       if (msg.type === 'player_left') {
@@ -180,7 +185,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         </div>
         <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.3)' }}>{t('room.give_code')}</div>
         <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.4)', marginTop: '8px' }}>{t('room.waiting')}</div>
-        <Players players={players} playerName={playerName} color={COLOR} youLabel={t('room.you')} />
+        <Players players={players} playerName={playerName} avatars={avatars} color={COLOR} youLabel={t('room.you')} />
       </div>
     )
 
@@ -196,7 +201,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
               {isPunish ? 'PUNISH' : 'STARTUP'}
             </span>
           </div>
-          <Scoreboard scores={scores} playerName={playerName} color={COLOR} youLabel={t('room.you')} />
+          <Scoreboard scores={scores} playerName={playerName} avatars={avatars} color={COLOR} youLabel={t('room.you')} />
         </div>
 
         <div style={{ height: '180px', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
@@ -362,34 +367,62 @@ function CenteredMsg({ children, color }: { children: React.ReactNode; color: st
   return <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.75rem', letterSpacing: '4px', color, textShadow: `0 0 10px ${color}55` }}>{children}</div>
 }
 
-function Players({ players, playerName, color, youLabel }: { players: string[]; playerName: string; color: string; youLabel: string }) {
+function Players({ players, playerName, avatars, color, youLabel }: { players: string[]; playerName: string; avatars: Record<string, string>; color: string; youLabel: string }) {
   return (
-    <div style={{ display: 'flex', gap: '24px', marginTop: '8px' }}>
-      {[0, 1].map(i => (
-        <div key={i} style={{ textAlign: 'center' }}>
-          <div style={{ width: '48px', height: '48px', border: `1px solid ${players[i] ? color : 'rgba(255,255,255,0.1)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.3rem', color: players[i] ? color : 'rgba(255,255,255,0.1)', boxShadow: players[i] ? `0 0 12px ${color}44` : 'none' }}>
-            {players[i] ? players[i][0].toUpperCase() : '?'}
+    <div style={{ display: 'flex', gap: '32px', marginTop: '8px' }}>
+      {[0, 1].map(i => {
+        const name    = players[i]
+        const slug    = name ? (avatars[name] || 'ryu') : null
+        const portrait = slug ? getFighterPortrait(slug) : null
+        const isMe    = name === playerName
+        return (
+          <div key={i} style={{ textAlign: 'center' }}>
+            <div style={{
+              width: '56px', height: '56px', overflow: 'hidden',
+              border: `2px solid ${name ? (isMe ? color : 'rgba(255,255,255,0.3)') : 'rgba(255,255,255,0.08)'}`,
+              background: 'rgba(0,0,0,0.4)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: name && isMe ? `0 0 16px ${color}44` : 'none',
+            }}>
+              {portrait
+                ? <img src={portrait} alt={slug!} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.4rem', color: 'rgba(255,255,255,0.15)' }}>?</span>
+              }
+            </div>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.52rem', letterSpacing: '2px', marginTop: '6px', color: name ? (isMe ? color : 'rgba(255,255,255,0.5)') : 'rgba(255,255,255,0.15)' }}>
+              {name ? (isMe ? youLabel : name.toUpperCase().slice(0, 10)) : '---'}
+            </div>
           </div>
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '2px', marginTop: '6px', color: players[i] ? (players[i] === playerName ? color : 'rgba(255,255,255,0.5)') : 'rgba(255,255,255,0.15)' }}>
-            {players[i] ? (players[i] === playerName ? youLabel : players[i].toUpperCase()) : '---'}
-          </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }
 
-function Scoreboard({ scores, playerName, color, youLabel }: { scores: { [k: string]: number }; playerName: string; color: string; youLabel: string }) {
+function Scoreboard({ scores, playerName, avatars, color, youLabel }: { scores: { [k: string]: number }; playerName: string; avatars: Record<string, string>; color: string; youLabel: string }) {
   const entries = Object.entries(scores)
   if (!entries.length) return null
   return (
-    <div style={{ display: 'flex', gap: '16px' }}>
-      {entries.map(([name, score]) => (
-        <div key={name} style={{ textAlign: 'center' }}>
-          <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.4rem', letterSpacing: '2px', color: name === playerName ? color : 'rgba(255,255,255,0.4)', textShadow: name === playerName ? `0 0 10px ${color}` : 'none' }}>{score}</div>
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.25)' }}>{name === playerName ? youLabel : name.toUpperCase().slice(0, 6)}</div>
-        </div>
-      ))}
+    <div style={{ display: 'flex', gap: '12px' }}>
+      {entries.map(([name, score]) => {
+        const isMe    = name === playerName
+        const slug    = avatars[name] || 'ryu'
+        const portrait = getFighterPortrait(slug)
+        return (
+          <div key={name} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ width: '24px', height: '24px', overflow: 'hidden', border: `1px solid ${isMe ? color : 'rgba(255,255,255,0.2)'}`, flexShrink: 0 }}>
+              {portrait
+                ? <img src={portrait} alt={slug} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>{name[0]}</span>
+              }
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.3rem', letterSpacing: '2px', color: isMe ? color : 'rgba(255,255,255,0.4)', textShadow: isMe ? `0 0 10px ${color}` : 'none' }}>{score}</div>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.25)' }}>{isMe ? youLabel : name.toUpperCase().slice(0, 6)}</div>
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }

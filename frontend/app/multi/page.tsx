@@ -1,15 +1,26 @@
 'use client'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import { track } from '@vercel/analytics'
 import { useLanguage } from '@/lib/i18n'
+import { getFighterPortrait } from '@/lib/portraits'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
+const FIGHTERS = [
+  'ryu','luke','jamie','chunli','guile','kimberly',
+  'juri','ken','blanka','dhalsim','ehonda','deejay',
+  'manon','marisa','jp','zangief','lily','cammy',
+  'rashid','aki','ed','akuma','mbison','terry',
+  'mai','elena','sagat','cviper','alex','ingrid',
+]
+
 export default function MultiLobby() {
-  const router = useRouter()
+  const router       = useRouter()
+  const searchParams = useSearchParams()
   const [name, setName]         = useState('')
+  const [avatar, setAvatar]     = useState('ryu')
   const [code, setCode]         = useState('')
   const [step, setStep]         = useState<'idle' | 'create' | 'join'>('idle')
   const [gameMode, setGameMode] = useState('startup')
@@ -18,13 +29,29 @@ export default function MultiLobby() {
   const [error, setError]       = useState('')
   const { t } = useLanguage()
 
+  // Pre-fill from localStorage + ?room= in URL
+  useEffect(() => {
+    const storedName   = localStorage.getItem('fda_pseudo') || ''
+    const storedAvatar = localStorage.getItem('fda_avatar') || 'ryu'
+    if (storedName)   setName(storedName)
+    if (storedAvatar) setAvatar(storedAvatar)
+    const roomParam = searchParams.get('room')
+    if (roomParam) { setCode(roomParam.toUpperCase()); setStep('join') }
+  }, [searchParams])
+
   const MODES = [
     { id: 'startup', label: 'STARTUP', sub: t('multi.mode_startup_sub'), color: '#ff2d78', desc: t('multi.mode_startup_desc') },
     { id: 'punish',  label: 'PUNISH',  sub: t('multi.mode_punish_sub'),  color: '#ffe000', desc: t('multi.mode_punish_desc') },
   ]
 
+  function persistPlayer(n: string, av: string) {
+    localStorage.setItem('fda_pseudo', n)
+    localStorage.setItem('fda_avatar', av)
+  }
+
   async function handleCreate() {
     if (!name.trim()) return setError(t('multi.err_name'))
+    persistPlayer(name.trim(), avatar)
     setLoading(true); setSlowLoad(false); setError('')
     const timer = setTimeout(() => setSlowLoad(true), 4000)
     try {
@@ -32,7 +59,7 @@ export default function MultiLobby() {
       const data = await res.json()
       clearTimeout(timer)
       track('multi_game_created', { mode: gameMode })
-      router.push(`/multi/${data.room_code}?name=${encodeURIComponent(name.trim())}&mode=${gameMode}`)
+      router.push(`/multi/${data.room_code}?name=${encodeURIComponent(name.trim())}&mode=${gameMode}&avatar=${avatar}`)
     } catch {
       clearTimeout(timer)
       setError(t('multi.err_network'))
@@ -43,8 +70,9 @@ export default function MultiLobby() {
   function handleJoin() {
     if (!name.trim()) return setError(t('multi.err_name'))
     if (!code.trim()) return setError(t('multi.err_code'))
+    persistPlayer(name.trim(), avatar)
     track('multi_game_joined')
-    router.push(`/multi/${code.trim().toUpperCase()}?name=${encodeURIComponent(name.trim())}`)
+    router.push(`/multi/${code.trim().toUpperCase()}?name=${encodeURIComponent(name.trim())}&avatar=${avatar}`)
   }
 
   const inputStyle: React.CSSProperties = {
@@ -70,14 +98,55 @@ export default function MultiLobby() {
     <>
       <Navbar />
       <main style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 60px)' }}>
-        <div style={{ width: '100%', maxWidth: '420px', padding: '0 24px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+        <div style={{ width: '100%', maxWidth: '480px', padding: '0 24px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
 
           <div style={{ textAlign: 'center', marginBottom: '4px' }}>
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '2.5rem', letterSpacing: '8px', color: '#fff', textShadow: '0 0 12px #ffe000, 0 0 30px #ffe00055' }}>{t('multi.title')}</div>
             <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.25)', marginTop: '6px' }}>{t('multi.subtitle')}</div>
           </div>
 
-          <input style={inputStyle} placeholder={t('multi.your_name')} value={name} onChange={e => setName(e.target.value)} maxLength={16} />
+          {/* Pseudo */}
+          <input
+            style={inputStyle}
+            placeholder={t('multi.your_name')}
+            value={name}
+            onChange={e => setName(e.target.value.slice(0, 12))}
+            maxLength={12}
+          />
+
+          {/* Avatar picker */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.25)' }}>{t('multi.choose_avatar')}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '4px' }}>
+              {FIGHTERS.map(slug => {
+                const isSelected = avatar === slug
+                const portrait   = getFighterPortrait(slug)
+                return (
+                  <button
+                    key={slug}
+                    onClick={() => setAvatar(slug)}
+                    title={slug.toUpperCase()}
+                    style={{
+                      padding: 0, border: `2px solid ${isSelected ? '#ffe000' : 'rgba(255,255,255,0.08)'}`,
+                      background: isSelected ? 'rgba(255,224,0,0.12)' : 'rgba(255,255,255,0.03)',
+                      cursor: 'pointer', transition: 'all 0.15s', aspectRatio: '1',
+                      boxShadow: isSelected ? '0 0 10px rgba(255,224,0,0.4)' : 'none',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {portrait
+                      ? <img src={portrait} alt={slug} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      : <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)' }}>{slug[0].toUpperCase()}</span>
+                    }
+                  </button>
+                )
+              })}
+            </div>
+            {/* Selected fighter name */}
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: '#ffe000', textAlign: 'center', opacity: 0.7 }}>
+              {avatar.toUpperCase()}
+            </div>
+          </div>
 
           {step === 'join' && (
             <input style={inputStyle} placeholder={t('multi.room_code')} value={code}

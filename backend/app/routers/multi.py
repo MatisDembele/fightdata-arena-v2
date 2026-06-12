@@ -33,6 +33,7 @@ class Room:
         self.question_sent_at: float = 0.0
         self.points_this_round: dict[str, int] = {}
         self.correct_counts: dict[str, int] = {}
+        self.player_avatars: dict[str, str] = {}
         self.lock = asyncio.Lock()
 
     def is_full(self) -> bool:
@@ -83,6 +84,7 @@ async def _next_question(room: Room, db: Session):
             "game_mode": room.game_mode,
             "correct_counts": dict(room.correct_counts),
             "total": MAX_QUESTIONS,
+            "avatars": dict(room.player_avatars),
         })
         return
 
