@@ -37,6 +37,7 @@ class Room:
         self.player_avatars: dict[str, str] = {}
         self.max_questions: int = max_questions if max_questions in VALID_QUESTIONS else MAX_QUESTIONS
         self.rematch_votes: set[str] = set()
+        self.timeout_task: Optional[asyncio.Task] = None
         self.lock = asyncio.Lock()
 
     def is_full(self) -> bool:
@@ -72,6 +73,9 @@ async def _send(ws: WebSocket, message: dict):
 
 def _reset_room(room: Room):
     """Reset game state for a rematch, keeping players/avatars/settings."""
+    if room.timeout_task and not room.timeout_task.done():
+        room.timeout_task.cancel()
+    room.timeout_task = None
     room.scores = {p: 0 for p in room.players}
     room.correct_counts = {}
     room.points_this_round = {}
@@ -82,10 +86,47 @@ def _reset_room(room: Room):
     room.rematch_votes = set()
 
 
+async def _timeout_question(room: Room, question_number: int):
+    try:
+        await asyncio.sleep(15.0)
+    except asyncio.CancelledError:
+        return
+    db = SessionLocal()
+    try:
+        async with room.lock:
+            if room.question_number != question_number:
+                return
+            current_q = room.current_question
+            for p in list(room.players.keys()):
+                if p not in room.answers:
+                    room.answers[p] = "__timeout__"
+                    room.points_this_round[p] = 0
+        if not current_q:
+            return
+        await _broadcast(room, {
+            "type": "answer_result",
+            "correct_answer": current_q["answer"],
+            "player_answers": dict(room.answers),
+            "scores": dict(room.scores),
+            "points_earned": dict(room.points_this_round),
+            "on_block_value": current_q.get("on_block_value"),
+            "game_mode": room.game_mode,
+            "timed_out": True,
+        })
+        await asyncio.sleep(3.5)
+        await _next_question(room, db)
+    finally:
+        db.close()
+
+
 async def _next_question(room: Room, db: Session):
     room.question_number += 1
     room.answers = {}
     room.points_this_round = {}
+
+    if room.timeout_task and not room.timeout_task.done():
+        room.timeout_task.cancel()
+    room.timeout_task = None
 
     if room.question_number > room.max_questions:
         scores = room.scores
@@ -129,6 +170,7 @@ async def _next_question(room: Room, db: Session):
         "game_mode": room.game_mode,
     })
     room.question_sent_at = time.time()
+    room.timeout_task = asyncio.ensure_future(_timeout_question(room, room.question_number))
 
 
 @router.post("/rooms")

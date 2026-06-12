@@ -94,6 +94,9 @@ async def websocket_endpoint(
             "game_mode": room.game_mode,
         })
         await asyncio.sleep(2.5)
+        for n in [3, 2, 1]:
+            await _broadcast(room, {"type": "countdown", "value": n})
+            await asyncio.sleep(1.0)
         await _next_question(room, db)
 
     try:
@@ -122,6 +125,8 @@ async def websocket_endpoint(
                     await _send(room.players[opponent], {"type": "opponent_answered"})
 
                 if all_done:
+                    if room.timeout_task and not room.timeout_task.done():
+                        room.timeout_task.cancel()
                     await _broadcast(room, {
                         "type": "answer_result",
                         "correct_answer": room.current_question["answer"] if room.current_question else "",
@@ -159,6 +164,9 @@ async def websocket_endpoint(
                         "game_mode": room.game_mode,
                     })
                     await asyncio.sleep(2.5)
+                    for n in [3, 2, 1]:
+                        await _broadcast(room, {"type": "countdown", "value": n})
+                        await asyncio.sleep(1.0)
                     await _next_question(room, db)
 
     except WebSocketDisconnect:

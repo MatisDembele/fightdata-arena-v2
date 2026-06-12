@@ -58,6 +58,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
   const [gameMode, setGameMode]                 = useState('startup')
   const [rematchWaiting, setRematchWaiting]     = useState(false)
   const [rematchRequested, setRematchRequested] = useState<string | null>(null)
+  const [countdown, setCountdown]               = useState(0)
 
   useEffect(() => {
     const ws = new WebSocket(`${WS_URL}/api/multi/ws/${room}/${encodeURIComponent(playerName)}?avatar=${playerAvatar}`)
@@ -80,7 +81,11 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         if (msg.avatars) setAvatars(msg.avatars)
         setPhase('vs')
       }
+      if (msg.type === 'countdown') {
+        setCountdown(msg.value)
+      }
       if (msg.type === 'question') {
+        setCountdown(0)
         if (leaderboardTimer.current) { clearTimeout(leaderboardTimer.current); leaderboardTimer.current = null }
         setQuestion(msg.question)
         setGameMode(msg.game_mode || msg.question.game_mode || 'startup')
@@ -553,6 +558,25 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
       <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 60px)', padding: '24px 20px' }}>
         {renderContent()}
       </main>
+      {countdown > 0 && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 100,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(4,0,12,0.65)',
+          pointerEvents: 'none',
+        }}>
+          <div style={{
+            fontFamily: "'Bebas Neue', sans-serif",
+            fontSize: 'clamp(8rem, 22vw, 14rem)',
+            lineHeight: 1,
+            color: '#ffe000',
+            textShadow: '0 0 40px #ffe000, 0 0 80px rgba(255,224,0,0.5), 0 0 120px rgba(255,224,0,0.2)',
+            letterSpacing: '-4px',
+          }}>
+            {countdown}
+          </div>
+        </div>
+      )}
     </>
   )
 }
