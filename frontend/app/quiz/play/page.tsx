@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar'
 import { getRandomQuiz, getFighterQuiz, getRandomPunish } from '@/lib/api'
 import type { QuizQuestion } from '@/types'
 import { track } from '@vercel/analytics'
+import { useLanguage } from '@/lib/i18n'
 
 type AnswerState = 'idle' | 'correct' | 'wrong'
 
@@ -22,12 +23,11 @@ function getRank(acc: number): Rank {
   return                  { label: 'ROOKIE',   color: '#c0c0c0', colorAlt: '#888888' }
 }
 
-// ── Composant principal ───────────────────────────────────────────────────────
-
 function QuizPlay() {
   const params = useSearchParams()
   const mode   = params.get('mode') || 'random'
   const slug   = params.get('slug') || ''
+  const { t } = useLanguage()
 
   const [question, setQuestion] = useState<QuizQuestion | null>(null)
   const [selected, setSelected] = useState<string | null>(null)
@@ -117,7 +117,7 @@ function QuizPlay() {
         }
       }
     } catch {
-      // silent — handleNextQuestion falls back to loadQuestion
+      // silent
     } finally {
       if (prefetchTokenRef.current === myToken) {
         prefetchingRef.current = false
@@ -131,14 +131,12 @@ function QuizPlay() {
     if (state !== 'idle') prefetchNext()
   }, [state, prefetchNext])
 
-  // Focus input en mode INPUT
   useEffect(() => {
     if (isInput && !loading && state === 'idle') {
       setTimeout(() => inputRef.current?.focus(), 100)
     }
   }, [isInput, loading, state, question])
 
-  // Records localStorage — s'exécute une fois en entrant dans 'finished'
   useEffect(() => {
     if (sessionPhase !== 'finished') return
     track('quiz_completed', { mode, score, accuracy })
@@ -168,26 +166,24 @@ function QuizPlay() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionPhase])
 
-  // Mode PUNISH FINDER
   const handlePunish = (userAnswer: 'punissable' | 'safe') => {
     if (state !== 'idle' || !question) return
     setSelected(userAnswer)
     if (userAnswer === question.answer) handleCorrect(); else handleWrong()
   }
 
-  // Timer hardcore
   useEffect(() => {
     if (!isHardcore || state !== 'idle' || loading || !question) return
     timerRef.current = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
           clearInterval(timerRef.current!)
           setState('wrong')
           setCombo(0)
           setTotal(n => n + 1)
           return 0
         }
-        return t - 1
+        return prev - 1
       })
     }, 1000)
     return () => { if (timerRef.current) clearInterval(timerRef.current) }
@@ -206,7 +202,6 @@ function QuizPlay() {
     setTotal(t => t + 1)
   }
 
-  // Mode QCM classique
   const handleChoice = (choice: string) => {
     if (state !== 'idle') return
     if (timerRef.current) clearInterval(timerRef.current)
@@ -214,11 +209,10 @@ function QuizPlay() {
     if (choice === question?.answer) handleCorrect(); else handleWrong()
   }
 
-  // Mode INPUT — soumission
   const handleInputSubmit = () => {
     if (state !== 'idle' || !inputVal.trim()) return
-    const userVal  = inputVal.trim()
-    const correct  = question?.answer ?? ''
+    const userVal = inputVal.trim()
+    const correct = question?.answer ?? ''
     if (userVal === correct) handleCorrect(); else handleWrong()
     setSelected(userVal)
   }
@@ -247,11 +241,12 @@ function QuizPlay() {
     if (isSurvival) {
       const stored = localStorage.getItem('fda_survival_best')
       const best = stored ? JSON.parse(stored).best : score
+      const s = score > 1 ? 's' : ''
       text = [
-        `Fight Data Arena 🥊 — Mode SURVIE`,
-        `J'ai survécu ${score} question${score > 1 ? 's' : ''} 💀`,
-        `Record : ${best} questions`,
-        `fightdata.app`,
+        t('play.share_survival_line1'),
+        t('play.share_survival_line2', { n: score, s }),
+        t('play.share_survival_line3', { best }),
+        'fightdata.app',
       ].join('\n')
     } else {
       const labels: Record<string, string> = {
@@ -266,9 +261,9 @@ function QuizPlay() {
       const scoreStr = sessionLength !== Infinity ? `${score}/${sessionLength}` : String(score)
       text = [
         `Fight Data Arena 🥊 — Mode ${label}`,
-        `Score : ${scoreStr} (${accuracy}%) — Rang ${rank.label}`,
-        `Combo max : ${maxCombo}🔥`,
-        `fightdata.app`,
+        t('play.share_score', { score: scoreStr, accuracy, rank: rank.label }),
+        t('play.share_combo', { combo: maxCombo }),
+        'fightdata.app',
       ].join('\n')
     }
     try {
@@ -276,11 +271,10 @@ function QuizPlay() {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      // clipboard non disponible
+      // clipboard not available
     }
-  }, [mode, slug, score, sessionLength, accuracy, maxCombo, isSurvival])
+  }, [mode, slug, score, sessionLength, accuracy, maxCombo, isSurvival, t])
 
-  // Couleur de choix QCM
   const choiceStyle = (choice: string): React.CSSProperties => {
     const base: React.CSSProperties = {
       padding: '11px 14px',
@@ -320,10 +314,9 @@ function QuizPlay() {
     input:    'INPUT MODE',
     punish:   'PUNISH FINDER',
     hardcore: 'HARDCORE',
-    survival: 'MODE SURVIE',
+    survival: t('play.mode_survival_label'),
   }[mode] ?? 'QUIZ'
 
-  // Auto-start en mode survie — pas de sélecteur de longueur
   useEffect(() => {
     if (isSurvival && sessionPhase === 'selector') {
       setScore(0); setCombo(0); setMaxCombo(0); setTotal(0)
@@ -346,10 +339,10 @@ function QuizPlay() {
               {modeLabel}
             </div>
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(1.8rem, 5vw, 2.5rem)', letterSpacing: '6px', color: '#fff' }}>
-              LONGUEUR DE SESSION
+              {t('play.session_length')}
             </div>
             <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.25)', marginTop: '8px' }}>
-              NOMBRE DE QUESTIONS PAR PARTIE
+              {t('play.questions_per_session')}
             </div>
           </div>
 
@@ -372,7 +365,7 @@ function QuizPlay() {
                 }}>
                   <span>{len === Infinity ? '∞' : len}</span>
                   <span style={{ fontSize: '0.4rem', letterSpacing: '1px', opacity: 0.6 }}>
-                    {len === Infinity ? 'INFINI' : 'Q'}
+                    {len === Infinity ? t('play.infinite_label') : 'Q'}
                   </span>
                 </button>
               )
@@ -380,7 +373,7 @@ function QuizPlay() {
           </div>
 
           <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.62rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.3)', textAlign: 'center', minHeight: '1.2em' }}>
-            {sessionLength === Infinity ? 'MODE INFINI — AUCUNE LIMITE' : `${sessionLength} QUESTIONS PAR SESSION`}
+            {sessionLength === Infinity ? t('play.infinite_mode') : t('play.n_questions', { n: sessionLength })}
           </div>
 
           <button onClick={startSession} style={{
@@ -391,11 +384,11 @@ function QuizPlay() {
             fontSize: '1.1rem', letterSpacing: '6px', color: '#fff',
             boxShadow: `0 0 20px ${modeColor}33`, transition: 'all 0.2s',
           }}>
-            COMMENCER →
+            {t('play.start')}
           </button>
 
           <Link href="/quiz" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
-            ← CHANGER DE MODE
+            {t('play.change_mode')}
           </Link>
         </div>
       </main>
@@ -412,14 +405,14 @@ function QuizPlay() {
           border: 'none', cursor: 'pointer',
           fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '3px', color: '#fff',
           boxShadow: `0 0 16px ${modeColor}33`, transition: 'all 0.2s',
-        }}>REJOUER</button>
+        }}>{t('play.replay')}</button>
         <Link href="/quiz" style={{
           flex: '1 1 0', padding: '13px 12px',
           background: 'none', border: '1px solid rgba(255,255,255,0.12)',
           color: 'rgba(255,255,255,0.45)',
           fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '3px',
           textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>MODES</Link>
+        }}>{t('play.modes_btn')}</Link>
         <button onClick={handleShare} style={{
           flex: '1 1 0', padding: '13px 12px',
           background: 'none',
@@ -427,14 +420,15 @@ function QuizPlay() {
           color: copied ? '#4ade80' : 'rgba(255,255,255,0.45)',
           fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '3px',
           cursor: 'pointer', transition: 'all 0.3s',
-        }}>{copied ? '✓ COPIÉ !' : 'PARTAGER'}</button>
+        }}>{copied ? t('play.copied') : t('play.share')}</button>
       </div>
     )
 
-    // ── Écran survie ──
+    // ── Survival end screen ──
     if (isSurvival) {
       const stored   = typeof window !== 'undefined' ? localStorage.getItem('fda_survival_best') : null
       const bestEver = stored ? (JSON.parse(stored) as { best: number }).best : score
+      const s = score > 1 ? 's' : ''
       return (
         <>
           <Navbar />
@@ -443,29 +437,29 @@ function QuizPlay() {
 
               <div>
                 <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(3rem, 12vw, 5rem)', letterSpacing: '6px', lineHeight: 1, color: '#ff2d78', textShadow: '0 0 24px #ff2d7888' }}>
-                  💀 GAME OVER
+                  {t('play.game_over')}
                 </div>
                 <div style={{ marginTop: '16px', fontFamily: "'Rajdhani', sans-serif", fontSize: '1.1rem', fontWeight: 600, color: 'rgba(255,255,255,0.6)', letterSpacing: '1px' }}>
-                  Tu as survécu <span style={{ color: modeColor, fontWeight: 700 }}>{score} question{score > 1 ? 's' : ''}</span>
+                  {t('play.survived_msg', { n: score, s })}
                 </div>
                 {isNewRecord && (
                   <div style={{ marginTop: '12px', fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.1rem', letterSpacing: '4px', color: '#ffd700', textShadow: '0 0 16px #ffd70088', animation: 'glowPulse 2s ease-in-out infinite' }}>
-                    🏆 NOUVEAU RECORD !
+                    {t('play.new_record')}
                   </div>
                 )}
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
                 {[
-                  { val: String(score), label: 'QUESTIONS SURVÉCUES' },
-                  { val: String(bestEver), label: 'RECORD PERSO' },
-                ].map((s, i) => (
+                  { val: String(score), label: t('play.survived_label') },
+                  { val: String(bestEver), label: t('play.best_record') },
+                ].map((stat, i) => (
                   <div key={i} style={{ padding: '20px 12px', background: 'rgba(0,0,0,0.3)', borderRight: i === 0 ? '1px solid rgba(255,255,255,0.08)' : 'none', textAlign: 'center' }}>
                     <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2rem, 8vw, 3rem)', letterSpacing: '2px', color: modeColor, textShadow: `0 0 12px ${modeColor}88` }}>
-                      {s.val}
+                      {stat.val}
                     </div>
                     <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.3)', marginTop: '6px' }}>
-                      {s.label}
+                      {stat.label}
                     </div>
                   </div>
                 ))}
@@ -478,7 +472,7 @@ function QuizPlay() {
       )
     }
 
-    // ── Écran normal ──
+    // ── Normal end screen ──
     const rank = getRank(accuracy)
     return (
       <>
@@ -488,7 +482,7 @@ function QuizPlay() {
 
             <div>
               <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.3)', marginBottom: '14px' }}>
-                RANG FINAL
+                {t('play.final_rank')}
               </div>
               <div style={{
                 fontFamily: "'Bebas Neue', sans-serif",
@@ -502,23 +496,23 @@ function QuizPlay() {
               </div>
               {isNewRecord && (
                 <div style={{ marginTop: '14px', fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.1rem', letterSpacing: '4px', color: '#ffd700', textShadow: '0 0 16px #ffd70088', animation: 'glowPulse 2s ease-in-out infinite' }}>
-                  🏆 NOUVEAU RECORD !
+                  {t('play.new_record')}
                 </div>
               )}
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', width: '100%', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
               {[
-                { val: sessionLength !== Infinity ? `${score}/${sessionLength}` : String(score), label: 'SCORE' },
-                { val: `${accuracy}%`, label: 'PRÉCISION' },
-                { val: `${maxCombo}🔥`, label: 'COMBO MAX' },
-              ].map((s, i) => (
+                { val: sessionLength !== Infinity ? `${score}/${sessionLength}` : String(score), label: t('play.score_label') },
+                { val: `${accuracy}%`, label: t('play.precision') },
+                { val: `${maxCombo}🔥`, label: t('play.combo_max') },
+              ].map((stat, i) => (
                 <div key={i} style={{ padding: '20px 12px', background: 'rgba(0,0,0,0.3)', borderRight: i < 2 ? '1px solid rgba(255,255,255,0.08)' : 'none', textAlign: 'center' }}>
                   <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(1.6rem, 5vw, 2.4rem)', letterSpacing: '2px', color: rank.color, textShadow: `0 0 12px ${rank.color}88` }}>
-                    {s.val}
+                    {stat.val}
                   </div>
                   <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.3)', marginTop: '6px' }}>
-                    {s.label}
+                    {stat.label}
                   </div>
                 </div>
               ))}
@@ -551,28 +545,28 @@ function QuizPlay() {
             background: `linear-gradient(90deg, transparent, ${modeColor}, transparent)`,
           }} />
           {[
-            { val: score,           label: 'SCORE' },
-            { val: `${combo}🔥`,   label: 'COMBO' },
-            { val: `${accuracy}%`, label: 'PRÉCISION' },
-            { val: total,           label: 'JOUÉS' },
-          ].map(s => (
-            <div key={s.label} style={{ textAlign: 'center' }}>
+            { val: score,           label: t('play.score_label') },
+            { val: `${combo}🔥`,   label: t('play.score_combo') },
+            { val: `${accuracy}%`, label: t('play.precision') },
+            { val: total,           label: t('play.score_played') },
+          ].map(stat => (
+            <div key={stat.label} style={{ textAlign: 'center' }}>
               <div style={{
                 fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.7rem', letterSpacing: '2px',
                 background: `linear-gradient(180deg, #fff, ${modeColor})`,
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-              }}>{s.val}</div>
+              }}>{stat.val}</div>
               <div style={{
                 fontFamily: "'Share Tech Mono', monospace", fontSize: '0.52rem',
                 letterSpacing: '3px', color: 'rgba(255,255,255,0.28)',
-              }}>{s.label}</div>
+              }}>{stat.label}</div>
             </div>
           ))}
         </div>
 
         {loading ? (
           <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.3)', letterSpacing: '4px' }}>
-            CHARGEMENT...
+            {t('play.loading')}
           </div>
         ) : question && (
           <div style={{
@@ -632,10 +626,9 @@ function QuizPlay() {
                 />
               ) : (
                 <span style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.15)', fontSize: '0.6rem', letterSpacing: '3px' }}>
-                  HITBOX PREVIEW
+                  {t('play.hitbox_preview')}
                 </span>
               )}
-              {/* Coins décoratifs */}
               {[
                 { top: '7px', left: '7px', borderTop: `1px solid ${modeColor}`, borderLeft: `1px solid ${modeColor}` },
                 { top: '7px', right: '7px', borderTop: `1px solid ${modeColor}`, borderRight: `1px solid ${modeColor}` },
@@ -650,21 +643,22 @@ function QuizPlay() {
             <div style={{ padding: '16px 18px 12px' }}>
               {isPunish ? (
                 <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1rem', fontWeight: 600, lineHeight: 1.4, color: 'rgba(255,255,255,0.9)' }}>
-                  <strong style={{ color: '#fff' }}>{question.move_name}</strong> est-il{' '}
-                  <span style={{ color: modeColor }}>punissable on block ?</span>
+                  <strong style={{ color: '#fff' }}>{question.move_name}</strong>{' '}
+                  {t('play.q_is_it_punishable')}{' '}
+                  <span style={{ color: modeColor }}>{t('play.q_punishable_on_block')}</span>
                 </p>
               ) : (
                 <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1rem', fontWeight: 600, lineHeight: 1.4, color: 'rgba(255,255,255,0.9)' }}>
-                  Quel est le <span style={{ color: modeColor }}>startup</span> de{' '}
+                  {t('play.q_what_is')} <span style={{ color: modeColor }}>startup</span> {t('play.q_of')}{' '}
                   <strong style={{ color: '#fff' }}>{question.move_name}</strong> ?
                 </p>
               )}
             </div>
 
-            {/* ── Contenu selon le mode ── */}
+            {/* Content by mode */}
             <div style={{ padding: '0 18px' }}>
 
-              {/* Mode QCM (random, fighter, hardcore) */}
+              {/* MCQ */}
               {!isInput && !isPunish && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {question.choices.map((choice, i) => (
@@ -680,7 +674,7 @@ function QuizPlay() {
                 </div>
               )}
 
-              {/* Mode INPUT */}
+              {/* INPUT mode */}
               {isInput && (
                 <div>
                   <div style={{ display: 'flex', gap: '8px' }}>
@@ -719,11 +713,11 @@ function QuizPlay() {
                     fontFamily: "'Share Tech Mono', monospace",
                     fontSize: '0.6rem', color: 'rgba(255,255,255,0.25)',
                     letterSpacing: '2px', marginTop: '8px',
-                  }}>TAPE LA VALEUR EXACTE EN FRAMES → ENTRÉE</p>
+                  }}>{t('play.input_hint')}</p>
                 </div>
               )}
 
-              {/* Mode PUNISH FINDER */}
+              {/* PUNISH FINDER mode */}
               {isPunish && (
                 <div>
                   <div style={{ display: 'flex', gap: '10px' }}>
@@ -732,27 +726,17 @@ function QuizPlay() {
                       disabled={state !== 'idle'}
                       style={{
                         flex: 1, padding: '20px 12px',
-                        background: state === 'idle'
-                          ? 'rgba(255,45,120,0.08)'
-                          : isPunishable
-                          ? 'rgba(255,45,120,0.2)'
-                          : 'rgba(255,45,120,0.04)',
-                        border: `1px solid ${
-                          state === 'idle' ? 'rgba(255,45,120,0.3)'
-                          : isPunishable ? '#ff2d78'
-                          : 'rgba(255,45,120,0.1)'
-                        }`,
+                        background: state === 'idle' ? 'rgba(255,45,120,0.08)' : isPunishable ? 'rgba(255,45,120,0.2)' : 'rgba(255,45,120,0.04)',
+                        border: `1px solid ${state === 'idle' ? 'rgba(255,45,120,0.3)' : isPunishable ? '#ff2d78' : 'rgba(255,45,120,0.1)'}`,
                         cursor: state === 'idle' ? 'pointer' : 'default',
                         fontFamily: "'Bebas Neue', sans-serif",
                         fontSize: '1.4rem', letterSpacing: '4px',
                         color: state !== 'idle' && isPunishable ? '#ff2d78' : 'rgba(255,45,120,0.8)',
                         transition: 'all 0.2s',
-                        boxShadow: state === 'idle'
-                          ? '0 0 12px rgba(255,45,120,0.1)'
-                          : isPunishable ? '0 0 20px rgba(255,45,120,0.3)' : 'none',
+                        boxShadow: state === 'idle' ? '0 0 12px rgba(255,45,120,0.1)' : isPunishable ? '0 0 20px rgba(255,45,120,0.3)' : 'none',
                       }}
                     >
-                      💀 PUNISSABLE
+                      💀 {t('play.punishable_label')}
                       <div style={{ fontSize: '0.6rem', letterSpacing: '2px', marginTop: '4px', opacity: 0.6 }}>{'≤ -4 ON BLOCK'}</div>
                     </button>
                     <button
@@ -760,27 +744,17 @@ function QuizPlay() {
                       disabled={state !== 'idle'}
                       style={{
                         flex: 1, padding: '20px 12px',
-                        background: state === 'idle'
-                          ? 'rgba(74,222,128,0.08)'
-                          : !isPunishable
-                          ? 'rgba(74,222,128,0.2)'
-                          : 'rgba(74,222,128,0.04)',
-                        border: `1px solid ${
-                          state === 'idle' ? 'rgba(74,222,128,0.3)'
-                          : !isPunishable ? '#4ade80'
-                          : 'rgba(74,222,128,0.1)'
-                        }`,
+                        background: state === 'idle' ? 'rgba(74,222,128,0.08)' : !isPunishable ? 'rgba(74,222,128,0.2)' : 'rgba(74,222,128,0.04)',
+                        border: `1px solid ${state === 'idle' ? 'rgba(74,222,128,0.3)' : !isPunishable ? '#4ade80' : 'rgba(74,222,128,0.1)'}`,
                         cursor: state === 'idle' ? 'pointer' : 'default',
                         fontFamily: "'Bebas Neue', sans-serif",
                         fontSize: '1.4rem', letterSpacing: '4px',
                         color: state !== 'idle' && !isPunishable ? '#4ade80' : 'rgba(74,222,128,0.8)',
                         transition: 'all 0.2s',
-                        boxShadow: state === 'idle'
-                          ? '0 0 12px rgba(74,222,128,0.1)'
-                          : !isPunishable ? '0 0 20px rgba(74,222,128,0.3)' : 'none',
+                        boxShadow: state === 'idle' ? '0 0 12px rgba(74,222,128,0.1)' : !isPunishable ? '0 0 20px rgba(74,222,128,0.3)' : 'none',
                       }}
                     >
-                      ✓ SAFE
+                      ✓ {t('play.safe_label')}
                       <div style={{ fontSize: '0.6rem', letterSpacing: '2px', marginTop: '4px', opacity: 0.6 }}>{'-3 à +∞ ON BLOCK'}</div>
                     </button>
                   </div>
@@ -788,12 +762,12 @@ function QuizPlay() {
                     fontFamily: "'Share Tech Mono', monospace",
                     fontSize: '0.52rem', color: 'rgba(255,255,255,0.18)',
                     letterSpacing: '1.5px', marginTop: '8px', textAlign: 'center',
-                  }}>HORS CAS DE PUSHBACK EXTRÊME</p>
+                  }}>{t('play.pushback_note')}</p>
                 </div>
               )}
             </div>
 
-            {/* Feedback + bouton suivant */}
+            {/* Feedback + next button */}
             <div style={{ padding: '12px 18px 18px' }}>
               {state !== 'idle' && (
                 <div style={{
@@ -806,18 +780,18 @@ function QuizPlay() {
                 }}>
                   {isPunish ? (
                     state === 'correct'
-                      ? `✓ Correct ! ${question.move_name} est ${isPunishable ? 'PUNISSABLE' : 'SAFE'} (on block : ${question.on_block_value})`
-                      : `✗ Raté ! ${question.move_name} est ${isPunishable ? 'PUNISSABLE' : 'SAFE'} (on block : ${question.on_block_value})`
+                      ? t('play.feedback_correct_punish', { move: question.move_name, label: t(isPunishable ? 'play.punishable_label' : 'play.safe_label'), value: question.on_block_value ?? '' })
+                      : t('play.feedback_wrong_punish',   { move: question.move_name, label: t(isPunishable ? 'play.punishable_label' : 'play.safe_label'), value: question.on_block_value ?? '' })
                   ) : isInput ? (
                     state === 'correct'
-                      ? `✓ Exact ! Startup : ${question.answer} frames.`
-                      : `✗ Raté ! La réponse était ${question.answer} frames (tu as mis : ${selected}).`
+                      ? t('play.feedback_correct_startup', { n: question.answer })
+                      : t('play.feedback_wrong_startup_input', { n: question.answer, v: selected ?? '' })
                   ) : (
                     state === 'correct'
-                      ? `✓ Correct ! Startup : ${question.answer} frames.`
+                      ? t('play.feedback_correct_startup', { n: question.answer })
                       : timeLeft === 0
-                      ? `⏱ Temps écoulé ! Réponse : ${question.answer} frames.`
-                      : `✗ Raté ! Réponse : ${question.answer} frames.`
+                      ? t('play.feedback_timeout', { n: question.answer })
+                      : t('play.feedback_wrong_startup', { n: question.answer })
                   )}
                 </div>
               )}
@@ -832,7 +806,11 @@ function QuizPlay() {
                 boxShadow: `0 0 16px ${modeColor}33`,
                 transition: 'all 0.2s',
               }}>
-                {isSessionOver && state !== 'idle' ? 'VOIR LES RÉSULTATS →' : state === 'idle' ? 'PASSER →' : 'QUESTION SUIVANTE →'}
+                {isSessionOver && state !== 'idle'
+                  ? t('play.see_results')
+                  : state === 'idle'
+                  ? t('play.skip')
+                  : t('play.next_question')}
               </button>
             </div>
 
@@ -844,7 +822,7 @@ function QuizPlay() {
           fontFamily: "'Share Tech Mono', monospace",
           fontSize: '0.6rem', letterSpacing: '3px',
           color: 'rgba(255,255,255,0.2)', textDecoration: 'none',
-        }}>← CHANGER DE MODE</Link>
+        }}>{t('play.change_mode')}</Link>
 
       </main>
     </>

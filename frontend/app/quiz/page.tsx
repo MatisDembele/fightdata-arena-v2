@@ -5,63 +5,7 @@ import Navbar from '@/components/Navbar'
 import { getFighters } from '@/lib/api'
 import { getFighterPortrait, getFighterColor } from '@/lib/portraits'
 import type { Fighter } from '@/types'
-
-const QUIZ_MODES = [
-  {
-    id: 'random',
-    label: 'RANDOM',
-    sub: 'QCM — Tous les persos',
-    desc: 'Questions à choix multiples sur tout le roster SF6. Le mode parfait pour débuter.',
-    color: '#ff2d78', colorAlt: '#9b1fff',
-    href: '/quiz/play?mode=random',
-    icon: '🎲',
-  },
-  {
-    id: 'fighter',
-    label: 'FIGHTER',
-    sub: 'QCM — Focus un perso',
-    desc: 'Choisis un personnage et maîtrise ses frames en profondeur.',
-    color: '#00f0ff', colorAlt: '#0050ff',
-    href: null,
-    icon: '🥊',
-  },
-  {
-    id: 'input',
-    label: 'INPUT',
-    sub: 'Frappe la valeur exacte',
-    desc: 'Pas de choix multiples — tu dois taper toi-même la valeur exacte du startup. Mode exigeant.',
-    color: '#9b1fff', colorAlt: '#ff2d78',
-    href: '/quiz/play?mode=input',
-    icon: '⌨️',
-  },
-  {
-    id: 'punish',
-    label: 'PUNISH FINDER',
-    sub: 'Punissable ou safe on block ?',
-    desc: 'Le move le plus rapide en SF6 est 4 frames. Un move à -4 ou pire est punissable. Entraîne-toi à reconnaître les moves qui se punissent.',
-    color: '#ffe000', colorAlt: '#ff6a00',
-    href: '/quiz/play?mode=punish',
-    icon: '🎯',
-  },
-  {
-    id: 'hardcore',
-    label: 'HARDCORE',
-    sub: 'Timer 5s — Tous les persos',
-    desc: 'Réponds en moins de 5 secondes. Pas de passe. Pour les vrais lab monsters.',
-    color: '#ff6a00', colorAlt: '#ff2d78',
-    href: '/quiz/play?mode=hardcore',
-    icon: '⚡',
-  },
-  {
-    id: 'survival',
-    label: 'SURVIE',
-    sub: '1 erreur = fin',
-    desc: 'Une seule vie. Réponds correctement le plus longtemps possible — la première erreur met fin à ta série.',
-    color: '#4ade80', colorAlt: '#00f0ff',
-    href: '/quiz/play?mode=survival',
-    icon: '💀',
-  },
-]
+import { useLanguage } from '@/lib/i18n'
 
 export default function QuizSelectPage() {
   const [active, setActive]             = useState(0)
@@ -69,6 +13,64 @@ export default function QuizSelectPage() {
   const [fighters, setFighters]         = useState<Fighter[]>([])
   const [search, setSearch]             = useState('')
   const [loadingF, setLoadingF]         = useState(false)
+  const { t } = useLanguage()
+
+  const QUIZ_MODES = [
+    {
+      id: 'random',
+      label: 'RANDOM',
+      sub: t('quiz.mode_random_sub'),
+      desc: t('quiz.mode_random_desc'),
+      color: '#ff2d78', colorAlt: '#9b1fff',
+      href: '/quiz/play?mode=random',
+      icon: '🎲',
+    },
+    {
+      id: 'fighter',
+      label: 'FIGHTER',
+      sub: t('quiz.mode_fighter_sub'),
+      desc: t('quiz.mode_fighter_desc'),
+      color: '#00f0ff', colorAlt: '#0050ff',
+      href: null,
+      icon: '🥊',
+    },
+    {
+      id: 'input',
+      label: 'INPUT',
+      sub: t('quiz.mode_input_sub'),
+      desc: t('quiz.mode_input_desc'),
+      color: '#9b1fff', colorAlt: '#ff2d78',
+      href: '/quiz/play?mode=input',
+      icon: '⌨️',
+    },
+    {
+      id: 'punish',
+      label: 'PUNISH FINDER',
+      sub: t('quiz.mode_punish_sub'),
+      desc: t('quiz.mode_punish_desc'),
+      color: '#ffe000', colorAlt: '#ff6a00',
+      href: '/quiz/play?mode=punish',
+      icon: '🎯',
+    },
+    {
+      id: 'hardcore',
+      label: 'HARDCORE',
+      sub: t('quiz.mode_hardcore_sub'),
+      desc: t('quiz.mode_hardcore_desc'),
+      color: '#ff6a00', colorAlt: '#ff2d78',
+      href: '/quiz/play?mode=hardcore',
+      icon: '⚡',
+    },
+    {
+      id: 'survival',
+      label: 'SURVIE',
+      sub: t('quiz.mode_survival_sub'),
+      desc: t('quiz.mode_survival_desc'),
+      color: '#4ade80', colorAlt: '#00f0ff',
+      href: '/quiz/play?mode=survival',
+      icon: '💀',
+    },
+  ]
 
   const current = QUIZ_MODES[active]
 
@@ -109,12 +111,12 @@ export default function QuizSelectPage() {
                 letterSpacing: '8px', color: '#fff',
                 textShadow: `0 0 20px ${current.color}`,
                 transition: 'text-shadow 0.4s',
-              }}>CHOISIR UN MODE</h1>
+              }}>{t('quiz.choose_mode')}</h1>
               <p style={{
                 fontFamily: "'Share Tech Mono', monospace",
                 fontSize: '0.6rem', letterSpacing: '4px',
                 color: 'rgba(255,255,255,0.25)', marginTop: '6px',
-              }}>STREET FIGHTER 6 // QUIZ — {QUIZ_MODES.length} MODES</p>
+              }}>{t('quiz.subtitle', { n: QUIZ_MODES.length })}</p>
             </div>
 
             <div style={{
@@ -184,7 +186,7 @@ export default function QuizSelectPage() {
                         fontSize: '0.72rem', fontWeight: 700,
                         color: 'rgba(255,255,255,0.5)',
                         letterSpacing: '1px',
-                      }}>JOUER →</div>
+                      }}>{t('quiz.play')}</div>
                     )}
                   </div>
                 )
@@ -200,18 +202,18 @@ export default function QuizSelectPage() {
                 color: 'rgba(255,255,255,0.5)', cursor: 'pointer',
                 padding: '8px 16px', fontFamily: "'Bebas Neue', sans-serif",
                 fontSize: '0.85rem', letterSpacing: '2px',
-              }}>← RETOUR</button>
+              }}>{t('quiz.back')}</button>
               <h2 style={{
                 fontFamily: "'Bebas Neue', sans-serif",
                 fontSize: '1.8rem', letterSpacing: '5px', color: '#fff',
                 textShadow: '0 0 16px #00f0ff',
-              }}>CHOISIR UN PERSONNAGE</h2>
+              }}>{t('quiz.choose_fighter')}</h2>
             </div>
 
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="RECHERCHER..."
+              placeholder={t('quiz.search')}
               style={{
                 width: '100%', padding: '11px 18px', marginBottom: '20px',
                 background: 'rgba(255,255,255,0.05)',
@@ -227,7 +229,7 @@ export default function QuizSelectPage() {
                 textAlign: 'center', padding: '40px',
                 fontFamily: "'Share Tech Mono', monospace",
                 color: 'rgba(255,255,255,0.3)', letterSpacing: '4px',
-              }}>CHARGEMENT...</div>
+              }}>{t('quiz.loading')}</div>
             ) : (
               <div style={{
                 display: 'grid',

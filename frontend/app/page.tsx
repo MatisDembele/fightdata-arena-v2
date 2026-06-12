@@ -1,45 +1,44 @@
 'use client'
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
-
-const MODES = [
-  {
-    id: 'quiz', label: 'QUIZ', sub: 'Teste tes connaissances',
-    href: '/quiz',
-    color: '#ff2d78', colorAlt: '#9b1fff',
-    desc: 'Devine le startup, le damage ou le on-block de chaque move depuis son hitbox GIF.',
-  },
-  {
-    id: 'database', label: 'DATABASE', sub: 'Frame data complète',
-    href: '/fighters',
-    color: '#00f0ff', colorAlt: '#0050ff',
-    desc: 'Accède aux données de frame de tous les personnages SF6. Startup, active, recovery et plus.',
-  },
-  {
-    id: 'multi', label: 'MULTI', sub: 'Défie tes amis',
-    href: '/multi',
-    color: '#ffe000', colorAlt: '#ff6a00',
-    desc: 'Affronte tes amis en quiz de frame data en temps réel. Qui connaît le mieux SF6 ?',
-  },
-  {
-    id: 'daily', label: 'DAILY', sub: 'Un challenge par jour',
-    href: '/quiz/daily',
-    color: '#00ff88', colorAlt: '#00b894',
-    desc: 'Chaque jour, 10 questions identiques pour tous. Partage ton score avec la communauté.',
-  },
-]
-
-const STATS = [
-  { val: '30',   label: 'PERSOS' },
-  { val: '1562', label: 'MOVES' },
-  { val: '4',    label: 'MODES' },
-]
+import { useState } from 'react'
+import { useLanguage } from '@/lib/i18n'
 
 export default function Home() {
-  const [active, setActive]   = useState(0)
-  const [mounted, setMounted] = useState(false)
+  const [active, setActive] = useState(0)
+  const { t } = useLanguage()
 
-  useEffect(() => { setMounted(true) }, [])
+  const MODES = [
+    {
+      id: 'quiz', label: 'QUIZ', sub: t('home.quiz_sub'),
+      href: '/quiz',
+      color: '#ff2d78', colorAlt: '#9b1fff',
+      desc: t('home.quiz_desc'),
+    },
+    {
+      id: 'database', label: 'DATABASE', sub: t('home.db_sub'),
+      href: '/fighters',
+      color: '#00f0ff', colorAlt: '#0050ff',
+      desc: t('home.db_desc'),
+    },
+    {
+      id: 'multi', label: 'MULTI', sub: t('home.multi_sub'),
+      href: '/multi',
+      color: '#ffe000', colorAlt: '#ff6a00',
+      desc: t('home.multi_desc'),
+    },
+    {
+      id: 'daily', label: 'DAILY', sub: t('home.daily_sub'),
+      href: '/quiz/daily',
+      color: '#00ff88', colorAlt: '#00b894',
+      desc: t('home.daily_desc'),
+    },
+  ]
+
+  const STATS = [
+    { val: '30',   label: t('home.stat_chars') },
+    { val: '1562', label: t('home.stat_moves') },
+    { val: '4',    label: t('home.stat_modes') },
+  ]
 
   const current = MODES[active]
 
@@ -101,7 +100,7 @@ export default function Home() {
       }}>
 
         {/* Titre */}
-        <div style={{ textAlign: 'center' }} className={mounted ? 'animate-fadeInUp' : ''}>
+        <div style={{ textAlign: 'center' }} className="animate-fadeInUp">
           <h1 style={{
             fontFamily: "'Bebas Neue', sans-serif",
             fontSize: 'clamp(2.8rem, 7vw, 5.5rem)',
@@ -115,7 +114,7 @@ export default function Home() {
             fontFamily: "'Share Tech Mono', monospace",
             fontSize: '0.65rem', letterSpacing: '7px',
             color: 'rgba(255,255,255,0.25)', marginTop: '8px',
-          }}>STREET FIGHTER 6 // FRAME DATA ENCYCLOPEDIA</div>
+          }}>{t('home.subtitle')}</div>
         </div>
 
         {/* Description */}
@@ -225,7 +224,7 @@ export default function Home() {
             fontFamily: "'Share Tech Mono', monospace",
             fontSize: '0.55rem', letterSpacing: '3px',
             color: 'rgba(255,255,255,0.15)',
-          }}>PATCH JUNE 2026</div>
+          }}>{t('home.patch')}</div>
         </div>
 
       </div>

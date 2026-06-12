@@ -1,6 +1,10 @@
+'use client'
 import Navbar from '@/components/Navbar'
+import { useLanguage } from '@/lib/i18n'
 
 export default function FightersPage() {
+  const { t } = useLanguage()
+
   return (
     <>
       <Navbar />
@@ -12,11 +16,11 @@ export default function FightersPage() {
           <h1 className="font-bebas" style={{
             fontSize: '3rem', letterSpacing: '6px',
             color: 'rgba(255,255,255,0.2)',
-          }}>BASE DE DONNÉES</h1>
+          }}>{t('fighters.title')}</h1>
           <p className="font-mono" style={{
             color: 'rgba(255,255,255,0.2)', letterSpacing: '3px', fontSize: '0.7rem',
             marginTop: '12px',
-          }}>COMING SOON</p>
+          }}>{t('fighters.coming_soon')}</p>
         </div>
       </main>
     </>

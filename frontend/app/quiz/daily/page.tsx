@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import { getDailyQuiz } from '@/lib/api'
 import type { QuizQuestion } from '@/types'
 import { track } from '@vercel/analytics'
+import { useLanguage } from '@/lib/i18n'
 
 const COLOR     = '#00ff88'
 const COLOR_ALT = '#00b894'
@@ -72,18 +73,6 @@ function saveResultAndStreak(answers: boolean[], score: number): DailyStreak {
   return streakData
 }
 
-function buildShareText(answers: boolean[], score: number, streak: number): string {
-  const emojis = answers.map(a => a ? '✅' : '❌').join('')
-  const date   = formatDate()
-  const lines  = [
-    `FIGHT DATA ARENA — DAILY ${date}`,
-    `${emojis}  ${score}/10`,
-  ]
-  if (streak >= 2) lines.push(`🔥 Streak : ${streak} jours`)
-  lines.push('fightdata.app/quiz/daily')
-  return lines.join('\n')
-}
-
 function DailyPage() {
   const [phase, setPhase]         = useState<Phase>('intro')
   const [questions, setQuestions] = useState<QuizQuestion[]>([])
@@ -98,6 +87,7 @@ function DailyPage() {
   const [loadError, setLoadError] = useState(false)
   const [alreadyPlayed, setAlreadyPlayed] = useState<DailyResult | null>(null)
   const answersRef = useRef<boolean[]>([])
+  const { t } = useLanguage()
 
   useEffect(() => {
     const result = getStoredResult()
@@ -166,7 +156,15 @@ function DailyPage() {
   }
 
   const copyResult = async () => {
-    const text = buildShareText(answers, score, streak)
+    const emojis = answers.map(a => a ? '✅' : '❌').join('')
+    const date   = formatDate()
+    const lines  = [
+      `FIGHT DATA ARENA — DAILY ${date}`,
+      `${emojis}  ${score}/10`,
+    ]
+    if (streak >= 2) lines.push(t('daily.streak', { n: streak }))
+    lines.push('fightdata.app/quiz/daily')
+    const text = lines.join('\n')
     try {
       await navigator.clipboard.writeText(text)
       setCopied(true)
@@ -209,11 +207,11 @@ function DailyPage() {
               DAILY {formatDate()}
             </div>
             <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.25)', marginTop: '10px' }}>
-              10 QUESTIONS — UN PAR JOUR
+              {t('daily.one_per_day')}
             </div>
           </div>
           <div style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '0.9rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, maxWidth: '320px' }}>
-            Chaque jour, 10 questions identiques pour tous les joueurs. Pas de skip — réponds à tout.
+            {t('daily.intro_desc')}
           </div>
           <button onClick={startPlaying} style={{
             width: '100%', maxWidth: '280px', padding: '14px',
@@ -223,10 +221,10 @@ function DailyPage() {
             fontSize: '1.1rem', letterSpacing: '6px', color: '#000',
             boxShadow: `0 0 20px ${COLOR}33`, transition: 'all 0.2s',
           }}>
-            COMMENCER →
+            {t('daily.start')}
           </button>
           <Link href="/" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
-            ← ACCUEIL
+            {t('daily.home')}
           </Link>
         </div>
       </main>
@@ -245,7 +243,7 @@ function DailyPage() {
             </div>
             {alreadyPlayed && (
               <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.3)', marginTop: '8px' }}>
-                DÉJÀ JOUÉ AUJOURD'HUI
+                {t('daily.already_played')}
               </div>
             )}
           </div>
@@ -271,7 +269,7 @@ function DailyPage() {
           </div>
           {streak >= 2 && (
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.2rem', letterSpacing: '3px', color: '#ffe000', textShadow: '0 0 12px #ffe000' }}>
-              🔥 STREAK : {streak} JOURS
+              🔥 {t('daily.streak', { n: streak })}
             </div>
           )}
           <button onClick={copyResult} style={{
@@ -285,10 +283,10 @@ function DailyPage() {
             transition: 'all 0.2s',
             boxShadow: copied ? 'none' : `0 0 16px ${COLOR}33`,
           }}>
-            {copied ? '✓ COPIÉ !' : 'COPIER LE RÉSULTAT'}
+            {copied ? t('daily.copied') : t('daily.copy_result')}
           </button>
           <Link href="/" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
-            ← ACCUEIL
+            {t('daily.home')}
           </Link>
         </div>
       </main>
@@ -305,9 +303,9 @@ function DailyPage() {
         <div className="score-bar" style={{ marginBottom: '24px' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: `linear-gradient(90deg, transparent, ${COLOR}, transparent)` }} />
           {[
-            { val: score,           label: 'SCORE' },
-            { val: `${idx + 1}/${questions.length}`, label: 'QUESTION' },
-            { val: `${answers.filter(Boolean).length}/${answers.length || 0}`, label: 'CORRECT' },
+            { val: score,           label: t('daily.score') },
+            { val: `${idx + 1}/${questions.length}`, label: t('daily.question') },
+            { val: `${answers.filter(Boolean).length}/${answers.length || 0}`, label: t('daily.correct') },
           ].map(s => (
             <div key={s.label} style={{ textAlign: 'center' }}>
               <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.7rem', letterSpacing: '2px', background: `linear-gradient(180deg, #fff, ${COLOR})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
@@ -322,18 +320,18 @@ function DailyPage() {
 
         {loading ? (
           <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.3)', letterSpacing: '4px' }}>
-            CHARGEMENT...
+            {t('daily.loading')}
           </div>
         ) : loadError ? (
           <div style={{ fontFamily: "'Share Tech Mono', monospace", color: '#ff2d78', letterSpacing: '3px', textAlign: 'center' }}>
-            ERREUR DE CHARGEMENT<br />
+            {t('daily.load_error')}<br />
             <button onClick={loadQuestions} style={{ marginTop: '12px', background: 'none', border: '1px solid #ff2d78', color: '#ff2d78', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '3px', padding: '8px 20px', cursor: 'pointer' }}>
-              RÉESSAYER
+              {t('daily.retry')}
             </button>
           </div>
         ) : !question ? (
           <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.3)', letterSpacing: '4px' }}>
-            CHARGEMENT...
+            {t('daily.loading')}
           </div>
         ) : (
           <div style={{ width: '100%', maxWidth: '500px', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -367,7 +365,7 @@ function DailyPage() {
             </div>
             <div style={{ padding: '16px 18px 12px' }}>
               <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1rem', fontWeight: 600, lineHeight: 1.4, color: 'rgba(255,255,255,0.9)' }}>
-                Quel est le <span style={{ color: COLOR }}>startup</span> de{' '}
+                {t('play.q_what_is')} <span style={{ color: COLOR }}>startup</span> {t('play.q_of')}{' '}
                 <strong style={{ color: '#fff' }}>{question.move_name}</strong> ?
               </p>
             </div>
@@ -387,8 +385,8 @@ function DailyPage() {
               {state !== 'idle' && (
                 <div style={{ padding: '9px 14px', marginBottom: '10px', background: state === 'correct' ? 'rgba(74,222,128,0.1)' : 'rgba(255,45,120,0.1)', border: `1px solid ${state === 'correct' ? '#4ade80' : '#ff2d78'}`, fontFamily: "'Rajdhani', sans-serif", fontSize: '0.9rem', fontWeight: 700, color: state === 'correct' ? '#4ade80' : '#ff2d78' }}>
                   {state === 'correct'
-                    ? `✓ Correct ! Startup : ${question.answer} frames.`
-                    : `✗ Raté ! Réponse : ${question.answer} frames.`}
+                    ? t('daily.feedback_correct', { n: question.answer })
+                    : t('daily.feedback_wrong', { n: question.answer })}
                 </div>
               )}
               <button
@@ -404,13 +402,13 @@ function DailyPage() {
                   color: state !== 'idle' ? '#000' : 'rgba(255,255,255,0.2)',
                   transition: 'all 0.2s',
                 }}>
-                {idx + 1 >= questions.length && state !== 'idle' ? 'VOIR LES RÉSULTATS →' : 'QUESTION SUIVANTE →'}
+                {idx + 1 >= questions.length && state !== 'idle' ? t('daily.see_results') : t('daily.next_question')}
               </button>
             </div>
           </div>
         )}
         <Link href="/" style={{ marginTop: '16px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
-          ← ACCUEIL
+          {t('daily.home')}
         </Link>
       </main>
     </>

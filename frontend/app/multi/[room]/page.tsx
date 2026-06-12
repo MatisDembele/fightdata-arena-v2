@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState, use } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
+import { useLanguage } from '@/lib/i18n'
 
 const WS_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/^http/, 'ws')
 
@@ -29,6 +30,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
   const searchParams = useSearchParams()
   const router       = useRouter()
   const playerName   = searchParams.get('name') || 'Joueur'
+  const { t } = useLanguage()
 
   const wsRef = useRef<WebSocket | null>(null)
 
@@ -83,15 +85,16 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
       }
       if (msg.type === 'player_left') {
         setPlayers(msg.players)
-        setError('Ton adversaire a quitté la partie.')
+        setError(t('room.opponent_left'))
         setPhase('error')
       }
       if (msg.type === 'error') { setError(msg.message); setPhase('error') }
     }
 
-    ws.onerror  = () => { setError('Connexion WebSocket échouée.'); setPhase('error') }
+    ws.onerror  = () => { setError(t('room.ws_failed')); setPhase('error') }
     ws.onopen   = () => setPhase('waiting')
     return () => ws.close()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [room, playerName])
 
   function sendAnswer(value: string) {
@@ -103,7 +106,6 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
   const opponent = players.find(p => p !== playerName)
   const isPunish = gameMode === 'punish'
 
-  // ── Styles QCM ──────────────────────────────────────────────────────────────
   const choiceStyle = (choice: string): React.CSSProperties => {
     const base: React.CSSProperties = {
       padding: '11px 14px', width: '100%', textAlign: 'left',
@@ -119,7 +121,6 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
     return { ...base, opacity: 0.3 }
   }
 
-  // ── Styles Punish ────────────────────────────────────────────────────────────
   const punishBtnStyle = (value: 'punissable' | 'safe'): React.CSSProperties => {
     const isPunishable = value === 'punissable'
     const c = isPunishable ? '#ff2d78' : '#4ade80'
@@ -136,19 +137,20 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
     }
   }
 
-  // ── Feedback texte ────────────────────────────────────────────────────────────
   const feedbackText = () => {
     if (!correctAnswer || !selected) return ''
-    const correct = selected === correctAnswer
+    const isCorrect = selected === correctAnswer
     if (isPunish) {
-      const label = correctAnswer === 'punissable' ? 'PUNISSABLE' : 'SAFE'
-      const ob = onBlockValue ? ` (on block : ${onBlockValue})` : ''
-      return correct ? `✓ Correct ! ${question?.move_name} est ${label}${ob}` : `✗ Raté ! ${question?.move_name} est ${label}${ob}`
+      const label = correctAnswer === 'punissable' ? t('room.punishable_label') : t('room.safe_label')
+      const ob = onBlockValue ? ` (${t('room.on_block_prefix')}${onBlockValue})` : ''
+      return isCorrect
+        ? t('room.feedback_correct_punish', { move: question?.move_name ?? '', label, ob })
+        : t('room.feedback_wrong_punish',   { move: question?.move_name ?? '', label, ob })
     }
-    return correct ? `✓ Correct ! Startup : ${correctAnswer} frames.` : `✗ Raté ! Réponse : ${correctAnswer} frames.`
+    return isCorrect
+      ? t('room.feedback_correct_startup', { answer: correctAnswer })
+      : t('room.feedback_wrong_startup',   { answer: correctAnswer })
   }
-
-  // ── Rendu par phase ─────────────────────────────────────────────────────────
 
   const backBtnStyle: React.CSSProperties = {
     background: 'none', border: `1px solid ${COLOR}`, color: COLOR,
@@ -158,12 +160,12 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
 
   const renderContent = () => {
 
-    if (phase === 'connecting') return <CenteredMsg color={COLOR}>CONNEXION...</CenteredMsg>
+    if (phase === 'connecting') return <CenteredMsg color={COLOR}>{t('room.connecting')}</CenteredMsg>
 
     if (phase === 'error') return (
       <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
         <div style={{ fontFamily: "'Share Tech Mono', monospace", color: COLOR_LOS, letterSpacing: '3px', fontSize: '0.8rem' }}>{error}</div>
-        <button onClick={() => router.push('/multi')} style={backBtnStyle}>← LOBBY</button>
+        <button onClick={() => router.push('/multi')} style={backBtnStyle}>{t('room.lobby')}</button>
       </div>
     )
 
@@ -172,29 +174,27 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.6rem', letterSpacing: '6px', color: '#fff' }}>
           ROOM — <span style={{ color: COLOR, textShadow: `0 0 12px ${COLOR}` }}>{room}</span>
         </div>
-        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.3)' }}>DONNE CE CODE À TON ADVERSAIRE</div>
-        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.4)', marginTop: '8px' }}>EN ATTENTE D&apos;UN ADVERSAIRE...</div>
-        <Players players={players} playerName={playerName} color={COLOR} />
+        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.3)' }}>{t('room.give_code')}</div>
+        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.4)', marginTop: '8px' }}>{t('room.waiting')}</div>
+        <Players players={players} playerName={playerName} color={COLOR} youLabel={t('room.you')} />
       </div>
     )
 
     if ((phase === 'playing' || phase === 'result') && question) return (
       <div style={{ width: '100%', maxWidth: '500px', minWidth: 0 }}>
 
-        {/* Header */}
         <div style={{ padding: '10px 18px', background: 'rgba(255,224,0,0.06)', borderBottom: `1px solid ${COLOR}28`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '4px', color: COLOR, textShadow: `0 0 8px ${COLOR}55` }}>
               Q{questionNumber}/{totalQuestions}
             </span>
-            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: isPunish ? '#ff2d78' : '#ff2d78', marginLeft: '12px', opacity: 0.6 }}>
+            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: '#ff2d78', marginLeft: '12px', opacity: 0.6 }}>
               {isPunish ? 'PUNISH' : 'STARTUP'}
             </span>
           </div>
-          <Scoreboard scores={scores} playerName={playerName} color={COLOR} />
+          <Scoreboard scores={scores} playerName={playerName} color={COLOR} youLabel={t('room.you')} />
         </div>
 
-        {/* GIF */}
         <div style={{ height: '180px', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
           {question.gif_url
             ? <img src={question.gif_url} alt={question.move_name} style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
@@ -208,17 +208,15 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
           ].map((s, i) => <div key={i} style={{ position: 'absolute', width: '10px', height: '10px', ...s }} />)}
         </div>
 
-        {/* Question */}
         <div style={{ padding: '14px 18px 10px' }}>
           <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1rem', fontWeight: 600, color: 'rgba(255,255,255,0.9)', margin: 0 }}>
             {isPunish
-              ? <><strong style={{ color: '#fff' }}>{question.move_name}</strong> est-il <span style={{ color: COLOR_LOS }}>punissable on block ?</span></>
-              : <>Quel est le <span style={{ color: COLOR }}>startup</span> de <strong style={{ color: '#fff' }}>{question.move_name}</strong> ?</>
+              ? <><strong style={{ color: '#fff' }}>{question.move_name}</strong> {t('room.q_is_it')} <span style={{ color: COLOR_LOS }}>{t('room.q_punishable_on_block')}</span></>
+              : <>{t('room.q_what_is')} <span style={{ color: COLOR }}>startup</span> {t('room.q_of')} <strong style={{ color: '#fff' }}>{question.move_name}</strong> ?</>
             }
           </p>
         </div>
 
-        {/* Réponses */}
         <div style={{ padding: '0 18px' }}>
           {!isPunish && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -233,24 +231,27 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
           {isPunish && (
             <div style={{ display: 'flex', gap: '10px' }}>
               <button onClick={() => sendAnswer('punissable')} disabled={!!selected} style={punishBtnStyle('punissable')}>
-                💀 PUNISSABLE
+                💀 {t('room.punishable_label')}
                 <div style={{ fontSize: '0.55rem', letterSpacing: '2px', marginTop: '4px', opacity: 0.6 }}>{'≤ -4 ON BLOCK'}</div>
               </button>
               <button onClick={() => sendAnswer('safe')} disabled={!!selected} style={punishBtnStyle('safe')}>
-                ✓ SAFE
+                ✓ {t('room.safe_label')}
                 <div style={{ fontSize: '0.55rem', letterSpacing: '2px', marginTop: '4px', opacity: 0.6 }}>{'-3 À +∞ ON BLOCK'}</div>
               </button>
             </div>
           )}
         </div>
 
-        {/* Statut + feedback */}
         <div style={{ padding: '12px 18px 18px' }}>
           {phase === 'playing' && (
             <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '2px', color: opponentAnswered ? COLOR : 'rgba(255,255,255,0.2)', textAlign: 'center', transition: 'color 0.3s' }}>
               {selected
-                ? opponentAnswered ? 'LES DEUX ONT RÉPONDU — RÉSULTAT...' : `EN ATTENTE DE ${(opponent || 'ADVERSAIRE').toUpperCase()}...`
-                : opponentAnswered ? `${(opponent || 'ADVERSAIRE').toUpperCase()} A RÉPONDU !` : `EN ATTENTE DE ${(opponent || 'ADVERSAIRE').toUpperCase()}...`
+                ? opponentAnswered
+                  ? t('room.both_answered')
+                  : t('room.waiting_for', { name: (opponent || 'ADVERSAIRE').toUpperCase() })
+                : opponentAnswered
+                  ? t('room.opponent_answered', { name: (opponent || 'ADVERSAIRE').toUpperCase() })
+                  : t('room.waiting_for', { name: (opponent || 'ADVERSAIRE').toUpperCase() })
               }
             </div>
           )}
@@ -275,7 +276,6 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
       return (
         <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '28px', alignItems: 'center' }}>
 
-          {/* Titre résultat */}
           <div>
             <div style={{
               fontFamily: "'Bebas Neue', sans-serif",
@@ -284,38 +284,33 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
               color: isDraw ? COLOR : isWin ? COLOR_WIN : COLOR_LOS,
               textShadow: `0 0 20px ${isDraw ? COLOR : isWin ? COLOR_WIN : COLOR_LOS}, 0 0 50px ${isDraw ? COLOR : isWin ? COLOR_WIN : COLOR_LOS}55`,
             }}>
-              {isDraw ? 'ÉGALITÉ' : isWin ? 'VICTOIRE' : 'DÉFAITE'}
+              {isDraw ? t('room.draw') : isWin ? t('room.victory') : t('room.defeat')}
             </div>
             <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.3)', marginTop: '8px' }}>
-              {isDraw ? 'MATCH NUL !' : isWin ? 'BIEN JOUÉ !' : 'MEILLEURE CHANCE LA PROCHAINE FOIS'}
+              {isDraw ? t('room.draw_msg') : isWin ? t('room.well_played') : t('room.better_luck')}
             </div>
           </div>
 
-          {/* Scores */}
           <div className="gameover-scores">
-            {/* Moi */}
             <div className="gameover-score-cell" style={{ background: isWin ? 'rgba(74,222,128,0.06)' : isDraw ? 'rgba(255,224,0,0.06)' : 'rgba(255,255,255,0.03)', borderRight: '1px solid rgba(255,255,255,0.08)' }}>
               <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2.5rem, 10vw, 3.5rem)', letterSpacing: '2px', color: isWin ? COLOR_WIN : isDraw ? COLOR : 'rgba(255,255,255,0.5)', textShadow: isWin ? `0 0 20px ${COLOR_WIN}` : isDraw ? `0 0 20px ${COLOR}` : 'none' }}>{myScore}</div>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.4)', marginTop: '6px' }}>TOI</div>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.2)', marginTop: '4px' }}>{accuracy}% PRÉCISION</div>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.4)', marginTop: '6px' }}>{t('room.you')}</div>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.2)', marginTop: '4px' }}>{accuracy}% {t('room.precision')}</div>
             </div>
-            {/* Adversaire */}
             <div className="gameover-score-cell" style={{ background: !isWin && !isDraw ? 'rgba(74,222,128,0.06)' : 'rgba(255,255,255,0.03)' }}>
               <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2.5rem, 10vw, 3.5rem)', letterSpacing: '2px', color: !isWin && !isDraw ? COLOR_WIN : 'rgba(255,255,255,0.5)', textShadow: !isWin && !isDraw ? `0 0 20px ${COLOR_WIN}` : 'none' }}>{oppScore}</div>
               <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.4)', marginTop: '6px' }}>{oppName.toUpperCase().slice(0, 8)}</div>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.2)', marginTop: '4px' }}>{Math.round((oppScore / totalQuestions) * 100)}% PRÉCISION</div>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.2)', marginTop: '4px' }}>{Math.round((oppScore / totalQuestions) * 100)}% {t('room.precision')}</div>
             </div>
           </div>
 
-          {/* Détail des questions */}
           <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)' }}>
-            {totalQuestions} QUESTIONS — MODE {gameMode.toUpperCase()}
+            {t('room.questions_mode', { n: totalQuestions, mode: gameMode.toUpperCase() })}
           </div>
 
-          {/* Boutons */}
           <div style={{ display: 'flex', gap: '12px' }}>
-            <button onClick={() => router.push('/multi')} style={backBtnStyle}>REJOUER</button>
-            <button onClick={() => router.push('/')} style={{ ...backBtnStyle, border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.4)', textShadow: 'none' }}>ACCUEIL</button>
+            <button onClick={() => router.push('/multi')} style={backBtnStyle}>{t('room.replay')}</button>
+            <button onClick={() => router.push('/')} style={{ ...backBtnStyle, border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.4)', textShadow: 'none' }}>{t('room.home')}</button>
           </div>
 
         </div>
@@ -339,7 +334,7 @@ function CenteredMsg({ children, color }: { children: React.ReactNode; color: st
   return <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.75rem', letterSpacing: '4px', color, textShadow: `0 0 10px ${color}55` }}>{children}</div>
 }
 
-function Players({ players, playerName, color }: { players: string[]; playerName: string; color: string }) {
+function Players({ players, playerName, color, youLabel }: { players: string[]; playerName: string; color: string; youLabel: string }) {
   return (
     <div style={{ display: 'flex', gap: '24px', marginTop: '8px' }}>
       {[0, 1].map(i => (
@@ -348,7 +343,7 @@ function Players({ players, playerName, color }: { players: string[]; playerName
             {players[i] ? players[i][0].toUpperCase() : '?'}
           </div>
           <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '2px', marginTop: '6px', color: players[i] ? (players[i] === playerName ? color : 'rgba(255,255,255,0.5)') : 'rgba(255,255,255,0.15)' }}>
-            {players[i] ? (players[i] === playerName ? 'TOI' : players[i].toUpperCase()) : '---'}
+            {players[i] ? (players[i] === playerName ? youLabel : players[i].toUpperCase()) : '---'}
           </div>
         </div>
       ))}
@@ -356,7 +351,7 @@ function Players({ players, playerName, color }: { players: string[]; playerName
   )
 }
 
-function Scoreboard({ scores, playerName, color }: { scores: { [k: string]: number }; playerName: string; color: string }) {
+function Scoreboard({ scores, playerName, color, youLabel }: { scores: { [k: string]: number }; playerName: string; color: string; youLabel: string }) {
   const entries = Object.entries(scores)
   if (!entries.length) return null
   return (
@@ -364,7 +359,7 @@ function Scoreboard({ scores, playerName, color }: { scores: { [k: string]: numb
       {entries.map(([name, score]) => (
         <div key={name} style={{ textAlign: 'center' }}>
           <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.4rem', letterSpacing: '2px', color: name === playerName ? color : 'rgba(255,255,255,0.4)', textShadow: name === playerName ? `0 0 10px ${color}` : 'none' }}>{score}</div>
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.25)' }}>{name === playerName ? 'TOI' : name.toUpperCase().slice(0, 6)}</div>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.25)' }}>{name === playerName ? youLabel : name.toUpperCase().slice(0, 6)}</div>
         </div>
       ))}
     </div>

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Analytics } from '@vercel/analytics/react'
+import Providers from '@/components/Providers'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -10,13 +11,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr">
+    <html lang="en">
       <body>
         <div className="sf6-bg" />
         <div className="sf6-grid" />
-        <div style={{ position: 'relative', zIndex: 10, minHeight: '100vh' }}>
-          {children}
-        </div>
+        <Providers>
+          <div style={{ position: 'relative', zIndex: 10, minHeight: '100vh' }}>
+            {children}
+          </div>
+        </Providers>
         <Analytics />
       </body>
     </html>
