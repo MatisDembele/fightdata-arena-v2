@@ -23,7 +23,7 @@ function tone(freq: number, type: OscillatorType, duration: number, gain: number
 
 export function getSoundEnabled(): boolean {
   if (typeof window === 'undefined') return false
-  return localStorage.getItem('fda_sound') !== 'off'
+  return localStorage.getItem('fda_sound') === 'on'
 }
 
 export function toggleSound(): boolean {

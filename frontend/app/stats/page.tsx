@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import { useLanguage } from '@/lib/i18n'
@@ -21,7 +21,12 @@ interface DailyStreak {
   last_played: string
 }
 
-const MODES = [
+interface FighterEntry {
+  slug: string
+  stats: ModeStats
+}
+
+const QUIZ_MODES = [
   { key: 'random',   label: 'RANDOM',       color: '#ff2d78' },
   { key: 'fighter',  label: 'FIGHTER (avg)', color: '#00f0ff' },
   { key: 'input',    label: 'INPUT',         color: '#9b1fff' },
@@ -30,44 +35,43 @@ const MODES = [
   { key: 'damage',   label: 'DAMAGE',        color: '#f59e0b' },
 ]
 
-function todayStr() {
-  return new Date().toISOString().split('T')[0]
-}
-
+function todayStr()     { return new Date().toISOString().split('T')[0] }
 function yesterdayStr() {
-  const d = new Date()
-  d.setDate(d.getDate() - 1)
+  const d = new Date(); d.setDate(d.getDate() - 1)
   return d.toISOString().split('T')[0]
 }
 
 export default function StatsPage() {
   const { t } = useLanguage()
+
   const [modeStats, setModeStats]       = useState<Record<string, ModeStats | null>>({})
   const [survival, setSurvival]         = useState<SurvivalStats | null>(null)
   const [streak, setStreak]             = useState<DailyStreak | null>(null)
   const [pseudo, setPseudo]             = useState<string | null>(null)
   const [avatar, setAvatar]             = useState<string | null>(null)
-  const [fighterKeys, setFighterKeys]   = useState<string[]>([])
+  const [fighters, setFighters]         = useState<FighterEntry[]>([])
 
   useEffect(() => {
     const stats: Record<string, ModeStats | null> = {}
-    for (const m of MODES) {
+
+    for (const m of QUIZ_MODES) {
       if (m.key === 'fighter') continue
       const raw = localStorage.getItem(`fda_best_${m.key}`)
       stats[m.key] = raw ? JSON.parse(raw) : null
     }
 
-    // Aggregate fighter stats
-    const slugs: string[] = []
+    // Collect + aggregate fighter-specific stats
+    const fighterList: FighterEntry[] = []
     let totalGames = 0, bestScore = -1, totalAcc = 0, count = 0
+
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i)
       if (k?.startsWith('fda_best_fighter_')) {
         const slug = k.replace('fda_best_fighter_', '')
-        slugs.push(slug)
-        const raw = localStorage.getItem(k)
+        const raw  = localStorage.getItem(k)
         if (raw) {
           const d: ModeStats = JSON.parse(raw)
+          fighterList.push({ slug, stats: d })
           totalGames += d.totalGames
           bestScore   = Math.max(bestScore, d.bestScore)
           totalAcc   += d.bestAccuracy
@@ -75,17 +79,13 @@ export default function StatsPage() {
         }
       }
     }
-    setFighterKeys(slugs)
-    if (count > 0) {
-      stats['fighter'] = {
-        bestScore,
-        bestAccuracy: Math.round(totalAcc / count),
-        totalGames,
-      }
-    } else {
-      stats['fighter'] = null
-    }
+
+    stats['fighter'] = count > 0
+      ? { bestScore, bestAccuracy: Math.round(totalAcc / count), totalGames }
+      : null
+
     setModeStats(stats)
+    setFighters(fighterList)
 
     const sv = localStorage.getItem('fda_survival_best')
     setSurvival(sv ? JSON.parse(sv) : null)
@@ -97,7 +97,9 @@ export default function StatsPage() {
     setAvatar(localStorage.getItem('fda_avatar'))
   }, [])
 
-  const streakActive = streak && (streak.last_played === todayStr() || streak.last_played === yesterdayStr())
+  const streakActive = streak && (
+    streak.last_played === todayStr() || streak.last_played === yesterdayStr()
+  )
 
   return (
     <>
@@ -117,12 +119,7 @@ export default function StatsPage() {
 
           {/* Player card */}
           {(pseudo || avatar) && (
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: '16px',
-              padding: '16px 20px',
-              background: 'rgba(155,31,255,0.07)',
-              border: '1px solid rgba(155,31,255,0.2)',
-            }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 20px', background: 'rgba(155,31,255,0.07)', border: '1px solid rgba(155,31,255,0.2)' }}>
               {avatar && (
                 <div style={{ width: '52px', height: '52px', overflow: 'hidden', flexShrink: 0, border: `1px solid ${getFighterColor(avatar)}44` }}>
                   <img
@@ -153,83 +150,53 @@ export default function StatsPage() {
               <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.3)' }}>
                 {t('stats.days')}
               </span>
-              {streakActive && streak!.streak >= 2 && (
-                <span style={{ fontSize: '1.4rem' }}>🔥</span>
-              )}
+              {streakActive && streak!.streak >= 2 && <span style={{ fontSize: '1.4rem' }}>🔥</span>}
             </div>
           </Section>
 
           {/* Quiz modes */}
           <Section title={t('stats.quiz_modes')} color="#9b1fff">
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {MODES.map(m => {
+              {QUIZ_MODES.map(m => {
                 const s = modeStats[m.key]
                 return (
-                  <div key={m.key} style={{
-                    display: 'grid', gridTemplateColumns: '120px 1fr 1fr 1fr',
-                    padding: '10px 14px', gap: '8px', alignItems: 'center',
-                    background: s ? 'rgba(255,255,255,0.03)' : 'transparent',
-                    border: `1px solid ${s ? 'rgba(255,255,255,0.07)' : 'transparent'}`,
-                  }}>
-                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', letterSpacing: '2px', color: s ? m.color : 'rgba(255,255,255,0.2)', textShadow: s ? `0 0 8px ${m.color}55` : 'none' }}>
-                      {m.label}
-                    </div>
+                  <ModeRow key={m.key} label={m.label} color={m.color} hasData={!!s}>
                     {s ? (
                       <>
-                        <StatCell val={`${s.bestScore}`}     label={t('stats.best_score')} color={m.color} />
-                        <StatCell val={`${s.bestAccuracy}%`} label={t('stats.accuracy')}   color={m.color} />
-                        <StatCell val={String(s.totalGames)} label={t('stats.games')}       color={m.color} />
+                        <StatCell val={String(s.bestScore)}     label={t('stats.best_score')} color={m.color} />
+                        <StatCell val={`${s.bestAccuracy}%`}    label={t('stats.accuracy')}   color={m.color} />
+                        <StatCell val={String(s.totalGames)}    label={t('stats.games')}       color={m.color} />
                       </>
                     ) : (
-                      <div style={{ gridColumn: '2 / 5', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.15)' }}>
-                        {t('stats.no_data')}
-                      </div>
+                      <NoData label={t('stats.no_data')} />
                     )}
-                  </div>
+                  </ModeRow>
                 )
               })}
 
               {/* Survival */}
-              <div style={{
-                display: 'grid', gridTemplateColumns: '120px 1fr 1fr 1fr',
-                padding: '10px 14px', gap: '8px', alignItems: 'center',
-                background: survival ? 'rgba(255,255,255,0.03)' : 'transparent',
-                border: `1px solid ${survival ? 'rgba(255,255,255,0.07)' : 'transparent'}`,
-              }}>
-                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', letterSpacing: '2px', color: survival ? '#4ade80' : 'rgba(255,255,255,0.2)', textShadow: survival ? '0 0 8px #4ade8055' : 'none' }}>
-                  SURVIVAL
-                </div>
+              <ModeRow label="SURVIVAL" color="#4ade80" hasData={!!survival}>
                 {survival ? (
                   <>
-                    <StatCell val={`${survival.best} Q`}       label={t('stats.survived')} color="#4ade80" />
-                    <StatCell val="—"                           label={t('stats.accuracy')} color="rgba(255,255,255,0.2)" />
-                    <StatCell val={String(survival.totalGames)} label={t('stats.games')}    color="#4ade80" />
+                    <StatCell val={`${survival.best} Q`}        label={t('stats.survived')} color="#4ade80" />
+                    <StatCell val="—"                            label={t('stats.accuracy')} color="rgba(255,255,255,0.2)" />
+                    <StatCell val={String(survival.totalGames)}  label={t('stats.games')}    color="#4ade80" />
                   </>
                 ) : (
-                  <div style={{ gridColumn: '2 / 5', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.15)' }}>
-                    {t('stats.no_data')}
-                  </div>
+                  <NoData label={t('stats.no_data')} />
                 )}
-              </div>
+              </ModeRow>
             </div>
           </Section>
 
           {/* Fighter breakdown */}
-          {fighterKeys.length > 0 && (
+          {fighters.length > 0 && (
             <Section title="FIGHTER BREAKDOWN" color="#00f0ff">
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                {fighterKeys.map(slug => {
-                  const raw  = localStorage.getItem(`fda_best_fighter_${slug}`)
-                  const s: ModeStats | null = raw ? JSON.parse(raw) : null
-                  if (!s) return null
+                {fighters.map(({ slug, stats: s }) => {
                   const color = getFighterColor(slug)
                   return (
-                    <div key={slug} style={{
-                      padding: '6px 10px',
-                      background: `${color}11`,
-                      border: `1px solid ${color}33`,
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
-                    }}>
+                    <div key={slug} style={{ padding: '6px 10px', background: `${color}11`, border: `1px solid ${color}33`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
                       <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.7rem', letterSpacing: '1px', color, textTransform: 'uppercase' }}>
                         {slug}
                       </div>
@@ -252,15 +219,22 @@ export default function StatsPage() {
   )
 }
 
-function Section({ title, color, children }: { title: string; color: string; children: React.ReactNode }) {
+function Section({ title, color, children }: { title: string; color: string; children: ReactNode }) {
   return (
     <div>
-      <div style={{
-        fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem',
-        letterSpacing: '4px', color, marginBottom: '12px',
-        borderBottom: `1px solid ${color}22`, paddingBottom: '8px',
-      }}>
+      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '4px', color, marginBottom: '12px', borderBottom: `1px solid ${color}22`, paddingBottom: '8px' }}>
         {title}
+      </div>
+      {children}
+    </div>
+  )
+}
+
+function ModeRow({ label, color, hasData, children }: { label: string; color: string; hasData: boolean; children: ReactNode }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 1fr 1fr', padding: '10px 14px', gap: '8px', alignItems: 'center', background: hasData ? 'rgba(255,255,255,0.03)' : 'transparent', border: `1px solid ${hasData ? 'rgba(255,255,255,0.07)' : 'transparent'}` }}>
+      <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', letterSpacing: '2px', color: hasData ? color : 'rgba(255,255,255,0.2)', textShadow: hasData ? `0 0 8px ${color}55` : 'none' }}>
+        {label}
       </div>
       {children}
     </div>
@@ -276,6 +250,14 @@ function StatCell({ val, label, color }: { val: string; label: string; color: st
       <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.3)', marginTop: '2px' }}>
         {label}
       </div>
+    </div>
+  )
+}
+
+function NoData({ label }: { label: string }) {
+  return (
+    <div style={{ gridColumn: '2 / 5', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.15)' }}>
+      {label}
     </div>
   )
 }

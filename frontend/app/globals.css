@@ -281,9 +281,11 @@ body {
 }
 
 @media (max-width: 640px) {
-  .navbar { padding: 0 14px; }
+  .navbar { padding: 0 8px; }
   .navbar-badge { display: none; }
-  .nav-link { padding: 8px 10px; }
+  .nav-link { padding: 8px 8px; }
+  .nav-item { padding: 0 10px; font-size: 0.72rem; letter-spacing: 1.5px; }
+  .nav-lang-btn { padding: 0 8px; }
 
   .quiz-modes-grid { grid-template-columns: repeat(2, 1fr); }
 
