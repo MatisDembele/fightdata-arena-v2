@@ -67,7 +67,7 @@ export default function QuizSelectPage() {
     },
     {
       id: 'survival',
-      label: 'SURVIE',
+      label: 'SURVIVAL',
       sub: t('quiz.mode_survival_sub'),
       desc: t('quiz.mode_survival_desc'),
       color: '#4ade80', colorAlt: '#00f0ff',
@@ -102,13 +102,22 @@ export default function QuizSelectPage() {
       icon: '🎨',
     },
     {
-      id: 'weekly',
-      label: 'WEEKLY',
-      sub: t('quiz.mode_weekly_sub'),
-      desc: t('quiz.mode_weekly_desc'),
-      color: '#ff6a00', colorAlt: '#d97706',
-      href: '/quiz/weekly',
-      icon: '📆',
+      id: 'mistakes',
+      label: 'ERROR BANK',
+      sub: t('quiz.mode_mistakes_sub'),
+      desc: t('quiz.mode_mistakes_desc'),
+      color: '#f43f5e', colorAlt: '#be123c',
+      href: '/quiz/play?mode=mistakes',
+      icon: '🔁',
+    },
+    {
+      id: 'duel',
+      label: 'DUEL',
+      sub: t('quiz.mode_duel_sub'),
+      desc: t('quiz.mode_duel_desc'),
+      color: '#14b8a6', colorAlt: '#0d9488',
+      href: '/quiz/duel',
+      icon: '⚔️',
     },
   ]
 

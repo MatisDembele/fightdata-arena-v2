@@ -244,6 +244,35 @@ const en = {
   'weekly.leaderboard_join':  'JOIN',
   'weekly.leaderboard_ok':    'SUBMITTED',
   'weekly.leaderboard_empty': 'No entries yet.',
+  // mistakes mode
+  'quiz.mode_mistakes_sub':  'Replay your wrong answers',
+  'quiz.mode_mistakes_desc': 'Every move you get wrong is saved here. Get it right once and it disappears. Fix your blind spots.',
+  'quiz.mistakes_empty':     'No mistakes yet — play other modes to build your error bank.',
+  'play.mode_mistakes_label': 'ERROR BANK',
+  'play.mistakes_bank':       '{n} MISTAKES BANKED',
+  // duel mode
+  'quiz.mode_duel_sub':  'Same seed, two players',
+  'quiz.mode_duel_desc': '10 identical questions shared via link. Play, then challenge a friend — compare scores side by side.',
+  'play.duel_intro_seed':    'SEED',
+  'play.duel_challenger':    'CHALLENGER',
+  'play.duel_no_challenger': 'Share the link after playing to challenge a friend.',
+  'play.duel_share':         'CHALLENGE A FRIEND',
+  'play.duel_link_copied':   '✓ LINK COPIED!',
+  'play.duel_vs':            'VS',
+  'play.duel_you':           'YOU',
+  'play.duel_win':           'YOU WIN!',
+  'play.duel_lose':          'YOU LOSE!',
+  'play.duel_tie':           "IT'S A TIE!",
+  // profile
+  'nav.profile':          'PROFILE',
+  'profile.title':        'PROFILE',
+  'profile.lifetime':     'LIFETIME',
+  'profile.history':      'RECENT SESSIONS',
+  'profile.no_history':   'No sessions yet — start playing!',
+  'profile.by_mode':      'BY MODE',
+  'profile.error_bank':   'ERROR BANK',
+  'profile.no_pseudo':    'Set your player name on the Stats page to appear on leaderboards.',
+  'profile.mistakes_play': 'TRAIN MISTAKES →',
 } as const
 
 type DictKey = keyof typeof en
@@ -490,6 +519,35 @@ const fr: Record<DictKey, string> = {
   'weekly.leaderboard_join':  'REJOINDRE',
   'weekly.leaderboard_ok':    'SOUMIS',
   'weekly.leaderboard_empty': 'Aucune entrée pour le moment.',
+  // mistakes mode
+  'quiz.mode_mistakes_sub':  'Rejoue tes erreurs',
+  'quiz.mode_mistakes_desc': 'Chaque move raté est mémorisé ici. Réponds correctement une fois et il disparaît. Corrige tes points faibles.',
+  'quiz.mistakes_empty':     "Aucune erreur pour l'instant — joue d'autres modes pour remplir ta banque.",
+  'play.mode_mistakes_label': 'BANQUE D\'ERREURS',
+  'play.mistakes_bank':       '{n} ERREURS EN BANQUE',
+  // duel mode
+  'quiz.mode_duel_sub':  'Même seed, deux joueurs',
+  'quiz.mode_duel_desc': '10 questions identiques partagées via lien. Joue, puis défie un ami — comparez les scores.',
+  'play.duel_intro_seed':    'SEED',
+  'play.duel_challenger':    'CHALLENGER',
+  'play.duel_no_challenger': 'Partage le lien après avoir joué pour défier un ami.',
+  'play.duel_share':         'DÉFIER UN AMI',
+  'play.duel_link_copied':   '✓ LIEN COPIÉ !',
+  'play.duel_vs':            'VS',
+  'play.duel_you':           'TOI',
+  'play.duel_win':           'TU GAGNES !',
+  'play.duel_lose':          'TU PERDS !',
+  'play.duel_tie':           'ÉGALITÉ !',
+  // profile
+  'nav.profile':          'PROFIL',
+  'profile.title':        'PROFIL',
+  'profile.lifetime':     'TOTAL',
+  'profile.history':      'SESSIONS RÉCENTES',
+  'profile.no_history':   'Aucune session — commence à jouer !',
+  'profile.by_mode':      'PAR MODE',
+  'profile.error_bank':   'BANQUE D\'ERREURS',
+  'profile.no_pseudo':    'Définis ton pseudo sur la page Stats pour apparaître dans les classements.',
+  'profile.mistakes_play': 'ENTRAÎNER LES ERREURS →',
 }
 
 const dict: Record<string, Record<DictKey, string>> = { en, fr }

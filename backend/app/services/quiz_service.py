@@ -348,6 +348,21 @@ def generate_random_onblock_question(db: Session) -> QuizQuestion | None:
     return None
 
 
+def generate_seeded_questions(db: Session, seed: str, n: int = 10) -> list[QuizQuestion]:
+    rng = random.Random(seed)
+    fighters = db.query(Fighter).all()
+    fighters_copy = list(fighters)
+    rng.shuffle(fighters_copy)
+    questions: list[QuizQuestion] = []
+    for fighter in fighters_copy:
+        if len(questions) >= n:
+            break
+        q = _generate_startup_question_rng(db, fighter.slug, rng)
+        if q:
+            questions.append(q)
+    return questions
+
+
 def generate_weekly_questions(db: Session, week_str: str) -> list[QuizQuestion]:
     rng = random.Random(week_str)
     fighters = db.query(Fighter).all()

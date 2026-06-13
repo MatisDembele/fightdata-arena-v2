@@ -132,3 +132,9 @@ export async function getGlobalLeaderboard(): Promise<GlobalLeaderboardEntry[]> 
   if (!res.ok) throw new Error('Erreur global leaderboard')
   return res.json()
 }
+
+export async function getSeededQuiz(seed: string, n = 10): Promise<QuizQuestion[]> {
+  const res = await fetch(`${API_URL}/api/quiz/seeded?seed=${encodeURIComponent(seed)}&n=${n}`)
+  if (!res.ok) throw new Error('Erreur seeded quiz')
+  return res.json()
+}

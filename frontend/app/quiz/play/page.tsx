@@ -64,13 +64,14 @@ function QuizPlay() {
   const historyRef                        = useRef<HistoryEntry[]>([])
   const [showReview, setShowReview]       = useState(false)
 
-  const isHardcore = mode === 'hardcore'
-  const isInput    = mode === 'input'
-  const isPunish   = mode === 'punish'
-  const isSurvival = mode === 'survival'
-  const isDamage   = mode === 'damage'
-  const isOnBlock  = mode === 'onblock'
-  const isCustom   = mode === 'custom'
+  const isHardcore  = mode === 'hardcore'
+  const isInput     = mode === 'input'
+  const isPunish    = mode === 'punish'
+  const isSurvival  = mode === 'survival'
+  const isDamage    = mode === 'damage'
+  const isOnBlock   = mode === 'onblock'
+  const isCustom    = mode === 'custom'
+  const isMistakes  = mode === 'mistakes'
 
   const [soundEnabled, setSoundEnabled] = useState(true)
   useEffect(() => { setSoundEnabled(getSoundEnabled()) }, [])
@@ -87,6 +88,7 @@ function QuizPlay() {
     damage:   '#f59e0b',
     onblock:  '#00b4d8',
     custom:   '#c77dff',
+    mistakes: '#f43f5e',
   }[mode] ?? '#ff2d78'
 
   const modeColorAlt = {
@@ -99,9 +101,17 @@ function QuizPlay() {
     damage:   '#d97706',
     onblock:  '#0077b6',
     custom:   '#7b2fff',
+    mistakes: '#be123c',
   }[mode] ?? '#9b1fff'
 
   const fetchOne = useCallback(async (): Promise<QuizQuestion> => {
+    if (isMistakes) {
+      const raw = localStorage.getItem('fda_mistakes')
+      const bank: Record<string, { question: QuizQuestion }> = raw ? JSON.parse(raw) : {}
+      const entries = Object.values(bank)
+      if (entries.length === 0) throw new Error('no_mistakes')
+      return entries[Math.floor(Math.random() * entries.length)].question
+    }
     if (isOnBlock) return getRandomOnBlock()
     if (isPunish) return getRandomPunish()
     if (isDamage) return getRandomDamage()
@@ -113,7 +123,7 @@ function QuizPlay() {
     }
     if (mode === 'fighter' && slug) return getFighterQuiz(slug)
     return getRandomQuiz()
-  }, [mode, slug, isPunish, isDamage, isOnBlock, isCustom, params])
+  }, [mode, slug, isPunish, isDamage, isOnBlock, isCustom, isMistakes, params])
 
   const fetchUnique = useCallback(async (): Promise<QuizQuestion> => {
     for (let i = 0; i < 4; i++) {
@@ -180,6 +190,26 @@ function QuizPlay() {
       userAnswer: selected ?? '',
       correct: state === 'correct',
     })
+    // Update mistake bank: wrong → save (capped 100), correct → remove
+    const mistakeKey = `${question.fighter_slug}:${question.move_name}:${mode}`
+    const raw = localStorage.getItem('fda_mistakes')
+    const bank: Record<string, { question: QuizQuestion; mode: string; count: number; lastSeen: string }> =
+      raw ? JSON.parse(raw) : {}
+    if (state === 'wrong') {
+      bank[mistakeKey] = {
+        question: { ...question },
+        mode,
+        count: (bank[mistakeKey]?.count ?? 0) + 1,
+        lastSeen: new Date().toISOString(),
+      }
+      const sorted = Object.entries(bank).sort((a, b) =>
+        new Date(b[1].lastSeen).getTime() - new Date(a[1].lastSeen).getTime()
+      )
+      localStorage.setItem('fda_mistakes', JSON.stringify(Object.fromEntries(sorted.slice(0, 100))))
+    } else if (state === 'correct' && bank[mistakeKey]) {
+      delete bank[mistakeKey]
+      localStorage.setItem('fda_mistakes', JSON.stringify(bank))
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state])
 
@@ -254,6 +284,22 @@ function QuizPlay() {
     if (total > 0) {
       const pseudo = localStorage.getItem('fda_pseudo')?.trim()
       if (pseudo) submitGlobalScore(pseudo, score, total).catch(() => {})
+    }
+    // Save session to history (last 30)
+    if (total > 0) {
+      const record = {
+        date: new Date().toISOString(),
+        mode,
+        score,
+        total,
+        accuracy: total > 0 ? Math.round((score / total) * 100) : 0,
+        maxCombo,
+        ...(mode === 'fighter' && slug ? { fighter: slug } : {}),
+      }
+      const histRaw = localStorage.getItem('fda_history')
+      const hist = histRaw ? JSON.parse(histRaw) : []
+      hist.unshift(record)
+      localStorage.setItem('fda_history', JSON.stringify(hist.slice(0, 30)))
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionPhase])
@@ -350,6 +396,10 @@ function QuizPlay() {
         input:    'INPUT',
         punish:   'PUNISH FINDER',
         hardcore: 'HARDCORE',
+        damage:   'DAMAGE',
+        onblock:  'ON BLOCK',
+        custom:   'CUSTOM',
+        mistakes: 'ERROR BANK',
       }
       const label    = labels[mode] ?? mode.toUpperCase()
       const rank     = getRank(accuracy)
@@ -399,6 +449,7 @@ function QuizPlay() {
     damage:   'DAMAGE MODE',
     onblock:  t('play.mode_onblock_label'),
     custom:   'CUSTOM MODE',
+    mistakes: t('play.mode_mistakes_label'),
   }[mode] ?? 'QUIZ'
 
   useEffect(() => {
@@ -409,11 +460,17 @@ function QuizPlay() {
     }
   }, [isSurvival, sessionPhase])
 
+  const [mistakesCount, setMistakesCount] = useState(0)
+
   useEffect(() => {
     if (sessionPhase !== 'selector') return
     const key = isCustom ? 'fda_best_custom' : (mode === 'fighter' && slug ? `fda_best_fighter_${slug}` : `fda_best_${mode}`)
     const raw = localStorage.getItem(key)
     setBestRecord(raw ? JSON.parse(raw) : null)
+    if (isMistakes) {
+      const bankRaw = localStorage.getItem('fda_mistakes')
+      setMistakesCount(bankRaw ? Object.keys(JSON.parse(bankRaw)).length : 0)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionPhase])
 
@@ -445,6 +502,7 @@ function QuizPlay() {
       damage:   t('quiz.mode_damage_sub'),
       onblock:  t('quiz.mode_onblock_sub'),
       custom:   t('quiz.mode_custom_sub'),
+      mistakes: isMistakes ? t('play.mistakes_bank', { n: mistakesCount }) : '',
     } as Record<string, string>)[mode] ?? ''
 
     return (
@@ -522,21 +580,34 @@ function QuizPlay() {
 
             {/* CTA */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
-              <button onClick={startSession} style={{
-                width: '100%', padding: '16px',
-                background: `linear-gradient(90deg, ${modeColorAlt}, ${modeColor})`,
-                border: 'none', cursor: 'pointer',
-                fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: '1.1rem', letterSpacing: '6px', color: '#fff',
-                boxShadow: `0 0 24px ${modeColor}33`, transition: 'all 0.2s',
-              }}>
-                {sessionLength === Infinity
-                  ? `${t('play.start')} ∞`
-                  : `${t('play.start')} ${sessionLength}Q`}
-              </button>
-              <Link href="/quiz" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
-                {t('play.change_mode')}
-              </Link>
+              {isMistakes && mistakesCount === 0 ? (
+                <>
+                  <div style={{ textAlign: 'center', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', fontFamily: "'Rajdhani', sans-serif", fontSize: '0.9rem', color: 'rgba(255,255,255,0.35)', lineHeight: 1.5 }}>
+                    {t('quiz.mistakes_empty')}
+                  </div>
+                  <Link href="/quiz" style={{ width: '100%', padding: '16px', background: `${modeColor}18`, border: `1px solid ${modeColor}44`, cursor: 'pointer', fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.1rem', letterSpacing: '6px', color: modeColor, textDecoration: 'none', display: 'block', textAlign: 'center' }}>
+                    {t('play.change_mode')}
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <button onClick={startSession} style={{
+                    width: '100%', padding: '16px',
+                    background: `linear-gradient(90deg, ${modeColorAlt}, ${modeColor})`,
+                    border: 'none', cursor: 'pointer',
+                    fontFamily: "'Bebas Neue', sans-serif",
+                    fontSize: '1.1rem', letterSpacing: '6px', color: '#fff',
+                    boxShadow: `0 0 24px ${modeColor}33`, transition: 'all 0.2s',
+                  }}>
+                    {sessionLength === Infinity
+                      ? `${t('play.start')} ∞`
+                      : `${t('play.start')} ${sessionLength}Q`}
+                  </button>
+                  <Link href="/quiz" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
+                    {t('play.change_mode')}
+                  </Link>
+                </>
+              )}
             </div>
 
           </div>
@@ -624,7 +695,7 @@ function QuizPlay() {
 
               {newAchievements.length > 0 && <AchievementToast achievements={newAchievements} label={t('play.achievement_unlocked')} />}
 
-              <ReviewSection history={historyRef.current} show={showReview} onToggle={() => setShowReview(v => !v)} modeColor={modeColor} isDamage={isDamage} t={t as (k: string, v?: Record<string, string | number>) => string} />
+              <ReviewSection history={historyRef.current} show={showReview} onToggle={() => setShowReview(v => !v)} modeColor={modeColor} mode={mode} t={t as (k: string, v?: Record<string, string | number>) => string} />
 
               {buttons}
             </div>
@@ -685,7 +756,7 @@ function QuizPlay() {
 
             {newAchievements.length > 0 && <AchievementToast achievements={newAchievements} label={t('play.achievement_unlocked')} />}
 
-            <ReviewSection history={historyRef.current} show={showReview} onToggle={() => setShowReview(v => !v)} modeColor={modeColor} isDamage={isDamage} t={t as (k: string, v?: Record<string, string | number>) => string} />
+            <ReviewSection history={historyRef.current} show={showReview} onToggle={() => setShowReview(v => !v)} modeColor={modeColor} mode={mode} t={t as (k: string, v?: Record<string, string | number>) => string} />
 
             {buttons}
           </div>
@@ -767,7 +838,7 @@ function QuizPlay() {
             {/* Header */}
             <div style={{
               padding: '11px 18px',
-              background: `rgba(${modeColor === '#ff2d78' ? '255,45,120' : modeColor === '#00f0ff' ? '0,240,255' : modeColor === '#9b1fff' ? '155,31,255' : modeColor === '#ffe000' ? '255,224,0' : modeColor === '#4ade80' ? '74,222,128' : '255,106,0'}, 0.07)`,
+              background: `${modeColor}12`,
               borderBottom: `1px solid ${modeColor}28`,
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
@@ -1061,15 +1132,17 @@ function getFunFact(q: { answer: string; on_block_value?: string | null; move_na
   return null
 }
 
-function ReviewSection({ history, show, onToggle, modeColor, isDamage, t }: {
+function ReviewSection({ history, show, onToggle, modeColor, mode, t }: {
   history: HistoryEntry[]
   show: boolean
   onToggle: () => void
   modeColor: string
-  isDamage: boolean
+  mode: string
   t: (k: string, v?: Record<string, string | number>) => string
 }) {
   if (history.length === 0) return null
+  const fmt = (val: string) =>
+    mode === 'damage' || mode === 'onblock' || mode === 'punish' ? val : `${val}f`
   return (
     <div style={{ width: '100%' }}>
       <button onClick={onToggle} style={{
@@ -1097,12 +1170,12 @@ function ReviewSection({ history, show, onToggle, modeColor, isDamage, t }: {
                 </div>
                 {!entry.correct && entry.userAnswer && (
                   <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.38rem', letterSpacing: '1px', color: '#ff2d78', marginTop: '2px' }}>
-                    {t('play.your_answer')}: {isDamage ? entry.userAnswer : `${entry.userAnswer}f`}
+                    {t('play.your_answer')}: {fmt(entry.userAnswer)}
                   </div>
                 )}
               </div>
               <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '1px', color: entry.correct ? '#4ade80' : 'rgba(255,255,255,0.45)', textAlign: 'right' }}>
-                {isDamage ? entry.question.answer : `${entry.question.answer}f`}
+                {fmt(entry.question.answer)}
               </div>
             </div>
           ))}

@@ -13,6 +13,7 @@ export default function Navbar() {
     { href: '/challenges',  label: 'CHALLENGES' },
     { href: '/multi',       label: 'MULTI' },
     { href: '/stats',       label: t('nav.stats') },
+    { href: '/profile',     label: t('nav.profile') },
   ]
 
   return (

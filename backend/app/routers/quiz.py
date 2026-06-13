@@ -62,6 +62,14 @@ def daily_questions(db: Session = Depends(get_db)):
     return questions
 
 
+@router.get("/seeded", response_model=list[QuizQuestion])
+def seeded_questions(seed: str, n: int = 10, db: Session = Depends(get_db)):
+    questions = quiz_service.generate_seeded_questions(db, seed, min(n, 20))
+    if not questions:
+        raise HTTPException(status_code=404, detail="Impossible de générer les questions")
+    return questions
+
+
 @router.get("/{slug}/startup", response_model=QuizQuestion)
 def startup_question(slug: str, db: Session = Depends(get_db)):
     question = quiz_service.generate_startup_question(db, slug)
