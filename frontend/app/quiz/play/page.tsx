@@ -46,6 +46,7 @@ function QuizPlay() {
   const nextQuestionRef  = useRef<QuizQuestion | null>(null)
   const prefetchingRef   = useRef<boolean>(false)
   const prefetchTokenRef = useRef<number>(0)
+  const seenMovesRef     = useRef<Set<string>>(new Set())
 
   const [sessionPhase, setSessionPhase]   = useState<'selector' | 'playing' | 'finished'>('selector')
   const [sessionLength, setSessionLength] = useState<number>(10)
@@ -86,6 +87,22 @@ function QuizPlay() {
     damage:   '#d97706',
   }[mode] ?? '#9b1fff'
 
+  const fetchOne = useCallback(async (): Promise<QuizQuestion> => {
+    if (isPunish) return getRandomPunish()
+    if (isDamage) return getRandomDamage()
+    if (mode === 'fighter' && slug) return getFighterQuiz(slug)
+    return getRandomQuiz()
+  }, [mode, slug, isPunish, isDamage])
+
+  const fetchUnique = useCallback(async (): Promise<QuizQuestion> => {
+    for (let i = 0; i < 4; i++) {
+      const q = await fetchOne()
+      const key = `${q.fighter_slug}:${q.move_name}`
+      if (!seenMovesRef.current.has(key)) return q
+    }
+    return fetchOne()
+  }, [fetchOne])
+
   const loadQuestion = useCallback(async () => {
     nextQuestionRef.current = null
     prefetchingRef.current  = false
@@ -97,33 +114,22 @@ function QuizPlay() {
     setTimeLeft(5)
     if (timerRef.current) clearInterval(timerRef.current)
     try {
-      const q = isPunish
-        ? await getRandomPunish()
-        : isDamage
-        ? await getRandomDamage()
-        : (mode === 'fighter' && slug)
-        ? await getFighterQuiz(slug)
-        : await getRandomQuiz()
+      const q = await fetchUnique()
+      seenMovesRef.current.add(`${q.fighter_slug}:${q.move_name}`)
       setQuestion(q)
     } catch (e) {
       console.error(e)
     } finally {
       setLoading(false)
     }
-  }, [mode, slug, isPunish, isDamage])
+  }, [fetchUnique])
 
   const prefetchNext = useCallback(async () => {
     if (prefetchingRef.current) return
     prefetchingRef.current = true
     const myToken = prefetchTokenRef.current
     try {
-      const q = isPunish
-        ? await getRandomPunish()
-        : isDamage
-        ? await getRandomDamage()
-        : (mode === 'fighter' && slug)
-        ? await getFighterQuiz(slug)
-        : await getRandomQuiz()
+      const q = await fetchUnique()
       if (prefetchTokenRef.current === myToken) {
         nextQuestionRef.current = q
         if (q.gif_url) {
@@ -138,7 +144,7 @@ function QuizPlay() {
         prefetchingRef.current = false
       }
     }
-  }, [mode, slug, isPunish, isDamage])
+  }, [fetchUnique])
 
   useEffect(() => { if (sessionPhase === 'playing') loadQuestion() }, [loadQuestion, sessionPhase])
 
@@ -276,6 +282,7 @@ function QuizPlay() {
       const q = nextQuestionRef.current
       nextQuestionRef.current = null
       prefetchingRef.current  = false
+      seenMovesRef.current.add(`${q.fighter_slug}:${q.move_name}`)
       setQuestion(q)
       setSelected(null)
       setState('idle')
@@ -328,6 +335,7 @@ function QuizPlay() {
 
   function startSession() {
     track('quiz_started', { mode })
+    seenMovesRef.current = new Set()
     setScore(0); setCombo(0); setMaxCombo(0); setTotal(0)
     setIsNewRecord(false); setLoading(true); setQuestion(null)
     setSessionPhase('playing')
@@ -335,6 +343,7 @@ function QuizPlay() {
 
   function restartSession() {
     track('quiz_started', { mode })
+    seenMovesRef.current = new Set()
     setScore(0); setCombo(0); setMaxCombo(0); setTotal(0)
     setState('idle'); setSelected(null); setQuestion(null); setLoading(true)
     setIsNewRecord(false)
