@@ -6,6 +6,7 @@ import { getRandomQuiz } from '@/lib/api'
 import { playCorrect, playWrong } from '@/lib/sounds'
 import { GifSection, makeChoiceStyle } from '@/components/QuestionCard'
 import { useLanguage } from '@/lib/i18n'
+import { checkAndUnlock, updateLifetime } from '@/lib/achievements'
 import type { QuizQuestion } from '@/types'
 
 const COLOR     = '#e879f9'
@@ -82,6 +83,10 @@ export default function FlashPage() {
       const hist = histRaw ? JSON.parse(histRaw) : []
       hist.unshift(record)
       localStorage.setItem('fda_history', JSON.stringify(hist.slice(0, 30)))
+    } catch { /* ignore */ }
+    try {
+      updateLifetime({ questions: totalRef.current, totalCorrect: finalScore })
+      checkAndUnlock({ mode: 'flash', flashScore: finalScore })
     } catch { /* ignore */ }
     setPhase('finished')
   }

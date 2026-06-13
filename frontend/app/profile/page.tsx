@@ -26,11 +26,14 @@ interface LifetimeStats {
 }
 
 
-const QUIZ_MODES = ['random', 'fighter', 'input', 'punish', 'hardcore', 'survival', 'damage', 'onblock', 'custom', 'mistakes']
+const QUIZ_MODES = ['random', 'fighter', 'input', 'punish', 'hardcore', 'survival', 'damage', 'onblock', 'custom', 'mistakes', 'flash']
 const MODE_LABEL: Record<string, string> = {
   random: 'RANDOM', fighter: 'FIGHTER', input: 'INPUT', punish: 'PUNISH', hardcore: 'HARDCORE',
   survival: 'SURVIVAL', damage: 'DAMAGE', onblock: 'ON BLOCK', custom: 'CUSTOM', mistakes: 'ERROR BANK',
+  flash: 'FLASH',
 }
+// Modes where the BEST column is not a session score but a highscore count
+const HIGHSCORE_MODES = new Set(['survival', 'flash'])
 
 function avatarColor(pseudo: string): string {
   const palette = ['#ff2d78','#00f0ff','#9b1fff','#ffe000','#4ade80','#f59e0b','#00b4d8','#c77dff','#ff6a00','#14b8a6','#f43f5e']
@@ -94,6 +97,11 @@ export default function ProfilePage() {
     if (survRaw) {
       const sv = JSON.parse(survRaw)
       bests['survival'] = { bestScore: sv.best, bestAccuracy: 0, totalGames: sv.totalGames }
+    }
+    const flashRaw = localStorage.getItem('fda_flash_best')
+    if (flashRaw) {
+      const fb = JSON.parse(flashRaw)
+      bests['flash'] = { bestScore: fb.best, bestAccuracy: 0, totalGames: fb.totalGames ?? 0 }
     }
     setModeBests(bests)
 
@@ -257,10 +265,10 @@ export default function ProfilePage() {
                   <div key={m} style={{ display: 'grid', gridTemplateColumns: '1fr 60px 60px 50px', gap: '8px', padding: '9px 14px', background: i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
                     <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', letterSpacing: '1px', color: c }}>{MODE_LABEL[m]}</div>
                     <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', color: best ? 'rgba(255,255,255,0.65)' : 'rgba(255,255,255,0.15)', textAlign: 'center' }}>
-                      {best ? (m === 'survival' ? best.bestScore : `${best.bestScore}`) : '—'}
+                      {best ? best.bestScore : '—'}
                     </div>
-                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', color: best && m !== 'survival' ? 'rgba(255,255,255,0.65)' : 'rgba(255,255,255,0.15)', textAlign: 'center' }}>
-                      {best && m !== 'survival' ? `${best.bestAccuracy}%` : '—'}
+                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', color: best && !HIGHSCORE_MODES.has(m) ? 'rgba(255,255,255,0.65)' : 'rgba(255,255,255,0.15)', textAlign: 'center' }}>
+                      {best && !HIGHSCORE_MODES.has(m) ? `${best.bestAccuracy}%` : '—'}
                     </div>
                     <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', color: best ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.15)', textAlign: 'center' }}>
                       {best?.totalGames ?? '—'}

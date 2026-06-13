@@ -44,6 +44,11 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'streak_30',          icon: '🔥', name: 'DAILY ×30',        desc: 'Reach a 30-day daily streak.',             rarity: 'master' },
   { id: 'hot_streak_30',      icon: '🤖', name: 'PERFECT MACHINE',  desc: 'Hit a 30-hit combo in one session.',       rarity: 'master' },
   { id: 'true_lab_monster',   icon: '🔬', name: 'TRUE LAB MONSTER', desc: 'Play all 10 quiz modes at least once.',    rarity: 'master' },
+  // FLASH MODE
+  { id: 'flash_debut', icon: '⚡', name: 'FLASH PLAYER',  desc: 'Play your first Flash game.',                  rarity: 'common' },
+  { id: 'flash_5',     icon: '🌩️', name: 'FLASH ×5',     desc: 'Score 5 correct in a single Flash game.',      rarity: 'rare' },
+  { id: 'flash_10',    icon: '💥', name: 'FLASH MASTER',  desc: 'Score 10 correct in a single Flash game.',     rarity: 'epic' },
+  { id: 'flash_20',    icon: '🔱', name: 'FLASH LEGEND',  desc: 'Score 20 correct in a single Flash game.',     rarity: 'master' },
   // LEGENDARY
   { id: 'grandmaster',     icon: '👑', name: 'GRANDMASTER',     desc: 'Answer 1000 total questions.',                 rarity: 'legendary' },
   { id: 'encyclopedia',    icon: '📚', name: 'ENCYCLOPEDIA',    desc: 'Play all 30 fighters in FIGHTER mode.',        rarity: 'legendary' },
@@ -178,6 +183,7 @@ export interface CheckContext {
   multiWon?: boolean
   weeklyScore?: number
   weeklyRank?: number
+  flashScore?: number
 }
 
 export function checkAndUnlock(ctx: CheckContext): Achievement[] {
@@ -185,7 +191,7 @@ export function checkAndUnlock(ctx: CheckContext): Achievement[] {
   const newly: Achievement[] = []
   const lt = getLifetime()
   const u = (id: string) => tryUnlock(id, newly)
-  const { mode, score, total, maxCombo, survived, dailyScore, dailyRank, multiWon, weeklyScore, weeklyRank } = ctx
+  const { mode, score, total, maxCombo, survived, dailyScore, dailyRank, multiWon, weeklyScore, weeklyRank, flashScore } = ctx
 
   // COMMON
   if (mode) u('first_quiz')
@@ -250,6 +256,12 @@ export function checkAndUnlock(ctx: CheckContext): Achievement[] {
   })
   const weeklyPlayed = !!localStorage.getItem('fda_weekly_result')
   if (played10.length === allModes10.length && weeklyPlayed) u('true_lab_monster')
+
+  // FLASH
+  if (mode === 'flash') u('flash_debut')
+  if (flashScore !== undefined && flashScore >= 5)  u('flash_5')
+  if (flashScore !== undefined && flashScore >= 10) u('flash_10')
+  if (flashScore !== undefined && flashScore >= 20) u('flash_20')
 
   // LEGENDARY
   if (lt.questions >= 1000) u('grandmaster')
