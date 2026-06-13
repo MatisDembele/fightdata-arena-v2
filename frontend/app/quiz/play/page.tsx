@@ -139,6 +139,27 @@ function QuizPlay() {
   }, [isInput, loading, state, question])
 
   useEffect(() => {
+    if (sessionPhase !== 'playing' || loading || isInput) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return
+      if (!isPunish && question?.choices) {
+        const num = parseInt(e.key)
+        if (num >= 1 && num <= question.choices.length && state === 'idle') {
+          handleChoice(question.choices[num - 1]); return
+        }
+        const idx = ['a','b','c','d'].indexOf(e.key.toLowerCase())
+        if (idx >= 0 && idx < question.choices.length && state === 'idle') {
+          handleChoice(question.choices[idx]); return
+        }
+      }
+      if (e.key === 'Enter' && state !== 'idle') handleNextQuestion()
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionPhase, loading, isInput, isPunish, state, question])
+
+  useEffect(() => {
     if (sessionPhase !== 'finished') return
     track('quiz_completed', { mode, score, accuracy })
     if (isSurvival) {
@@ -628,6 +649,7 @@ function QuizPlay() {
                         width: '20px', height: '20px', flexShrink: 0,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         border: '1px solid rgba(255,255,255,0.18)', fontSize: '0.62rem',
+                        fontFamily: "'Share Tech Mono', monospace",
                       }}>{String.fromCharCode(65 + i)}</span>
                       {choice} frames
                     </button>

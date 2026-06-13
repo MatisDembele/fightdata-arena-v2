@@ -225,7 +225,11 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
     if (phase === 'waiting') return (
       <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
         <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.6rem', letterSpacing: '6px', color: '#fff' }}>
-          ROOM — <span style={{ color: COLOR, textShadow: `0 0 12px ${COLOR}` }}>{room}</span>
+          ROOM — <span
+            onClick={() => navigator.clipboard.writeText(room)}
+            title="Click to copy"
+            style={{ color: COLOR, textShadow: `0 0 12px ${COLOR}`, cursor: 'pointer' }}
+          >{room}</span>
         </div>
         <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.3)' }}>{t('room.give_code')}</div>
         {/* Room options badge */}
@@ -344,7 +348,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
           {!isPunish && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {question.choices.map((choice, i) => (
-                <button key={choice} onClick={() => sendAnswer(choice)} style={makeChoiceStyle(choice, correctAnswer, selected, !selected && !correctAnswer)}>
+                <button key={choice} onClick={() => sendAnswer(choice)} style={{ ...makeChoiceStyle(choice, correctAnswer, selected, !correctAnswer), cursor: selected || correctAnswer ? 'default' : 'pointer' }}>
                   <span style={{ width: '20px', height: '20px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.18)', fontSize: '0.62rem' }}>{String.fromCharCode(65 + i)}</span>
                   {choice} frames
                 </button>

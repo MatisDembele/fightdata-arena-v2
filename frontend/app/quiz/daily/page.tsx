@@ -140,6 +140,24 @@ function DailyPage() {
     if (correct) setScore(s => s + 1)
   }
 
+  useEffect(() => {
+    if (phase !== 'playing') return
+    const handler = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return
+      const question = questions[idx]
+      if (question?.choices && state === 'idle') {
+        const num = parseInt(e.key)
+        if (num >= 1 && num <= question.choices.length) { handleChoice(question.choices[num - 1]); return }
+        const ci = ['a','b','c','d'].indexOf(e.key.toLowerCase())
+        if (ci >= 0 && ci < question.choices.length) { handleChoice(question.choices[ci]); return }
+      }
+      if (e.key === 'Enter' && state !== 'idle') handleNext()
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, state, idx, questions])
+
   const handleNext = () => {
     if (idx + 1 >= questions.length) {
       const finalAnswers = answersRef.current

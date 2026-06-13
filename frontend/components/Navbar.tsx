@@ -64,7 +64,9 @@ export default function Navbar() {
       }}>
         {links.map(link => {
           const isActive = !link.external && (
-            path === link.href || (link.href !== '/' && path.startsWith(link.href))
+            path === link.href ||
+            (link.href !== '/' && path.startsWith(link.href) &&
+             !links.some(other => other.href !== link.href && path.startsWith(other.href) && other.href.length > link.href.length))
           )
           const Tag = link.external ? 'a' : Link
           const extraProps = link.external
