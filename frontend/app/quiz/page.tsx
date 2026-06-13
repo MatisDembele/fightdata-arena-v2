@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import { getFighters } from '@/lib/api'
@@ -8,6 +9,7 @@ import type { Fighter } from '@/types'
 import { useLanguage } from '@/lib/i18n'
 
 export default function QuizSelectPage() {
+  const router                          = useRouter()
   const [active, setActive]             = useState(0)
   const [showFighters, setShowFighters] = useState(false)
   const [fighters, setFighters]         = useState<Fighter[]>([])
@@ -83,7 +85,7 @@ export default function QuizSelectPage() {
         finally { setLoadingF(false) }
       }
     } else if (mode.href) {
-      window.location.href = mode.href
+      router.push(mode.href)
     }
   }
 

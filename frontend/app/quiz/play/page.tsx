@@ -7,6 +7,7 @@ import { getRandomQuiz, getFighterQuiz, getRandomPunish } from '@/lib/api'
 import type { QuizQuestion } from '@/types'
 import { track } from '@vercel/analytics'
 import { useLanguage } from '@/lib/i18n'
+import { GifSection, makeChoiceStyle } from '@/components/QuestionCard'
 
 type AnswerState = 'idle' | 'correct' | 'wrong'
 
@@ -274,24 +275,6 @@ function QuizPlay() {
       // clipboard not available
     }
   }, [mode, slug, score, sessionLength, accuracy, maxCombo, isSurvival, t])
-
-  const choiceStyle = (choice: string): React.CSSProperties => {
-    const base: React.CSSProperties = {
-      padding: '11px 14px',
-      display: 'flex', alignItems: 'center', gap: '10px',
-      cursor: state === 'idle' ? 'pointer' : 'default',
-      border: '1px solid rgba(255,255,255,0.09)',
-      background: 'rgba(255,255,255,0.04)',
-      transition: 'all 0.15s',
-      fontFamily: "'Share Tech Mono', monospace",
-      fontSize: '0.88rem', color: 'rgba(255,255,255,0.75)',
-      width: '100%', textAlign: 'left',
-    }
-    if (state === 'idle') return base
-    if (choice === question?.answer) return { ...base, background: 'rgba(74,222,128,0.12)', border: '1px solid #4ade80', color: '#4ade80', boxShadow: '0 0 12px rgba(74,222,128,0.2)' }
-    if (choice === selected) return { ...base, background: 'rgba(255,45,120,0.12)', border: '1px solid #ff2d78', color: '#ff2d78' }
-    return { ...base, opacity: 0.3 }
-  }
 
   function startSession() {
     track('quiz_started', { mode })
@@ -615,29 +598,7 @@ function QuizPlay() {
             )}
 
             {/* GIF */}
-            <div style={{
-              height: '180px', background: 'rgba(255,255,255,0.03)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              overflow: 'hidden', position: 'relative',
-            }}>
-              {question.gif_url ? (
-                <img src={question.gif_url} alt={question.move_name}
-                  style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }}
-                />
-              ) : (
-                <span style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.15)', fontSize: '0.6rem', letterSpacing: '3px' }}>
-                  {t('play.hitbox_preview')}
-                </span>
-              )}
-              {[
-                { top: '7px', left: '7px', borderTop: `1px solid ${modeColor}`, borderLeft: `1px solid ${modeColor}` },
-                { top: '7px', right: '7px', borderTop: `1px solid ${modeColor}`, borderRight: `1px solid ${modeColor}` },
-                { bottom: '7px', left: '7px', borderBottom: `1px solid ${modeColor}`, borderLeft: `1px solid ${modeColor}` },
-                { bottom: '7px', right: '7px', borderBottom: `1px solid ${modeColor}`, borderRight: `1px solid ${modeColor}` },
-              ].map((s, i) => (
-                <div key={i} style={{ position: 'absolute', width: '10px', height: '10px', ...s }} />
-              ))}
-            </div>
+            <GifSection gifUrl={question.gif_url} moveName={question.move_name} color={modeColor} fallback={t('play.hitbox_preview')} />
 
             {/* Question */}
             <div style={{ padding: '16px 18px 12px' }}>
@@ -662,7 +623,7 @@ function QuizPlay() {
               {!isInput && !isPunish && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {question.choices.map((choice, i) => (
-                    <button key={choice} onClick={() => handleChoice(choice)} style={choiceStyle(choice)}>
+                    <button key={choice} onClick={() => handleChoice(choice)} style={makeChoiceStyle(choice, question.answer, selected, state === 'idle')}>
                       <span style={{
                         width: '20px', height: '20px', flexShrink: 0,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',

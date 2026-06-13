@@ -272,6 +272,14 @@ body {
 .nav-lang-btn:hover { color: rgba(255,255,255,0.65); }
 .nav-lang-btn.active { color: var(--yellow); }
 
+@media (max-width: 768px) {
+  .navbar { padding: 0 20px; }
+  .quiz-modes-grid { grid-template-columns: repeat(2, 1fr); }
+  .home-mode-active   { flex: 0 0 clamp(160px, 38vw, 280px); padding: 22px 20px 26px; }
+  .home-mode-inactive { flex: 0 0 clamp(80px, 18vw, 160px); padding: 16px 14px 20px; }
+  .gameover-score-cell { padding: 20px 28px; }
+}
+
 @media (max-width: 640px) {
   .navbar { padding: 0 14px; }
   .navbar-badge { display: none; }

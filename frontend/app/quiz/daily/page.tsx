@@ -6,6 +6,7 @@ import { getDailyQuiz } from '@/lib/api'
 import type { QuizQuestion } from '@/types'
 import { track } from '@vercel/analytics'
 import { useLanguage } from '@/lib/i18n'
+import QuestionCard, { makeChoiceStyle } from '@/components/QuestionCard'
 
 const COLOR     = '#00ff88'
 const COLOR_ALT = '#00b894'
@@ -174,25 +175,6 @@ function DailyPage() {
     }
   }
 
-  const choiceStyle = (choice: string): React.CSSProperties => {
-    const base: React.CSSProperties = {
-      padding: '11px 14px',
-      display: 'flex', alignItems: 'center', gap: '10px',
-      cursor: state === 'idle' ? 'pointer' : 'default',
-      border: '1px solid rgba(255,255,255,0.09)',
-      background: 'rgba(255,255,255,0.04)',
-      transition: 'all 0.15s',
-      fontFamily: "'Share Tech Mono', monospace",
-      fontSize: '0.88rem', color: 'rgba(255,255,255,0.75)',
-      width: '100%', textAlign: 'left',
-    }
-    if (state === 'idle') return base
-    const q = questions[idx]
-    if (choice === q?.answer) return { ...base, background: 'rgba(74,222,128,0.12)', border: '1px solid #4ade80', color: '#4ade80', boxShadow: '0 0 12px rgba(74,222,128,0.2)' }
-    if (choice === selected)  return { ...base, background: 'rgba(255,45,120,0.12)', border: '1px solid #ff2d78', color: '#ff2d78' }
-    return { ...base, opacity: 0.3 }
-  }
-
   // ── INTRO ───────────────────────────────────────────────────────────────────
   if (phase === 'intro') return (
     <>
@@ -334,45 +316,31 @@ function DailyPage() {
             {t('daily.loading')}
           </div>
         ) : (
-          <div style={{ width: '100%', maxWidth: '500px', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <div style={{ padding: '11px 18px', background: 'rgba(0,255,136,0.07)', borderBottom: `1px solid ${COLOR}28`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '4px', background: `linear-gradient(90deg, ${COLOR}, ${COLOR_ALT})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                DAILY {formatDate()}
-              </span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '2px', color: COLOR }}>
-                  Q{idx + 1}/10
+          <QuestionCard
+            gifUrl={question.gif_url}
+            moveName={question.move_name}
+            color={COLOR}
+            header={
+              <div style={{ padding: '11px 18px', background: 'rgba(0,255,136,0.07)', borderBottom: `1px solid ${COLOR}28`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '4px', background: `linear-gradient(90deg, ${COLOR}, ${COLOR_ALT})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  DAILY {formatDate()}
                 </span>
-                <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.4)' }}>
-                  {question.fighter_slug}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '2px', color: COLOR }}>Q{idx + 1}/10</span>
+                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.4)' }}>{question.fighter_slug}</span>
+                </div>
               </div>
-            </div>
-            <div style={{ height: '180px', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
-              {question.gif_url ? (
-                <img src={question.gif_url} alt={question.move_name} style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
-              ) : (
-                <span style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.15)', fontSize: '0.6rem', letterSpacing: '3px' }}>NO GIF</span>
-              )}
-              {[
-                { top: '7px', left: '7px', borderTop: `1px solid ${COLOR}`, borderLeft: `1px solid ${COLOR}` },
-                { top: '7px', right: '7px', borderTop: `1px solid ${COLOR}`, borderRight: `1px solid ${COLOR}` },
-                { bottom: '7px', left: '7px', borderBottom: `1px solid ${COLOR}`, borderLeft: `1px solid ${COLOR}` },
-                { bottom: '7px', right: '7px', borderBottom: `1px solid ${COLOR}`, borderRight: `1px solid ${COLOR}` },
-              ].map((s, i) => (
-                <div key={i} style={{ position: 'absolute', width: '10px', height: '10px', ...s }} />
-              ))}
-            </div>
-            <div style={{ padding: '16px 18px 12px' }}>
+            }
+            questionText={
               <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1rem', fontWeight: 600, lineHeight: 1.4, color: 'rgba(255,255,255,0.9)' }}>
                 {t('play.q_what_is')} <span style={{ color: COLOR }}>startup</span> {t('play.q_of')}{' '}
                 <strong style={{ color: '#fff' }}>{question.move_name}</strong> ?
               </p>
-            </div>
-            <div style={{ padding: '0 18px' }}>
+            }
+            choices={
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {question.choices.map((choice, i) => (
-                  <button key={choice} onClick={() => handleChoice(choice)} style={choiceStyle(choice)}>
+                  <button key={choice} onClick={() => handleChoice(choice)} style={makeChoiceStyle(choice, question.answer, selected, state === 'idle')}>
                     <span style={{ width: '20px', height: '20px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.18)', fontSize: '0.62rem' }}>
                       {String.fromCharCode(65 + i)}
                     </span>
@@ -380,32 +348,25 @@ function DailyPage() {
                   </button>
                 ))}
               </div>
-            </div>
-            <div style={{ padding: '12px 18px 18px' }}>
-              {state !== 'idle' && (
-                <div style={{ padding: '9px 14px', marginBottom: '10px', background: state === 'correct' ? 'rgba(74,222,128,0.1)' : 'rgba(255,45,120,0.1)', border: `1px solid ${state === 'correct' ? '#4ade80' : '#ff2d78'}`, fontFamily: "'Rajdhani', sans-serif", fontSize: '0.9rem', fontWeight: 700, color: state === 'correct' ? '#4ade80' : '#ff2d78' }}>
-                  {state === 'correct'
-                    ? t('daily.feedback_correct', { n: question.answer })
-                    : t('daily.feedback_wrong', { n: question.answer })}
-                </div>
-              )}
-              <button
-                onClick={state !== 'idle' ? handleNext : undefined}
-                disabled={state === 'idle'}
-                style={{
-                  width: '100%', padding: '13px',
-                  background: state !== 'idle' ? `linear-gradient(90deg, ${COLOR_ALT}, ${COLOR})` : 'rgba(255,255,255,0.05)',
-                  border: state === 'idle' ? '1px solid rgba(255,255,255,0.08)' : 'none',
-                  cursor: state !== 'idle' ? 'pointer' : 'default',
-                  fontFamily: "'Bebas Neue', sans-serif",
-                  fontSize: '0.95rem', letterSpacing: '4px',
-                  color: state !== 'idle' ? '#000' : 'rgba(255,255,255,0.2)',
-                  transition: 'all 0.2s',
-                }}>
-                {idx + 1 >= questions.length && state !== 'idle' ? t('daily.see_results') : t('daily.next_question')}
-              </button>
-            </div>
-          </div>
+            }
+            feedback={
+              <>
+                {state !== 'idle' && (
+                  <div style={{ padding: '9px 14px', marginBottom: '10px', background: state === 'correct' ? 'rgba(74,222,128,0.1)' : 'rgba(255,45,120,0.1)', border: `1px solid ${state === 'correct' ? '#4ade80' : '#ff2d78'}`, fontFamily: "'Rajdhani', sans-serif", fontSize: '0.9rem', fontWeight: 700, color: state === 'correct' ? '#4ade80' : '#ff2d78' }}>
+                    {state === 'correct'
+                      ? t('daily.feedback_correct', { n: question.answer })
+                      : t('daily.feedback_wrong', { n: question.answer })}
+                  </div>
+                )}
+                <button
+                  onClick={state !== 'idle' ? handleNext : undefined}
+                  disabled={state === 'idle'}
+                  style={{ width: '100%', padding: '13px', background: state !== 'idle' ? `linear-gradient(90deg, ${COLOR_ALT}, ${COLOR})` : 'rgba(255,255,255,0.05)', border: state === 'idle' ? '1px solid rgba(255,255,255,0.08)' : 'none', cursor: state !== 'idle' ? 'pointer' : 'default', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '4px', color: state !== 'idle' ? '#000' : 'rgba(255,255,255,0.2)', transition: 'all 0.2s' }}>
+                  {idx + 1 >= questions.length && state !== 'idle' ? t('daily.see_results') : t('daily.next_question')}
+                </button>
+              </>
+            }
+          />
         )}
         <Link href="/" style={{ marginTop: '16px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
           {t('daily.home')}

@@ -7,6 +7,16 @@ from app.database import Base, engine, SessionLocal
 from app.routers import fighters, quiz, multi
 from app.routers.multi import rooms, _broadcast, _send, _next_question, _reset_room
 
+
+async def _heartbeat(websocket: WebSocket):
+    """Ping every 25s to prevent proxy/Vercel idle-timeout disconnects."""
+    try:
+        while True:
+            await asyncio.sleep(25)
+            await _send(websocket, {"type": "ping"})
+    except asyncio.CancelledError:
+        pass
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
@@ -41,6 +51,7 @@ async def websocket_endpoint(
     player_name: str,
 ):
     await websocket.accept()
+    heartbeat_task = asyncio.create_task(_heartbeat(websocket))
     db = SessionLocal()
     avatar = websocket.query_params.get("avatar", "ryu")
 
@@ -102,6 +113,9 @@ async def websocket_endpoint(
     try:
         while True:
             data = await websocket.receive_json()
+
+            if data.get("type") in ("pong", "ping"):
+                continue
 
             if data.get("type") == "answer":
                 answer = str(data.get("value", "")).strip()
@@ -183,6 +197,7 @@ async def websocket_endpoint(
         else:
             rooms.pop(room_code, None)
     finally:
+        heartbeat_task.cancel()
         db.close()
 
 
