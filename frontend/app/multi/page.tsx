@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import { track } from '@vercel/analytics'
@@ -16,7 +16,7 @@ const FIGHTERS = [
   'mai','elena','sagat','cviper','alex','ingrid',
 ]
 
-export default function MultiLobby() {
+function MultiLobbyContent() {
   const router       = useRouter()
   const searchParams = useSearchParams()
   const [name, setName]         = useState('')
@@ -214,5 +214,13 @@ export default function MultiLobby() {
         </div>
       </main>
     </>
+  )
+}
+
+export default function MultiLobby() {
+  return (
+    <Suspense fallback={null}>
+      <MultiLobbyContent />
+    </Suspense>
   )
 }
