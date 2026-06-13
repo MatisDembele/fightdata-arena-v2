@@ -204,6 +204,9 @@ const en = {
   'stats.days':        'DAYS',
   'stats.no_data':     'No games yet.',
   'stats.survived':    'survived',
+  'stats.achievements':          'ACHIEVEMENTS',
+  'stats.achievements_progress': '{n}/{total} unlocked',
+  'play.achievement_unlocked':   'ACHIEVEMENT UNLOCKED',
 } as const
 
 type DictKey = keyof typeof en
@@ -410,6 +413,9 @@ const fr: Record<DictKey, string> = {
   'stats.days':        'JOURS',
   'stats.no_data':     "Aucune partie pour l’instant.",
   'stats.survived':    'survivé',
+  'stats.achievements':          'SUCCÈS',
+  'stats.achievements_progress': '{n}/{total} débloqués',
+  'play.achievement_unlocked':   'SUCCÈS DÉBLOQUÉ',
 }
 
 const dict: Record<string, Record<DictKey, string>> = { en, fr }

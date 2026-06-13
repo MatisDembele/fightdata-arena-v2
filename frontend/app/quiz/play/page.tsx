@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import { getRandomQuiz, getFighterQuiz, getRandomPunish, getRandomDamage } from '@/lib/api'
 import { playCorrect, playWrong, getSoundEnabled, toggleSound } from '@/lib/sounds'
+import { checkAndUnlock, updateLifetime, RARITY_COLOR, type Achievement, type LifetimeDelta } from '@/lib/achievements'
 import type { QuizQuestion } from '@/types'
 import { track } from '@vercel/analytics'
 import { useLanguage } from '@/lib/i18n'
@@ -51,6 +52,7 @@ function QuizPlay() {
   const [maxCombo, setMaxCombo]           = useState(0)
   const [copied, setCopied]               = useState(false)
   const [isNewRecord, setIsNewRecord]     = useState(false)
+  const [newAchievements, setNewAchievements] = useState<Achievement[]>([])
 
   const isHardcore = mode === 'hardcore'
   const isInput    = mode === 'input'
@@ -196,6 +198,19 @@ function QuizPlay() {
         totalGames:   prev.totalGames + 1,
       }))
     }
+    // Lifetime + achievements (run after best-score save so checkAndUnlock can read updated keys)
+    const delta: LifetimeDelta = { questions: total, totalCorrect: score }
+    if (isPunish) delta.punishCorrect = score
+    if (mode === 'fighter' && slug) {
+      delta.addFighter = slug
+      delta.addFighterCorrect = { slug, correct: score }
+    }
+    updateLifetime(delta)
+    const ctx: Parameters<typeof checkAndUnlock>[0] = { mode, score, total, maxCombo }
+    if (isSurvival) ctx.survived = score
+    if (mode === 'fighter' && slug) ctx.slug = slug
+    const newly = checkAndUnlock(ctx)
+    if (newly.length > 0) setNewAchievements(newly)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionPhase])
 
@@ -490,6 +505,8 @@ function QuizPlay() {
                 ))}
               </div>
 
+              {newAchievements.length > 0 && <AchievementToast achievements={newAchievements} label={t('play.achievement_unlocked')} />}
+
               {buttons}
             </div>
           </main>
@@ -546,6 +563,8 @@ function QuizPlay() {
             <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)' }}>
               {modeLabel} — {sessionLength === Infinity ? '∞' : sessionLength} QUESTIONS
             </div>
+
+            {newAchievements.length > 0 && <AchievementToast achievements={newAchievements} label={t('play.achievement_unlocked')} />}
 
             {buttons}
           </div>
@@ -853,4 +872,27 @@ function QuizPlay() {
 
 export default function QuizPlayPage() {
   return <Suspense><QuizPlay /></Suspense>
+}
+
+function AchievementToast({ achievements, label }: { achievements: Achievement[]; label: string }) {
+  return (
+    <div style={{ width: '100%', padding: '14px 16px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '4px', color: '#f59e0b' }}>
+        {label}
+      </div>
+      {achievements.map(a => (
+        <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ fontSize: '1.3rem', lineHeight: 1 }}>{a.icon}</div>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '2px', color: RARITY_COLOR[a.rarity] }}>
+              {a.name}
+            </div>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.35)', marginTop: '2px' }}>
+              {a.desc}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
 }

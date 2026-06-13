@@ -2,8 +2,9 @@
 import { useState, useEffect, type ReactNode } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
-import { useLanguage } from '@/lib/i18n'
+import { useLanguage, type DictKey } from '@/lib/i18n'
 import { getFighterPortrait, getFighterColor } from '@/lib/portraits'
+import { ACHIEVEMENTS, RARITIES, RARITY_COLOR, RARITY_LABEL, getUnlocked, type Rarity } from '@/lib/achievements'
 
 interface ModeStats {
   bestScore: number
@@ -50,6 +51,7 @@ export default function StatsPage() {
   const [pseudo, setPseudo]             = useState<string | null>(null)
   const [avatar, setAvatar]             = useState<string | null>(null)
   const [fighters, setFighters]         = useState<FighterEntry[]>([])
+  const [unlocked, setUnlocked]         = useState<Record<string, number>>({})
 
   useEffect(() => {
     const stats: Record<string, ModeStats | null> = {}
@@ -95,6 +97,7 @@ export default function StatsPage() {
 
     setPseudo(localStorage.getItem('fda_pseudo'))
     setAvatar(localStorage.getItem('fda_avatar'))
+    setUnlocked(getUnlocked())
   }, [])
 
   const streakActive = streak && (
@@ -210,6 +213,9 @@ export default function StatsPage() {
             </Section>
           )}
 
+          {/* Achievements */}
+          <AchievementsSection unlocked={unlocked} t={t} />
+
           <Link href="/" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none', textAlign: 'center' }}>
             ← HOME
           </Link>
@@ -259,5 +265,56 @@ function NoData({ label }: { label: string }) {
     <div style={{ gridColumn: '2 / 5', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.15)' }}>
       {label}
     </div>
+  )
+}
+
+function AchievementsSection({ unlocked, t }: { unlocked: Record<string, number>; t: (key: DictKey, v?: Record<string, string | number>) => string }) {
+  const totalUnlocked = ACHIEVEMENTS.filter(a => !!unlocked[a.id]).length
+  return (
+    <Section title={`${t('stats.achievements')} — ${t('stats.achievements_progress', { n: totalUnlocked, total: ACHIEVEMENTS.length })}`} color="#f59e0b">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        {RARITIES.map((rarity: Rarity) => {
+          const group = ACHIEVEMENTS.filter(a => a.rarity === rarity)
+          const count = group.filter(a => !!unlocked[a.id]).length
+          return (
+            <div key={rarity}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '3px', color: RARITY_COLOR[rarity], marginBottom: '8px' }}>
+                {RARITY_LABEL[rarity]} ({count}/{group.length})
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {group.map(a => {
+                  const isUnlocked = !!unlocked[a.id]
+                  const c = RARITY_COLOR[a.rarity]
+                  return (
+                    <div key={a.id} style={{
+                      display: 'flex', alignItems: 'center', gap: '12px',
+                      padding: '8px 12px',
+                      background: isUnlocked ? `${c}0d` : 'rgba(255,255,255,0.02)',
+                      border: `1px solid ${isUnlocked ? c + '33' : 'rgba(255,255,255,0.05)'}`,
+                      opacity: isUnlocked ? 1 : 0.4,
+                    }}>
+                      <div style={{ fontSize: '1.2rem', lineHeight: 1, filter: isUnlocked ? 'none' : 'grayscale(1)', flexShrink: 0 }}>
+                        {a.icon}
+                      </div>
+                      <div style={{ flex: 1, textAlign: 'left' }}>
+                        <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.75rem', letterSpacing: '1.5px', color: isUnlocked ? c : 'rgba(255,255,255,0.3)' }}>
+                          {a.name}
+                        </div>
+                        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.4rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.22)', marginTop: '2px' }}>
+                          {a.desc}
+                        </div>
+                      </div>
+                      {isUnlocked && (
+                        <div style={{ fontSize: '0.65rem', color: c, flexShrink: 0 }}>✓</div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </Section>
   )
 }

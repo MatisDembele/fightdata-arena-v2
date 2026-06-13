@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import { useLanguage } from '@/lib/i18n'
 import { getFighterPortrait } from '@/lib/portraits'
 import { GifSection, makeChoiceStyle } from '@/components/QuestionCard'
+import { checkAndUnlock, updateLifetime, RARITY_COLOR, type Achievement } from '@/lib/achievements'
 
 const WS_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/^http/, 'ws')
 
@@ -58,6 +59,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
   const [error, setError]                       = useState('')
   const [gameMode, setGameMode]                 = useState('startup')
   const [rematchWaiting, setRematchWaiting]     = useState(false)
+  const [newAchievements, setNewAchievements]   = useState<Achievement[]>([])
   const [rematchRequested, setRematchRequested] = useState<string | null>(null)
   const [countdown, setCountdown]               = useState(0)
 
@@ -154,6 +156,14 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [room, playerName])
+
+  useEffect(() => {
+    if (phase !== 'gameover' || winner !== playerName) return
+    updateLifetime({ multiWins: 1 })
+    const newly = checkAndUnlock({ multiWon: true })
+    if (newly.length > 0) setNewAchievements(newly)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, winner])
 
   function sendAnswer(value: string) {
     if (selected || !wsRef.current) return
@@ -503,6 +513,27 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
           <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)' }}>
             {t('room.questions_mode', { n: totalQuestions, mode: gameMode.toUpperCase() })}
           </div>
+
+          {newAchievements.length > 0 && (
+            <div style={{ width: '100%', maxWidth: '400px', padding: '14px 16px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '4px', color: '#f59e0b' }}>
+                {t('play.achievement_unlocked')}
+              </div>
+              {newAchievements.map(a => (
+                <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ fontSize: '1.3rem', lineHeight: 1 }}>{a.icon}</div>
+                  <div>
+                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '2px', color: RARITY_COLOR[a.rarity] }}>
+                      {a.name}
+                    </div>
+                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.35)', marginTop: '2px' }}>
+                      {a.desc}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center' }}>
             {!rematchWaiting && !rematchRequested && (
