@@ -27,17 +27,17 @@ export default function Home() {
       desc: t('home.multi_desc'),
     },
     {
-      id: 'daily', label: 'DAILY', sub: t('home.daily_sub'),
-      href: '/quiz/daily', external: false,
+      id: 'challenges', label: 'CHALLENGES', sub: t('home.challenges_sub'),
+      href: '/challenges', external: false,
       color: '#00ff88', colorAlt: '#00b894',
-      desc: t('home.daily_desc'),
+      desc: t('home.challenges_desc'),
     },
   ]
 
   const STATS = [
     { val: '30',   label: t('home.stat_chars') },
     { val: '1562', label: t('home.stat_moves') },
-    { val: '7',    label: t('home.stat_modes') },
+    { val: '10',   label: t('home.stat_modes') },
   ]
 
   const current = MODES[active]
