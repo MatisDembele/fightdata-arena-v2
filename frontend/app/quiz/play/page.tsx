@@ -53,6 +53,7 @@ function QuizPlay() {
   const [copied, setCopied]               = useState(false)
   const [isNewRecord, setIsNewRecord]     = useState(false)
   const [newAchievements, setNewAchievements] = useState<Achievement[]>([])
+  const [bestRecord, setBestRecord]       = useState<{ bestScore: number; bestAccuracy: number } | null>(null)
 
   const isHardcore = mode === 'hardcore'
   const isInput    = mode === 'input'
@@ -358,75 +359,139 @@ function QuizPlay() {
     }
   }, [isSurvival, sessionPhase])
 
+  useEffect(() => {
+    if (sessionPhase !== 'selector') return
+    const key = mode === 'fighter' && slug ? `fda_best_fighter_${slug}` : `fda_best_${mode}`
+    const raw = localStorage.getItem(key)
+    setBestRecord(raw ? JSON.parse(raw) : null)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionPhase])
+
+  useEffect(() => {
+    if (sessionPhase !== 'selector') return
+    const LENGTHS = [10, 20, 30, 40, 50, Infinity]
+    const handler = (e: KeyboardEvent) => {
+      const n = parseInt(e.key)
+      if (n >= 1 && n <= LENGTHS.length) { setSessionLength(LENGTHS[n - 1]); return }
+      if (e.key === 'Enter') startSession()
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionPhase])
+
   const isPunishable = question?.answer === 'punissable'
 
   // ── SELECTOR ────────────────────────────────────────────────────────────────
-  if (sessionPhase === 'selector') return (
-    <>
-      <Navbar />
-      <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', minHeight: 'calc(100vh - 60px)' }}>
-        <div style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '28px', alignItems: 'center' }}>
+  if (sessionPhase === 'selector') {
+    const LENGTHS = [10, 20, 30, 40, 50, Infinity] as number[]
+    const TIME_EST: Record<number, string> = { 10: '~3 min', 20: '~6 min', 30: '~9 min', 40: '~12 min', 50: '~15 min' }
+    const modeSub = ({
+      random:   t('quiz.mode_random_sub'),
+      fighter:  t('quiz.mode_fighter_sub'),
+      input:    t('quiz.mode_input_sub'),
+      punish:   t('quiz.mode_punish_sub'),
+      hardcore: t('quiz.mode_hardcore_sub'),
+      damage:   t('quiz.mode_damage_sub'),
+    } as Record<string, string>)[mode] ?? ''
 
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '4px', background: `linear-gradient(90deg, ${modeColor}, ${modeColorAlt})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '10px' }}>
-              {modeLabel}
+    return (
+      <>
+        <Navbar />
+        <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', minHeight: 'calc(100vh - 60px)' }}>
+          <div style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '28px' }}>
+
+            {/* Mode header */}
+            <div>
+              <div style={{
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: 'clamp(2rem, 7vw, 3rem)',
+                letterSpacing: '6px', lineHeight: 1,
+                background: `linear-gradient(135deg, ${modeColor}, ${modeColorAlt})`,
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                filter: `drop-shadow(0 0 18px ${modeColor}55)`,
+              }}>
+                {modeLabel}
+              </div>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.52rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.3)', marginTop: '8px' }}>
+                {modeSub}
+              </div>
+              {bestRecord && (
+                <div style={{ marginTop: '14px', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', background: `${modeColor}10`, border: `1px solid ${modeColor}30` }}>
+                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.28)' }}>RECORD</span>
+                  <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '2px', color: modeColor }}>{bestRecord.bestScore} CORRECT</span>
+                  <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.6rem' }}>·</span>
+                  <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '2px', color: modeColor }}>{bestRecord.bestAccuracy}%</span>
+                </div>
+              )}
             </div>
-            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(1.8rem, 5vw, 2.5rem)', letterSpacing: '6px', color: '#fff' }}>
-              {t('play.session_length')}
+
+            {/* Question count picker */}
+            <div>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.18)', marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '10px' }}>
+                {t('play.session_length')}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                {LENGTHS.map((len, i) => {
+                  const isSel = sessionLength === len
+                  const isInf = len === Infinity
+                  return (
+                    <button
+                      key={String(len)}
+                      onClick={() => setSessionLength(len)}
+                      style={{
+                        padding: '18px 8px 14px',
+                        background: isSel ? `${modeColor}18` : 'rgba(255,255,255,0.03)',
+                        border: `1px solid ${isSel ? modeColor : 'rgba(255,255,255,0.07)'}`,
+                        cursor: 'pointer',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+                        transition: 'all 0.15s',
+                        boxShadow: isSel ? `0 0 22px ${modeColor}22, inset 0 0 30px ${modeColor}08` : 'none',
+                        position: 'relative',
+                      }}
+                    >
+                      <span style={{ position: 'absolute', top: '6px', right: '8px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.38rem', letterSpacing: '0px', color: isSel ? `${modeColor}77` : 'rgba(255,255,255,0.12)' }}>
+                        [{i + 1}]
+                      </span>
+                      <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '2.2rem', letterSpacing: '1px', lineHeight: 1, color: isSel ? modeColor : 'rgba(255,255,255,0.55)', textShadow: isSel ? `0 0 18px ${modeColor}88` : 'none' }}>
+                        {isInf ? '∞' : len}
+                      </span>
+                      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.4rem', letterSpacing: '2px', color: isSel ? `${modeColor}bb` : 'rgba(255,255,255,0.22)' }}>
+                        {isInf ? t('play.infinite_label') : 'Q'}
+                      </span>
+                      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.38rem', letterSpacing: '1px', color: isSel ? `${modeColor}66` : 'rgba(255,255,255,0.13)', marginTop: '2px' }}>
+                        {isInf ? '∞' : TIME_EST[len]}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.25)', marginTop: '8px' }}>
-              {t('play.questions_per_session')}
+
+            {/* CTA */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
+              <button onClick={startSession} style={{
+                width: '100%', padding: '16px',
+                background: `linear-gradient(90deg, ${modeColorAlt}, ${modeColor})`,
+                border: 'none', cursor: 'pointer',
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: '1.1rem', letterSpacing: '6px', color: '#fff',
+                boxShadow: `0 0 24px ${modeColor}33`, transition: 'all 0.2s',
+              }}>
+                {sessionLength === Infinity
+                  ? `${t('play.start')} ∞`
+                  : `${t('play.start')} ${sessionLength}Q`}
+              </button>
+              <Link href="/quiz" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
+                {t('play.change_mode')}
+              </Link>
             </div>
+
           </div>
-
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
-            {([10, 20, 30, 40, 50, Infinity] as number[]).map(len => {
-              const isSel = sessionLength === len
-              return (
-                <button key={String(len)} onClick={() => setSessionLength(len)} style={{
-                  width: '76px', height: '76px',
-                  background: isSel ? `${modeColor}18` : 'rgba(255,255,255,0.03)',
-                  border: `1px solid ${isSel ? modeColor : 'rgba(255,255,255,0.1)'}`,
-                  color: isSel ? modeColor : 'rgba(255,255,255,0.4)',
-                  fontFamily: "'Bebas Neue', sans-serif",
-                  fontSize: len === Infinity ? '2rem' : '1.7rem',
-                  letterSpacing: '1px', cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  textShadow: isSel ? `0 0 12px ${modeColor}88` : 'none',
-                  boxShadow: isSel ? `0 0 18px ${modeColor}22` : 'none',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px',
-                }}>
-                  <span>{len === Infinity ? '∞' : len}</span>
-                  <span style={{ fontSize: '0.4rem', letterSpacing: '1px', opacity: 0.6 }}>
-                    {len === Infinity ? t('play.infinite_label') : 'Q'}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.62rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.3)', textAlign: 'center', minHeight: '1.2em' }}>
-            {sessionLength === Infinity ? t('play.infinite_mode') : t('play.n_questions', { n: sessionLength })}
-          </div>
-
-          <button onClick={startSession} style={{
-            width: '100%', maxWidth: '280px', padding: '14px',
-            background: `linear-gradient(90deg, ${modeColorAlt}, ${modeColor})`,
-            border: 'none', cursor: 'pointer',
-            fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: '1.1rem', letterSpacing: '6px', color: '#fff',
-            boxShadow: `0 0 20px ${modeColor}33`, transition: 'all 0.2s',
-          }}>
-            {t('play.start')}
-          </button>
-
-          <Link href="/quiz" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
-            {t('play.change_mode')}
-          </Link>
-        </div>
-      </main>
-    </>
-  )
+        </main>
+      </>
+    )
+  }
 
   // ── FINISHED ────────────────────────────────────────────────────────────────
   if (sessionPhase === 'finished') {
