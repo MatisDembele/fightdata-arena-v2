@@ -5,7 +5,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Fight Data Arena — SF6 Frame Data',
-  description: 'Quiz et base de données de frame data Street Fighter 6. Startup, active, recovery pour tous les personnages.',
+  description: 'Street Fighter 6 frame data quiz. Guess startup, damage, and on-block values for every character.',
   keywords: 'Street Fighter 6, frame data, quiz, startup, SF6, fighting game',
 }
 

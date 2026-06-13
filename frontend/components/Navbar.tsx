@@ -8,10 +8,10 @@ export default function Navbar() {
   const { lang, setLang, t } = useLanguage()
 
   const links: { href: string; label: string; external?: boolean }[] = [
-    { href: '/',                                  label: t('nav.home') },
-    { href: '/quiz',                              label: 'QUIZ' },
-    { href: 'https://ultimateframedata.com/sf6/', label: 'FRAME DATA', external: true },
-    { href: '/multi',                             label: 'MULTI' },
+    { href: '/',           label: t('nav.home') },
+    { href: '/quiz',       label: 'QUIZ' },
+    { href: '/quiz/daily', label: 'DAILY' },
+    { href: '/multi',      label: 'MULTI' },
   ]
 
   return (

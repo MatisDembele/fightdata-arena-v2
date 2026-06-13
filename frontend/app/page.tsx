@@ -10,25 +10,25 @@ export default function Home() {
   const MODES = [
     {
       id: 'quiz', label: 'QUIZ', sub: t('home.quiz_sub'),
-      href: '/quiz',
+      href: '/quiz', external: false,
       color: '#ff2d78', colorAlt: '#9b1fff',
       desc: t('home.quiz_desc'),
     },
     {
       id: 'database', label: 'DATABASE', sub: t('home.db_sub'),
-      href: '/fighters',
+      href: 'https://ultimateframedata.com/sf6', external: true,
       color: '#00f0ff', colorAlt: '#0050ff',
       desc: t('home.db_desc'),
     },
     {
       id: 'multi', label: 'MULTI', sub: t('home.multi_sub'),
-      href: '/multi',
+      href: '/multi', external: false,
       color: '#ffe000', colorAlt: '#ff6a00',
       desc: t('home.multi_desc'),
     },
     {
       id: 'daily', label: 'DAILY', sub: t('home.daily_sub'),
-      href: '/quiz/daily',
+      href: '/quiz/daily', external: false,
       color: '#00ff88', colorAlt: '#00b894',
       desc: t('home.daily_desc'),
     },
@@ -37,7 +37,7 @@ export default function Home() {
   const STATS = [
     { val: '30',   label: t('home.stat_chars') },
     { val: '1562', label: t('home.stat_moves') },
-    { val: '4',    label: t('home.stat_modes') },
+    { val: '5',    label: t('home.stat_modes') },
   ]
 
   const current = MODES[active]
@@ -161,14 +161,10 @@ export default function Home() {
           <div className="home-modes-inner">
             {MODES.map((mode, i) => {
               const isActive = i === active
-              return (
-                <Link
-                  key={mode.id}
-                  href={mode.href}
-                  className={`home-mode-card ${isActive ? 'home-mode-active' : 'home-mode-inactive'}`}
-                  onMouseEnter={() => setActive(i)}
-                  onClick={(e) => { if (i !== active) { e.preventDefault(); setActive(i) } }}
-                >
+              const handleClick = (e: React.MouseEvent) => { if (i !== active) { e.preventDefault(); setActive(i) } }
+              const className = `home-mode-card ${isActive ? 'home-mode-active' : 'home-mode-inactive'}`
+              const inner = (
+                <>
                   <div style={{
                     position: 'absolute', inset: 0,
                     background: isActive ? `linear-gradient(180deg, ${mode.color}18, ${mode.colorAlt}28)` : 'rgba(0,0,0,0.15)',
@@ -211,6 +207,20 @@ export default function Home() {
                       transition: 'all 0.3s',
                     }}>{mode.sub}</div>
                   </div>
+                </>
+              )
+              if (mode.external) {
+                return (
+                  <a key={mode.id} href={mode.href} target="_blank" rel="noopener noreferrer"
+                    className={className} onMouseEnter={() => setActive(i)} onClick={handleClick}>
+                    {inner}
+                  </a>
+                )
+              }
+              return (
+                <Link key={mode.id} href={mode.href}
+                  className={className} onMouseEnter={() => setActive(i)} onClick={handleClick}>
+                  {inner}
                 </Link>
               )
             })}
