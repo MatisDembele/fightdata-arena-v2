@@ -47,6 +47,12 @@ export async function getFighterPunish(slug: string) {
   return res.json()
 }
 
+export async function getRandomDamage() {
+  const res = await fetch(`${API_URL}/api/quiz/random/damage`)
+  if (!res.ok) throw new Error('Erreur quiz damage')
+  return res.json()
+}
+
 export async function getDailyQuiz(): Promise<QuizQuestion[]> {
   const res = await fetch(`${API_URL}/api/quiz/daily`)
   if (!res.ok) throw new Error('Erreur daily quiz')

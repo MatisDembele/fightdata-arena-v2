@@ -41,6 +41,8 @@ const en = {
   'quiz.mode_hardcore_desc':   'Answer in under 5 seconds. No skip. For true lab monsters.',
   'quiz.mode_survival_sub':    '1 mistake = over',
   'quiz.mode_survival_desc':   'One life. Answer correctly as long as you can — the first mistake ends your streak.',
+  'quiz.mode_damage_sub':      'Guess the damage value',
+  'quiz.mode_damage_desc':     'Multiple choice — guess the exact damage value of each move from its hitbox GIF.',
 
   // quiz play
   'play.session_length':          'SESSION LENGTH',
@@ -77,6 +79,7 @@ const en = {
   'play.q_of':                    'of',
   'play.q_is_it_punishable':      'is',
   'play.q_punishable_on_block':   'punishable on block?',
+  'play.q_damage':                'damage',
   'play.punishable_label':        'PUNISHABLE',
   'play.safe_label':              'SAFE',
   'play.feedback_correct_startup':      '✓ Correct! Startup: {n} frames.',
@@ -85,6 +88,9 @@ const en = {
   'play.feedback_timeout':              "⏱ Time's up! Answer: {n} frames.",
   'play.feedback_correct_punish':       '✓ Correct! {move} is {label} (on block: {value})',
   'play.feedback_wrong_punish':         '✗ Wrong! {move} is {label} (on block: {value})',
+  'play.feedback_correct_damage':       '✓ Correct! Damage: {n}.',
+  'play.feedback_wrong_damage':         '✗ Wrong! Damage was {n}.',
+  'play.sound_toggle':                  'SFX',
   'play.share_survival_line1':    'Fight Data Arena 🥊 — SURVIVAL Mode',
   'play.share_survival_line2':    'I survived {n} question{s} 💀',
   'play.share_survival_line3':    'Best: {best} questions',
@@ -177,6 +183,22 @@ const en = {
   // fighters
   'fighters.title':       'DATABASE',
   'fighters.coming_soon': 'COMING SOON',
+
+  // nav
+  'nav.stats': 'STATS',
+
+  // stats page
+  'stats.title':       'STATS',
+  'stats.player':      'PLAYER',
+  'stats.daily':       'DAILY',
+  'stats.quiz_modes':  'QUIZ MODES',
+  'stats.best_score':  'BEST',
+  'stats.accuracy':    'ACCURACY',
+  'stats.games':       'GAMES',
+  'stats.streak':      'STREAK',
+  'stats.days':        'DAYS',
+  'stats.no_data':     'No games yet.',
+  'stats.survived':    'survived',
 } as const
 
 type DictKey = keyof typeof en
@@ -220,6 +242,8 @@ const fr: Record<DictKey, string> = {
   'quiz.mode_hardcore_desc':   'Réponds en moins de 5 secondes. Pas de passe. Pour les vrais lab monsters.',
   'quiz.mode_survival_sub':    '1 erreur = fin',
   'quiz.mode_survival_desc':   "Une seule vie. Réponds correctement le plus longtemps possible — la première erreur met fin à ta série.",
+  'quiz.mode_damage_sub':      'Devine le damage',
+  'quiz.mode_damage_desc':     'QCM — devine la valeur exacte du damage de chaque move depuis son hitbox GIF.',
 
   // quiz play
   'play.session_length':        'LONGUEUR DE SESSION',
@@ -256,6 +280,7 @@ const fr: Record<DictKey, string> = {
   'play.q_of':                  'de',
   'play.q_is_it_punishable':    'est-il',
   'play.q_punishable_on_block': 'punissable on block ?',
+  'play.q_damage':              'damage',
   'play.punishable_label':      'PUNISSABLE',
   'play.safe_label':            'SAFE',
   'play.feedback_correct_startup':      '✓ Exact ! Startup : {n} frames.',
@@ -264,6 +289,9 @@ const fr: Record<DictKey, string> = {
   'play.feedback_timeout':              '⏱ Temps écoulé ! Réponse : {n} frames.',
   'play.feedback_correct_punish':       '✓ Correct ! {move} est {label} (on block : {value})',
   'play.feedback_wrong_punish':         '✗ Raté ! {move} est {label} (on block : {value})',
+  'play.feedback_correct_damage':       '✓ Exact ! Damage : {n}.',
+  'play.feedback_wrong_damage':         '✗ Raté ! Le damage était {n}.',
+  'play.sound_toggle':                  'SFX',
   'play.share_survival_line1':  'Fight Data Arena 🥊 — Mode SURVIE',
   'play.share_survival_line2':  "J'ai survécu {n} question{s} 💀",
   'play.share_survival_line3':  'Record : {best} questions',
@@ -356,6 +384,22 @@ const fr: Record<DictKey, string> = {
   // fighters
   'fighters.title':       'BASE DE DONNÉES',
   'fighters.coming_soon': 'COMING SOON',
+
+  // nav
+  'nav.stats': 'STATS',
+
+  // stats page
+  'stats.title':       'STATS',
+  'stats.player':      'JOUEUR',
+  'stats.daily':       'DAILY',
+  'stats.quiz_modes':  'MODES DE QUIZ',
+  'stats.best_score':  'RECORD',
+  'stats.accuracy':    'PRÉCISION',
+  'stats.games':       'PARTIES',
+  'stats.streak':      'STREAK',
+  'stats.days':        'JOURS',
+  'stats.no_data':     "Aucune partie pour l’instant.",
+  'stats.survived':    'survivé',
 }
 
 const dict: Record<string, Record<DictKey, string>> = { en, fr }

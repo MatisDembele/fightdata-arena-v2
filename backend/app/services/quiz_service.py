@@ -42,6 +42,83 @@ def _pick_distractors(correct: int, pool: set[int], rng: random.Random) -> list[
     return chosen[:3]
 
 
+def _parse_damage(value: str | None) -> int | None:
+    """Accept only simple integer damage values (e.g. '600'), reject ranges."""
+    if not value:
+        return None
+    if re.match(r"^\d+$", value.strip()):
+        return int(value.strip())
+    return None
+
+
+def _pick_damage_distractors(correct: int, pool: set[int], rng: random.Random) -> list[int]:
+    close = sorted(
+        [v for v in pool if v != correct and abs(v - correct) <= 300],
+        key=lambda v: abs(v - correct),
+    )
+    rng.shuffle(close)
+    chosen: list[int] = close[:3]
+    if len(chosen) < 3:
+        used = pool | set(chosen) | {correct}
+        for offset in [100, -100, 200, -200, 300, -300, 150, -150, 50, -50]:
+            if len(chosen) == 3:
+                break
+            c = correct + offset
+            if c > 0 and c not in used:
+                chosen.append(c)
+                used.add(c)
+    if len(chosen) < 3:
+        for v in sorted(pool, key=lambda v: abs(v - correct)):
+            if len(chosen) == 3:
+                break
+            if v not in chosen and v != correct:
+                chosen.append(v)
+    return chosen[:3]
+
+
+def generate_damage_question(db: Session, slug: str) -> QuizQuestion | None:
+    fighter = db.query(Fighter).filter(Fighter.slug == slug).first()
+    if not fighter:
+        return None
+    candidates = (
+        db.query(Move)
+        .filter(Move.fighter_id == fighter.id, Move.gif_path.isnot(None))
+        .all()
+    )
+    candidates = [m for m in candidates if _parse_damage(m.damage) is not None]
+    if len(candidates) < 4:
+        return None
+    rng = random.Random()
+    correct_move = rng.choice(candidates)
+    correct_int = _parse_damage(correct_move.damage)
+    pool_ints = {_parse_damage(m.damage) for m in candidates if _parse_damage(m.damage) != correct_int}
+    pool_ints.discard(None)
+    distractors = _pick_damage_distractors(correct_int, pool_ints, rng)
+    choices = [str(v) for v in sorted(distractors + [correct_int])]
+    return QuizQuestion(
+        move_name=correct_move.move_name,
+        section=correct_move.section,
+        gif_url=correct_move.gif_url,
+        gif_path=correct_move.gif_path,
+        question=f"Quel est le damage de {correct_move.move_name} ?",
+        choices=choices,
+        answer=str(correct_int),
+        fighter_slug=slug,
+    )
+
+
+def generate_random_damage_question(db: Session) -> QuizQuestion | None:
+    fighters = db.query(Fighter).all()
+    if not fighters:
+        return None
+    random.shuffle(fighters)
+    for fighter in fighters:
+        q = generate_damage_question(db, fighter.slug)
+        if q:
+            return q
+    return None
+
+
 def _parse_on_block(value: str | None) -> int | None:
     if not value:
         return None

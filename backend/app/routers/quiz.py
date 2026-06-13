@@ -26,6 +26,14 @@ def random_punish_question(db: Session = Depends(get_db)):
     return question
 
 
+@router.get("/random/damage", response_model=QuizQuestion)
+def random_damage_question(db: Session = Depends(get_db)):
+    question = quiz_service.generate_random_damage_question(db)
+    if not question:
+        raise HTTPException(status_code=404, detail="Pas assez de données pour générer un quiz damage")
+    return question
+
+
 @router.get("/daily", response_model=list[QuizQuestion])
 def daily_questions(db: Session = Depends(get_db)):
     today = datetime.now(timezone.utc).date()

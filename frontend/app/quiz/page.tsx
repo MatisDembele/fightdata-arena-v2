@@ -72,6 +72,15 @@ export default function QuizSelectPage() {
       href: '/quiz/play?mode=survival',
       icon: '💀',
     },
+    {
+      id: 'damage',
+      label: 'DAMAGE',
+      sub: t('quiz.mode_damage_sub'),
+      desc: t('quiz.mode_damage_desc'),
+      color: '#f59e0b', colorAlt: '#d97706',
+      href: '/quiz/play?mode=damage',
+      icon: '💥',
+    },
   ]
 
   const current = QUIZ_MODES[active]

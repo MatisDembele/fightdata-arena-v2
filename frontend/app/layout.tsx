@@ -4,9 +4,22 @@ import Providers from '@/components/Providers'
 import './globals.css'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://fightdata.app'),
   title: 'Fight Data Arena — SF6 Frame Data',
   description: 'Street Fighter 6 frame data quiz. Guess startup, damage, and on-block values for every character.',
   keywords: 'Street Fighter 6, frame data, quiz, startup, SF6, fighting game',
+  manifest: '/manifest.json',
+  openGraph: {
+    title: 'Fight Data Arena — SF6 Frame Data Quiz',
+    description: 'Street Fighter 6 frame data quiz. Guess startup, damage, and on-block values.',
+    type: 'website',
+    siteName: 'Fight Data Arena',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Fight Data Arena — SF6 Frame Data Quiz',
+    description: 'Street Fighter 6 frame data quiz. Guess startup, damage, and on-block values.',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

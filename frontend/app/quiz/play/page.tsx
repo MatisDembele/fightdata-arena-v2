@@ -3,7 +3,8 @@ import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
-import { getRandomQuiz, getFighterQuiz, getRandomPunish } from '@/lib/api'
+import { getRandomQuiz, getFighterQuiz, getRandomPunish, getRandomDamage } from '@/lib/api'
+import { playCorrect, playWrong, getSoundEnabled, toggleSound } from '@/lib/sounds'
 import type { QuizQuestion } from '@/types'
 import { track } from '@vercel/analytics'
 import { useLanguage } from '@/lib/i18n'
@@ -55,6 +56,10 @@ function QuizPlay() {
   const isInput    = mode === 'input'
   const isPunish   = mode === 'punish'
   const isSurvival = mode === 'survival'
+  const isDamage   = mode === 'damage'
+
+  const [soundEnabled, setSoundEnabled] = useState(true)
+  useEffect(() => { setSoundEnabled(getSoundEnabled()) }, [])
 
   const accuracy = total > 0 ? Math.round((score / total) * 100) : 0
 
@@ -65,6 +70,7 @@ function QuizPlay() {
     punish:   '#ffe000',
     hardcore: '#ff6a00',
     survival: '#4ade80',
+    damage:   '#f59e0b',
   }[mode] ?? '#ff2d78'
 
   const modeColorAlt = {
@@ -74,6 +80,7 @@ function QuizPlay() {
     punish:   '#ff6a00',
     hardcore: '#ff2d78',
     survival: '#00f0ff',
+    damage:   '#d97706',
   }[mode] ?? '#9b1fff'
 
   const loadQuestion = useCallback(async () => {
@@ -89,6 +96,8 @@ function QuizPlay() {
     try {
       const q = isPunish
         ? await getRandomPunish()
+        : isDamage
+        ? await getRandomDamage()
         : (mode === 'fighter' && slug)
         ? await getFighterQuiz(slug)
         : await getRandomQuiz()
@@ -98,7 +107,7 @@ function QuizPlay() {
     } finally {
       setLoading(false)
     }
-  }, [mode, slug, isPunish])
+  }, [mode, slug, isPunish, isDamage])
 
   const prefetchNext = useCallback(async () => {
     if (prefetchingRef.current) return
@@ -107,6 +116,8 @@ function QuizPlay() {
     try {
       const q = isPunish
         ? await getRandomPunish()
+        : isDamage
+        ? await getRandomDamage()
         : (mode === 'fighter' && slug)
         ? await getFighterQuiz(slug)
         : await getRandomQuiz()
@@ -124,7 +135,7 @@ function QuizPlay() {
         prefetchingRef.current = false
       }
     }
-  }, [mode, slug, isPunish])
+  }, [mode, slug, isPunish, isDamage])
 
   useEffect(() => { if (sessionPhase === 'playing') loadQuestion() }, [loadQuestion, sessionPhase])
 
@@ -212,6 +223,7 @@ function QuizPlay() {
   }, [isHardcore, state, loading, question])
 
   const handleCorrect = () => {
+    playCorrect()
     setState('correct')
     setScore(s => s + 1)
     setCombo(s => { const next = s + 1; setMaxCombo(m => Math.max(m, next)); return next })
@@ -219,6 +231,7 @@ function QuizPlay() {
   }
 
   const handleWrong = () => {
+    playWrong()
     setState('wrong')
     setCombo(0)
     setTotal(t => t + 1)
@@ -319,6 +332,7 @@ function QuizPlay() {
     punish:   'PUNISH FINDER',
     hardcore: 'HARDCORE',
     survival: t('play.mode_survival_label'),
+    damage:   'DAMAGE MODE',
   }[mode] ?? 'QUIZ'
 
   useEffect(() => {
@@ -425,6 +439,13 @@ function QuizPlay() {
           fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '3px',
           cursor: 'pointer', transition: 'all 0.3s',
         }}>{copied ? t('play.copied') : t('play.share')}</button>
+        <Link href="/stats" style={{
+          width: '100%', padding: '10px 12px',
+          background: 'none', border: '1px solid rgba(255,255,255,0.07)',
+          color: 'rgba(255,255,255,0.25)',
+          fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px',
+          textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>{t('stats.title')} →</Link>
       </div>
     )
 
@@ -566,6 +587,20 @@ function QuizPlay() {
               }}>{stat.label}</div>
             </div>
           ))}
+          <button
+            onClick={() => { setSoundEnabled(toggleSound()) }}
+            style={{
+              position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+              background: 'none', border: '1px solid rgba(255,255,255,0.1)',
+              color: soundEnabled ? modeColor : 'rgba(255,255,255,0.2)',
+              fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem',
+              letterSpacing: '2px', padding: '3px 7px', cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+            title={soundEnabled ? 'Mute SFX' : 'Enable SFX'}
+          >
+            {soundEnabled ? '🔊' : '🔇'}
+          </button>
         </div>
 
         {loading ? (
@@ -631,7 +666,7 @@ function QuizPlay() {
                 </p>
               ) : (
                 <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1rem', fontWeight: 600, lineHeight: 1.4, color: 'rgba(255,255,255,0.9)' }}>
-                  {t('play.q_what_is')} <span style={{ color: modeColor }}>startup</span> {t('play.q_of')}{' '}
+                  {t('play.q_what_is')} <span style={{ color: modeColor }}>{isDamage ? t('play.q_damage') : 'startup'}</span> {t('play.q_of')}{' '}
                   <strong style={{ color: '#fff' }}>{question.move_name}</strong> ?
                 </p>
               )}
@@ -651,7 +686,7 @@ function QuizPlay() {
                         border: '1px solid rgba(255,255,255,0.18)', fontSize: '0.62rem',
                         fontFamily: "'Share Tech Mono', monospace",
                       }}>{String.fromCharCode(65 + i)}</span>
-                      {choice} frames
+                      {isDamage ? choice : `${choice} frames`}
                     </button>
                   ))}
                 </div>
@@ -765,6 +800,10 @@ function QuizPlay() {
                     state === 'correct'
                       ? t('play.feedback_correct_punish', { move: question.move_name, label: t(isPunishable ? 'play.punishable_label' : 'play.safe_label'), value: question.on_block_value ?? '' })
                       : t('play.feedback_wrong_punish',   { move: question.move_name, label: t(isPunishable ? 'play.punishable_label' : 'play.safe_label'), value: question.on_block_value ?? '' })
+                  ) : isDamage ? (
+                    state === 'correct'
+                      ? t('play.feedback_correct_damage', { n: question.answer })
+                      : t('play.feedback_wrong_damage', { n: question.answer })
                   ) : isInput ? (
                     state === 'correct'
                       ? t('play.feedback_correct_startup', { n: question.answer })

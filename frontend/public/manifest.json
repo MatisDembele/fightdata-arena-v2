@@ -1,0 +1,16 @@
+{
+  "name": "Fight Data Arena",
+  "short_name": "FDA",
+  "description": "Street Fighter 6 frame data quiz",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d0010",
+  "theme_color": "#0d0010",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}

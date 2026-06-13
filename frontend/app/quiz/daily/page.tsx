@@ -7,6 +7,7 @@ import type { QuizQuestion } from '@/types'
 import { track } from '@vercel/analytics'
 import { useLanguage } from '@/lib/i18n'
 import QuestionCard, { makeChoiceStyle } from '@/components/QuestionCard'
+import { playCorrect, playWrong } from '@/lib/sounds'
 
 const COLOR     = '#00ff88'
 const COLOR_ALT = '#00b894'
@@ -134,10 +135,10 @@ function DailyPage() {
     const correct = choice === questions[idx]?.answer
     setSelected(choice)
     setState(correct ? 'correct' : 'wrong')
+    if (correct) { playCorrect(); setScore(s => s + 1) } else playWrong()
     const next = [...answersRef.current, correct]
     answersRef.current = next
     setAnswers(next)
-    if (correct) setScore(s => s + 1)
   }
 
   useEffect(() => {

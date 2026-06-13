@@ -12,6 +12,7 @@ export default function Navbar() {
     { href: '/quiz',       label: 'QUIZ' },
     { href: '/quiz/daily', label: 'DAILY' },
     { href: '/multi',      label: 'MULTI' },
+    { href: '/stats',      label: t('nav.stats') },
   ]
 
   return (
