@@ -10,6 +10,7 @@ export const MODE_COLORS: Record<string, string> = {
   custom:   '#c77dff',
   mistakes: '#f43f5e',
   duel:     '#14b8a6',
+  flash:    '#e879f9',
 }
 
 export const MODE_COLORS_ALT: Record<string, string> = {
@@ -24,6 +25,7 @@ export const MODE_COLORS_ALT: Record<string, string> = {
   custom:   '#7b2fff',
   mistakes: '#be123c',
   duel:     '#0d9488',
+  flash:    '#a855f7',
 }
 
 export interface Rank {

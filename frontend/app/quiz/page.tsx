@@ -119,6 +119,15 @@ export default function QuizSelectPage() {
       href: '/quiz/duel',
       icon: '⚔️',
     },
+    {
+      id: 'flash',
+      label: 'FLASH',
+      sub: t('quiz.mode_flash_sub'),
+      desc: t('quiz.mode_flash_desc'),
+      color: '#e879f9', colorAlt: '#a855f7',
+      href: '/quiz/flash',
+      icon: '⚡',
+    },
   ]
 
   const current = QUIZ_MODES[active]

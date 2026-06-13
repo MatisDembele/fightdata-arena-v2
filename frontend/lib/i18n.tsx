@@ -263,6 +263,9 @@ const en = {
   'play.duel_win':           'YOU WIN!',
   'play.duel_lose':          'YOU LOSE!',
   'play.duel_tie':           "IT'S A TIE!",
+  // flash mode
+  'quiz.mode_flash_sub':  'Beat the clock — faster every round',
+  'quiz.mode_flash_desc': '3 lives. Timer shrinks each question. Wrong answer or timeout costs a life. How far can you go?',
   // profile
   'nav.profile':          'PROFILE',
   'profile.title':        'PROFILE',
@@ -538,6 +541,9 @@ const fr: Record<DictKey, string> = {
   'play.duel_win':           'TU GAGNES !',
   'play.duel_lose':          'TU PERDS !',
   'play.duel_tie':           'ÉGALITÉ !',
+  // flash mode
+  'quiz.mode_flash_sub':  'Contre-la-montre — plus rapide à chaque question',
+  'quiz.mode_flash_desc': "3 vies. Le chrono se réduit à chaque question. Mauvaise réponse ou timeout = 1 vie perdue. Jusqu'où tu tiens ?",
   // profile
   'nav.profile':          'PROFIL',
   'profile.title':        'PROFIL',
