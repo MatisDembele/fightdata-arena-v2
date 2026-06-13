@@ -8,11 +8,11 @@ export default function Navbar() {
   const { lang, setLang, t } = useLanguage()
 
   const links: { href: string; label: string; external?: boolean }[] = [
-    { href: '/',           label: t('nav.home') },
-    { href: '/quiz',       label: 'QUIZ' },
-    { href: '/quiz/daily', label: 'DAILY' },
-    { href: '/multi',      label: 'MULTI' },
-    { href: '/stats',      label: t('nav.stats') },
+    { href: '/',            label: t('nav.home') },
+    { href: '/quiz',        label: 'QUIZ' },
+    { href: '/challenges',  label: 'CHALLENGES' },
+    { href: '/multi',       label: 'MULTI' },
+    { href: '/stats',       label: t('nav.stats') },
   ]
 
   return (
