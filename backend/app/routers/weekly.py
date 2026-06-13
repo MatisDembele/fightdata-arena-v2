@@ -1,9 +1,12 @@
 from datetime import datetime, timezone, timedelta
-from fastapi import APIRouter, Depends, HTTPException
+
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+
 from app.database import get_db
 from app.models.weekly_score import WeeklyScore
+from app.utils import validate_name, check_rate
 
 router = APIRouter(prefix="/weekly", tags=["weekly"])
 
@@ -29,22 +32,25 @@ def _this_week() -> str:
 
 
 @router.post("/score")
-def submit_score(payload: ScoreSubmit, db: Session = Depends(get_db)):
-    name = payload.player_name.strip()[:24]
-    if not name:
-        raise HTTPException(400, "Name required")
+def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(get_db)):
+    check_rate(request)
+    name = validate_name(payload.player_name)
     if not (0 <= payload.score <= 20 and 0 <= payload.accuracy <= 100):
         raise HTTPException(400, "Invalid score")
+
     week = _this_week()
     existing = db.query(WeeklyScore).filter_by(player_name=name, week=week).first()
     if existing:
-        if payload.score > existing.score or (payload.score == existing.score and payload.accuracy > existing.accuracy):
-            existing.score = payload.score
+        if payload.score > existing.score or (
+            payload.score == existing.score and payload.accuracy > existing.accuracy
+        ):
+            existing.score    = payload.score
             existing.accuracy = payload.accuracy
             db.commit()
     else:
         db.add(WeeklyScore(player_name=name, score=payload.score, accuracy=payload.accuracy, week=week))
         db.commit()
+
     return {"ok": True}
 
 
@@ -58,4 +64,7 @@ def get_leaderboard(db: Session = Depends(get_db)):
         .limit(10)
         .all()
     )
-    return [ScoreEntry(rank=i + 1, player_name=r.player_name, score=r.score, accuracy=r.accuracy) for i, r in enumerate(rows)]
+    return [
+        ScoreEntry(rank=i + 1, player_name=r.player_name, score=r.score, accuracy=r.accuracy)
+        for i, r in enumerate(rows)
+    ]

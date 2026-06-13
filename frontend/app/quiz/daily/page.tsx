@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
+import { todayStr } from '@/lib/dates'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import { getDailyQuiz, submitDailyScore, getDailyLeaderboard, type LeaderboardEntry } from '@/lib/api'
@@ -27,10 +28,6 @@ interface DailyStreak {
   last_played: string
 }
 
-function todayStr(): string {
-  return new Date().toISOString().split('T')[0]
-}
-
 function dayNumber(): number {
   const start = new Date('2026-01-01').getTime()
   const today = new Date().setHours(0, 0, 0, 0)
@@ -46,8 +43,16 @@ function getStoredResult(): DailyResult | null {
   try {
     const raw = localStorage.getItem('fda_daily_result')
     if (!raw) return null
-    return JSON.parse(raw)
-  } catch { return null }
+    const data = JSON.parse(raw)
+    if (typeof data.date !== 'string' || typeof data.score !== 'number' || !Array.isArray(data.answers)) {
+      localStorage.removeItem('fda_daily_result')
+      return null
+    }
+    return data as DailyResult
+  } catch {
+    localStorage.removeItem('fda_daily_result')
+    return null
+  }
 }
 
 function getStoredStreak(): DailyStreak {
@@ -60,8 +65,8 @@ function getStoredStreak(): DailyStreak {
 
 function saveResultAndStreak(answers: boolean[], score: number): DailyStreak {
   const today = todayStr()
-  localStorage.setItem('fda_daily_result', JSON.stringify({ date: today, answers, score }))
 
+  // Compute streak BEFORE writing anything to avoid desync on crash
   const stored = getStoredStreak()
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
@@ -72,6 +77,9 @@ function saveResultAndStreak(answers: boolean[], score: number): DailyStreak {
   else if (stored.last_played === today)   newStreak = stored.streak
 
   const streakData: DailyStreak = { streak: newStreak, last_played: today }
+
+  // Write both synchronously — minimizes desync window
+  localStorage.setItem('fda_daily_result', JSON.stringify({ date: today, answers, score }))
   localStorage.setItem('fda_daily_streak', JSON.stringify(streakData))
   return streakData
 }
@@ -111,10 +119,10 @@ function DailyPage() {
 
   useEffect(() => {
     const next = questions[idx + 1]
-    if (next?.gif_url) {
-      const img = new Image()
-      img.src = next.gif_url
-    }
+    if (!next?.gif_url) return
+    const img = new Image()
+    img.onerror = () => {}
+    img.src = next.gif_url
   }, [idx, questions])
 
   const fetchLeaderboard = useCallback(() => {

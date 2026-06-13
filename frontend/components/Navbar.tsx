@@ -1,4 +1,5 @@
 'use client'
+import { useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useLanguage } from '@/lib/i18n'
@@ -6,6 +7,15 @@ import { useLanguage } from '@/lib/i18n'
 export default function Navbar() {
   const path = usePathname()
   const { lang, setLang, t } = useLanguage()
+
+  // Storage versioning — run once on mount for future migrations
+  useEffect(() => {
+    const CURRENT_V = 1
+    const stored = parseInt(localStorage.getItem('_fda_v') || '0', 10)
+    if (stored < CURRENT_V) {
+      localStorage.setItem('_fda_v', String(CURRENT_V))
+    }
+  }, [])
 
   const links: { href: string; label: string; external?: boolean }[] = [
     { href: '/',            label: t('nav.home') },

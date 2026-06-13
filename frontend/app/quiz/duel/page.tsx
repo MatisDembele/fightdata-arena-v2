@@ -7,20 +7,16 @@ import { getSeededQuiz } from '@/lib/api'
 import { playCorrect, playWrong } from '@/lib/sounds'
 import { GifSection, makeChoiceStyle } from '@/components/QuestionCard'
 import { useLanguage } from '@/lib/i18n'
+import { getRank } from '@/lib/constants'
 import type { QuizQuestion } from '@/types'
 
 const COLOR     = '#14b8a6'
 const COLOR_ALT = '#0d9488'
 
-type Rank = { label: string; color: string; colorAlt: string }
-function getRank(acc: number): Rank {
-  if (acc === 100) return { label: 'MASTER',   color: '#cc44ff', colorAlt: '#9b1fff' }
-  if (acc >= 88)   return { label: 'DIAMOND',  color: '#00ccff', colorAlt: '#0077ff' }
-  if (acc >= 75)   return { label: 'PLATINUM', color: '#88bbee', colorAlt: '#4477cc' }
-  if (acc >= 62)   return { label: 'GOLD',     color: '#ffd700', colorAlt: '#f0a800' }
-  if (acc >= 50)   return { label: 'SILVER',   color: '#d8dde8', colorAlt: '#b0b8c8' }
-  if (acc >= 37)   return { label: 'BRONZE',   color: '#cd7f32', colorAlt: '#a05020' }
-  return                  { label: 'ROOKIE',   color: '#c0c0c0', colorAlt: '#888888' }
+function parseIntParam(s: string | null): number | null {
+  if (!s) return null
+  const n = parseInt(s, 10)
+  return Number.isNaN(n) ? null : n
 }
 
 function generateSeed(): string {
@@ -35,8 +31,8 @@ function DuelQuiz() {
   const { t } = useLanguage()
 
   const seed      = params.get('seed')
-  const p1score   = params.get('p1') !== null ? parseInt(params.get('p1')!) : null
-  const p1acc     = params.get('p1a') !== null ? parseInt(params.get('p1a')!) : null
+  const p1score = parseIntParam(params.get('p1'))
+  const p1acc   = parseIntParam(params.get('p1a'))
 
   const [phase,       setPhase]       = useState<Phase>('loading')
   const [questions,   setQuestions]   = useState<QuizQuestion[]>([])

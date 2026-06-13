@@ -2,6 +2,25 @@ import type { QuizQuestion } from '@/types'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
+// Simple in-memory TTL cache for leaderboard endpoints (5 min)
+const LB_TTL = 5 * 60 * 1000
+const _lbCache: Record<string, { data: unknown; ts: number }> = {}
+
+async function cachedGet<T>(key: string, url: string): Promise<T> {
+  const now = Date.now()
+  const hit = _lbCache[key]
+  if (hit && now - hit.ts < LB_TTL) return hit.data as T
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`Erreur ${key}`)
+  const data = await res.json()
+  _lbCache[key] = { data, ts: now }
+  return data as T
+}
+
+export function invalidateLeaderboardCache(key: string): void {
+  delete _lbCache[key]
+}
+
 export async function getFighters() {
   const res = await fetch(`${API_URL}/api/fighters/`)
   if (!res.ok) throw new Error('Erreur chargement fighters')
@@ -77,9 +96,7 @@ export interface LeaderboardEntry {
 }
 
 export async function getDailyLeaderboard(): Promise<LeaderboardEntry[]> {
-  const res = await fetch(`${API_URL}/api/daily/leaderboard`)
-  if (!res.ok) throw new Error('Erreur leaderboard')
-  return res.json()
+  return cachedGet<LeaderboardEntry[]>('daily_lb', `${API_URL}/api/daily/leaderboard`)
 }
 
 export async function getRandomOnBlock() {
@@ -105,9 +122,7 @@ export async function submitWeeklyScore(player_name: string, score: number, accu
 }
 
 export async function getWeeklyLeaderboard(): Promise<LeaderboardEntry[]> {
-  const res = await fetch(`${API_URL}/api/weekly/leaderboard`)
-  if (!res.ok) throw new Error('Erreur weekly leaderboard')
-  return res.json()
+  return cachedGet<LeaderboardEntry[]>('weekly_lb', `${API_URL}/api/weekly/leaderboard`)
 }
 
 export interface GlobalLeaderboardEntry {
@@ -128,9 +143,7 @@ export async function submitGlobalScore(player_name: string, correct: number, to
 }
 
 export async function getGlobalLeaderboard(): Promise<GlobalLeaderboardEntry[]> {
-  const res = await fetch(`${API_URL}/api/global/leaderboard`)
-  if (!res.ok) throw new Error('Erreur global leaderboard')
-  return res.json()
+  return cachedGet<GlobalLeaderboardEntry[]>('global_lb', `${API_URL}/api/global/leaderboard`)
 }
 
 export async function getSeededQuiz(seed: string, n = 10): Promise<QuizQuestion[]> {

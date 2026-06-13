@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import { getGlobalLeaderboard } from '@/lib/api'
 import { ACHIEVEMENTS, RARITY_COLOR, RARITIES, type Rarity } from '@/lib/achievements'
 import { useLanguage } from '@/lib/i18n'
+import { MODE_COLORS } from '@/lib/constants'
 
 interface SessionRecord {
   date: string
@@ -24,19 +25,6 @@ interface LifetimeStats {
   fighterCorrect?: Record<string, number>
 }
 
-const MODE_COLOR: Record<string, string> = {
-  random:   '#ff2d78',
-  fighter:  '#00f0ff',
-  input:    '#9b1fff',
-  punish:   '#ffe000',
-  hardcore: '#ff6a00',
-  survival: '#4ade80',
-  damage:   '#f59e0b',
-  onblock:  '#00b4d8',
-  custom:   '#c77dff',
-  mistakes: '#f43f5e',
-  duel:     '#14b8a6',
-}
 
 const QUIZ_MODES = ['random', 'fighter', 'input', 'punish', 'hardcore', 'survival', 'damage', 'onblock', 'custom', 'mistakes']
 const MODE_LABEL: Record<string, string> = {
@@ -264,7 +252,7 @@ export default function ProfilePage() {
               </div>
               {QUIZ_MODES.map((m, i) => {
                 const best = modeBests[m]
-                const c = MODE_COLOR[m] || '#888'
+                const c = MODE_COLORS[m] || '#888'
                 return (
                   <div key={m} style={{ display: 'grid', gridTemplateColumns: '1fr 60px 60px 50px', gap: '8px', padding: '9px 14px', background: i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
                     <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', letterSpacing: '1px', color: c }}>{MODE_LABEL[m]}</div>
@@ -297,7 +285,7 @@ export default function ProfilePage() {
                   ))}
                 </div>
                 {history.slice(0, 20).map((rec, i) => {
-                  const c = MODE_COLOR[rec.mode] || '#888'
+                  const c = MODE_COLORS[rec.mode] || '#888'
                   return (
                     <div key={i} style={{ display: 'grid', gridTemplateColumns: '80px 1fr 60px 60px 50px', gap: '8px', padding: '9px 14px', background: i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent', borderBottom: '1px solid rgba(255,255,255,0.03)', alignItems: 'center' }}>
                       <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.3)' }}>

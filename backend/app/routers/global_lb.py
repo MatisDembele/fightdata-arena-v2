@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+
 from app.database import get_db
 from app.models.global_score import GlobalScore
+from app.utils import validate_name, check_rate
 
 router = APIRouter(prefix="/global", tags=["global"])
 
@@ -22,10 +24,12 @@ class LeaderboardEntry(BaseModel):
 
 
 @router.post("/score")
-def add_score(payload: ScoreDelta, db: Session = Depends(get_db)):
-    name = payload.player_name.strip()[:24]
-    if not name or payload.total <= 0 or not (0 <= payload.correct <= payload.total):
+def add_score(payload: ScoreDelta, request: Request, db: Session = Depends(get_db)):
+    check_rate(request, limit=10, window=60.0)
+    name = validate_name(payload.player_name)
+    if payload.total <= 0 or not (0 <= payload.correct <= payload.total):
         return {"ok": False}
+
     row = db.query(GlobalScore).filter_by(player_name=name).first()
     if row:
         row.total_correct   += payload.correct

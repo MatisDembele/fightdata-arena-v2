@@ -86,15 +86,23 @@ function defaultLifetime(): Lifetime {
 
 export function getLifetime(): Lifetime {
   if (typeof window === 'undefined') return defaultLifetime()
-  const raw = localStorage.getItem('fda_lifetime')
-  const lt = raw ? JSON.parse(raw) : {}
-  return {
-    questions:      lt.questions      || 0,
-    totalCorrect:   lt.totalCorrect   || 0,
-    punishCorrect:  lt.punishCorrect  || 0,
-    multiWins:      lt.multiWins      || 0,
-    fightersPlayed: lt.fightersPlayed || [],
-    fighterCorrect: lt.fighterCorrect || {},
+  try {
+    const raw = localStorage.getItem('fda_lifetime')
+    if (!raw) return defaultLifetime()
+    const lt = JSON.parse(raw) as Record<string, unknown>
+    return {
+      questions:      typeof lt.questions      === 'number' ? lt.questions      : 0,
+      totalCorrect:   typeof lt.totalCorrect   === 'number' ? lt.totalCorrect   : 0,
+      punishCorrect:  typeof lt.punishCorrect  === 'number' ? lt.punishCorrect  : 0,
+      multiWins:      typeof lt.multiWins      === 'number' ? lt.multiWins      : 0,
+      fightersPlayed: Array.isArray(lt.fightersPlayed)       ? lt.fightersPlayed as string[] : [],
+      fighterCorrect: (lt.fighterCorrect && typeof lt.fighterCorrect === 'object' && !Array.isArray(lt.fighterCorrect))
+        ? lt.fighterCorrect as Record<string, number>
+        : {},
+    }
+  } catch {
+    localStorage.removeItem('fda_lifetime')
+    return defaultLifetime()
   }
 }
 

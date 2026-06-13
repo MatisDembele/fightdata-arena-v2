@@ -1,12 +1,12 @@
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 from app.database import get_db
 from app.models.daily_score import DailyScore
+from app.utils import validate_name, check_rate
 
 router = APIRouter(prefix="/daily", tags=["daily"])
 
@@ -31,10 +31,9 @@ def _today() -> str:
 
 
 @router.post("/score")
-def submit_score(payload: ScoreSubmit, db: Session = Depends(get_db)):
-    name = payload.player_name.strip()[:24]
-    if not name:
-        raise HTTPException(400, "Name required")
+def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(get_db)):
+    check_rate(request)
+    name = validate_name(payload.player_name)
     if not (0 <= payload.score <= 10 and 0 <= payload.accuracy <= 100):
         raise HTTPException(400, "Invalid score")
 
