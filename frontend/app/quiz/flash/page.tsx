@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
-import { getRandomQuiz } from '@/lib/api'
+import { getRandomQuiz, submitFlashScore, getFlashLeaderboard, invalidateLeaderboardCache, type FlashLeaderboardEntry } from '@/lib/api'
 import { playCorrect, playWrong } from '@/lib/sounds'
 import { GifSection, makeChoiceStyle } from '@/components/QuestionCard'
 import { useLanguage } from '@/lib/i18n'
@@ -37,6 +37,8 @@ export default function FlashPage() {
   const [loading, setLoading]         = useState(false)
   const [bestScore, setBestScore]     = useState(0)
   const [newRecord, setNewRecord]     = useState(false)
+  const [flashLb, setFlashLb]         = useState<FlashLeaderboardEntry[]>([])
+  const [flashPseudo, setFlashPseudo] = useState('')
 
   // Mutable refs so async/timer callbacks always see fresh values
   const livesRef     = useRef(LIVES)
@@ -55,6 +57,24 @@ export default function FlashPage() {
       if (raw) setBestScore(JSON.parse(raw).best ?? 0)
     } catch { /* ignore */ }
   }, [])
+
+  // On game end: submit best score + fetch leaderboard
+  useEffect(() => {
+    if (phase !== 'finished') return
+    const p = localStorage.getItem('fda_pseudo') || ''
+    setFlashPseudo(p)
+    if (p) {
+      try {
+        const raw  = localStorage.getItem('fda_flash_best')
+        const best = raw ? (JSON.parse(raw).best ?? 0) : 0
+        if (best > 0) {
+          invalidateLeaderboardCache('flash_lb')
+          submitFlashScore(p, best).catch(() => {})
+        }
+      } catch { /* ignore */ }
+    }
+    getFlashLeaderboard().then(setFlashLb).catch(() => {})
+  }, [phase])
 
   function stopTimer() {
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
@@ -307,6 +327,38 @@ export default function FlashPage() {
                 {t('play.modes_btn')}
               </Link>
             </div>
+
+            {/* Leaderboard */}
+            {flashLb.length > 0 && (
+              <div style={{ width: '100%', textAlign: 'left' }}>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '4px', color: COLOR, marginBottom: '10px', borderBottom: `1px solid ${COLOR}22`, paddingBottom: '6px' }}>
+                  FLASH LEADERBOARD
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  {flashLb.map(entry => {
+                    const isMe = flashPseudo && entry.player_name === flashPseudo
+                    return (
+                      <div key={entry.rank} style={{ display: 'grid', gridTemplateColumns: '28px 1fr auto', gap: '8px', padding: '6px 10px', alignItems: 'center', background: isMe ? `${COLOR}12` : 'rgba(255,255,255,0.02)', border: `1px solid ${isMe ? COLOR + '44' : 'rgba(255,255,255,0.05)'}` }}>
+                        <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', color: entry.rank === 1 ? '#ffd700' : entry.rank === 2 ? '#c0c0c0' : entry.rank === 3 ? '#cd7f32' : 'rgba(255,255,255,0.3)' }}>
+                          #{entry.rank}
+                        </span>
+                        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '1px', color: isMe ? COLOR : 'rgba(255,255,255,0.6)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {entry.player_name}
+                        </span>
+                        <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', color: isMe ? COLOR : 'rgba(255,255,255,0.4)', textShadow: isMe ? `0 0 8px ${COLOR}` : 'none' }}>
+                          {entry.best_score}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+                {!flashPseudo && (
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.2)', marginTop: '8px' }}>
+                    Set your name on the Stats page to appear here.
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </main>
       </>

@@ -146,6 +146,26 @@ export async function getGlobalLeaderboard(): Promise<GlobalLeaderboardEntry[]> 
   return cachedGet<GlobalLeaderboardEntry[]>('global_lb', `${API_URL}/api/global/leaderboard`)
 }
 
+export interface FlashLeaderboardEntry {
+  rank: number
+  player_name: string
+  best_score: number
+}
+
+export async function submitFlashScore(player_name: string, best_score: number) {
+  const res = await fetch(`${API_URL}/api/flash/score`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ player_name, best_score }),
+  })
+  if (!res.ok) throw new Error('Erreur submit flash score')
+  return res.json()
+}
+
+export async function getFlashLeaderboard(): Promise<FlashLeaderboardEntry[]> {
+  return cachedGet<FlashLeaderboardEntry[]>('flash_lb', `${API_URL}/api/flash/leaderboard`)
+}
+
 export async function getSeededQuiz(seed: string, n = 10): Promise<QuizQuestion[]> {
   const res = await fetch(`${API_URL}/api/quiz/seeded?seed=${encodeURIComponent(seed)}&n=${n}`)
   if (!res.ok) throw new Error('Erreur seeded quiz')

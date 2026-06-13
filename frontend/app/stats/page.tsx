@@ -18,6 +18,11 @@ interface SurvivalStats {
   totalGames: number
 }
 
+interface FlashStats {
+  best: number
+  totalGames: number
+}
+
 interface DailyStreak {
   streak: number
   last_played: string
@@ -50,6 +55,7 @@ export default function StatsPage() {
 
   const [modeStats, setModeStats]       = useState<Record<string, ModeStats | null>>({})
   const [survival, setSurvival]         = useState<SurvivalStats | null>(null)
+  const [flash,    setFlash]            = useState<FlashStats | null>(null)
   const [streak, setStreak]             = useState<DailyStreak | null>(null)
   const [pseudo, setPseudo]             = useState<string | null>(null)
   const [avatar, setAvatar]             = useState<string | null>(null)
@@ -95,6 +101,9 @@ export default function StatsPage() {
 
     const sv = localStorage.getItem('fda_survival_best')
     setSurvival(sv ? JSON.parse(sv) : null)
+
+    const fl = localStorage.getItem('fda_flash_best')
+    setFlash(fl ? JSON.parse(fl) : null)
 
     const st = localStorage.getItem('fda_daily_streak')
     setStreak(st ? JSON.parse(st) : null)
@@ -189,6 +198,19 @@ export default function StatsPage() {
                     <StatCell val={`${survival.best} Q`}        label={t('stats.survived')} color="#4ade80" />
                     <StatCell val="—"                            label={t('stats.accuracy')} color="rgba(255,255,255,0.2)" />
                     <StatCell val={String(survival.totalGames)}  label={t('stats.games')}    color="#4ade80" />
+                  </>
+                ) : (
+                  <NoData label={t('stats.no_data')} />
+                )}
+              </ModeRow>
+
+              {/* Flash */}
+              <ModeRow label="FLASH" color="#e879f9" hasData={!!flash}>
+                {flash ? (
+                  <>
+                    <StatCell val={`${flash.best}`}             label={t('stats.best_score')} color="#e879f9" />
+                    <StatCell val="—"                           label={t('stats.accuracy')}   color="rgba(255,255,255,0.2)" />
+                    <StatCell val={String(flash.totalGames)}    label={t('stats.games')}       color="#e879f9" />
                   </>
                 ) : (
                   <NoData label={t('stats.no_data')} />
