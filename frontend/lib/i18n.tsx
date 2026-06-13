@@ -206,6 +206,8 @@ const en = {
   'stats.survived':    'survived',
   'stats.achievements':          'ACHIEVEMENTS',
   'stats.achievements_progress': '{n}/{total} unlocked',
+  'stats.global_leaderboard':    'GLOBAL TOP 10',
+  'stats.global_correct':        'CORRECT',
   'play.achievement_unlocked':   'ACHIEVEMENT UNLOCKED',
 
   // on block mode
@@ -448,6 +450,8 @@ const fr: Record<DictKey, string> = {
   'stats.survived':    'survivé',
   'stats.achievements':          'SUCCÈS',
   'stats.achievements_progress': '{n}/{total} débloqués',
+  'stats.global_leaderboard':    'TOP 10 MONDIAL',
+  'stats.global_correct':        'CORRECTS',
   'play.achievement_unlocked':   'SUCCÈS DÉBLOQUÉ',
 
   // on block mode

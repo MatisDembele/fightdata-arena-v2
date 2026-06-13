@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import { useLanguage, type DictKey } from '@/lib/i18n'
 import { getFighterPortrait, getFighterColor } from '@/lib/portraits'
 import { ACHIEVEMENTS, RARITIES, RARITY_COLOR, RARITY_LABEL, getUnlocked, type Rarity } from '@/lib/achievements'
+import { getGlobalLeaderboard, type GlobalLeaderboardEntry } from '@/lib/api'
 
 interface ModeStats {
   bestScore: number
@@ -54,6 +55,7 @@ export default function StatsPage() {
   const [avatar, setAvatar]             = useState<string | null>(null)
   const [fighters, setFighters]         = useState<FighterEntry[]>([])
   const [unlocked, setUnlocked]         = useState<Record<string, number>>({})
+  const [globalLb, setGlobalLb]         = useState<GlobalLeaderboardEntry[]>([])
 
   useEffect(() => {
     const stats: Record<string, ModeStats | null> = {}
@@ -100,6 +102,7 @@ export default function StatsPage() {
     setPseudo(localStorage.getItem('fda_pseudo'))
     setAvatar(localStorage.getItem('fda_avatar'))
     setUnlocked(getUnlocked())
+    getGlobalLeaderboard().then(setGlobalLb).catch(() => {})
   }, [])
 
   const streakActive = streak && (
@@ -215,6 +218,39 @@ export default function StatsPage() {
                       <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.35rem', color: 'rgba(255,255,255,0.25)' }}>
                         {s.totalGames}g
                       </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </Section>
+          )}
+
+          {/* Global leaderboard */}
+          {globalLb.length > 0 && (
+            <Section title={t('stats.global_leaderboard')} color="#ffd700">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {globalLb.map(entry => {
+                  const isMe = pseudo && entry.player_name === pseudo
+                  const acc  = entry.total_questions > 0 ? Math.round(entry.total_correct / entry.total_questions * 100) : 0
+                  return (
+                    <div key={entry.rank} style={{
+                      display: 'grid', gridTemplateColumns: '28px 1fr 56px 40px',
+                      padding: '7px 12px', alignItems: 'center', gap: '8px',
+                      background: isMe ? 'rgba(255,215,0,0.08)' : entry.rank <= 3 ? 'rgba(255,255,255,0.03)' : 'transparent',
+                      border: `1px solid ${isMe ? '#ffd70044' : 'rgba(255,255,255,0.05)'}`,
+                    }}>
+                      <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '1px', color: entry.rank === 1 ? '#ffd700' : entry.rank === 2 ? '#c0c0c0' : entry.rank === 3 ? '#cd7f32' : 'rgba(255,255,255,0.3)' }}>
+                        #{entry.rank}
+                      </span>
+                      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '1px', color: isMe ? '#ffd700' : 'rgba(255,255,255,0.7)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {entry.player_name}
+                      </span>
+                      <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', color: isMe ? '#ffd700' : 'rgba(255,255,255,0.5)', textAlign: 'right' }}>
+                        {entry.total_correct}
+                      </span>
+                      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', color: 'rgba(255,255,255,0.25)', textAlign: 'right' }}>
+                        {acc}%
+                      </span>
                     </div>
                   )
                 })}

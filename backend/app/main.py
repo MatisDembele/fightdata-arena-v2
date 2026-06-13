@@ -4,7 +4,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine, SessionLocal
-from app.routers import fighters, quiz, multi, daily, weekly
+from app.routers import fighters, quiz, multi, daily, weekly, global_lb
 from app.routers.multi import rooms, _broadcast, _send, _next_question, _reset_room
 
 
@@ -43,6 +43,7 @@ app.include_router(fighters.router, prefix="/api")
 app.include_router(quiz.router, prefix="/api")
 app.include_router(daily.router, prefix="/api")
 app.include_router(weekly.router, prefix="/api")
+app.include_router(global_lb.router, prefix="/api")
 app.include_router(multi.router, prefix="/api/multi")
 
 

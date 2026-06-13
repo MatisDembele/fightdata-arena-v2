@@ -2,7 +2,8 @@
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
-import { getWeeklyQuiz, submitWeeklyScore, getWeeklyLeaderboard, type LeaderboardEntry } from '@/lib/api'
+import { getWeeklyQuiz, submitWeeklyScore, getWeeklyLeaderboard, submitGlobalScore, type LeaderboardEntry } from '@/lib/api'
+import { checkAndUnlock, RARITY_COLOR, type Achievement } from '@/lib/achievements'
 import type { QuizQuestion } from '@/types'
 import { track } from '@vercel/analytics'
 import { useLanguage } from '@/lib/i18n'
@@ -68,6 +69,7 @@ function WeeklyPage() {
   const [lbName, setLbName]               = useState('')
   const [lbSubmitted, setLbSubmitted]     = useState(false)
   const [lbSubmitting, setLbSubmitting]   = useState(false)
+  const [newAchievements, setNewAchievements] = useState<Achievement[]>([])
   const answersRef = useRef<boolean[]>([])
   const { t } = useLanguage()
 
@@ -101,6 +103,15 @@ function WeeklyPage() {
     const timer = setTimeout(fetchLeaderboard, 900)
     return () => clearTimeout(timer)
   }, [phase, fetchLeaderboard])
+
+  useEffect(() => {
+    if (!lbSubmitted || leaderboard.length === 0) return
+    if (leaderboard[0]?.player_name === lbName) {
+      const newly = checkAndUnlock({ weeklyRank: 1 })
+      if (newly.length > 0) setNewAchievements(prev => [...prev, ...newly.filter(a => !prev.find(x => x.id === a.id))])
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leaderboard])
 
   const loadQuestions = useCallback(async () => {
     setLoading(true)
@@ -158,11 +169,15 @@ function WeeklyPage() {
       saveResult(finalAnswers, finalScore)
       track('weekly_played', { score: finalScore, accuracy })
       setScore(finalScore)
+      // Achievements
+      const newly = checkAndUnlock({ weeklyScore: finalScore })
+      if (newly.length > 0) setNewAchievements(newly)
       const pseudo = localStorage.getItem('fda_pseudo')?.trim()
       if (pseudo) {
         setLbName(pseudo)
         setLbSubmitted(true)
         submitWeeklyScore(pseudo, finalScore, accuracy).catch(() => {})
+        submitGlobalScore(pseudo, finalScore, finalAnswers.length).catch(() => {})
       }
       setPhase('finished')
     } else {
@@ -285,6 +300,23 @@ function WeeklyPage() {
               </div>
             ))}
           </div>
+
+          {newAchievements.length > 0 && (
+            <div style={{ width: '100%', padding: '14px 16px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '4px', color: '#f59e0b' }}>
+                {t('play.achievement_unlocked')}
+              </div>
+              {newAchievements.map(a => (
+                <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ fontSize: '1.3rem', lineHeight: 1 }}>{a.icon}</div>
+                  <div>
+                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '2px', color: RARITY_COLOR[a.rarity] }}>{a.name}</div>
+                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.35)', marginTop: '2px' }}>{a.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           <button onClick={copyResult} style={{
             width: '100%', maxWidth: '280px', padding: '14px',

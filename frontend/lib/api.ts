@@ -109,3 +109,26 @@ export async function getWeeklyLeaderboard(): Promise<LeaderboardEntry[]> {
   if (!res.ok) throw new Error('Erreur weekly leaderboard')
   return res.json()
 }
+
+export interface GlobalLeaderboardEntry {
+  rank: number
+  player_name: string
+  total_correct: number
+  total_questions: number
+}
+
+export async function submitGlobalScore(player_name: string, correct: number, total: number) {
+  const res = await fetch(`${API_URL}/api/global/score`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ player_name, correct, total }),
+  })
+  if (!res.ok) throw new Error('Erreur submit global score')
+  return res.json()
+}
+
+export async function getGlobalLeaderboard(): Promise<GlobalLeaderboardEntry[]> {
+  const res = await fetch(`${API_URL}/api/global/leaderboard`)
+  if (!res.ok) throw new Error('Erreur global leaderboard')
+  return res.json()
+}

@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
-import { getRandomQuiz, getFighterQuiz, getRandomPunish, getRandomDamage, getRandomOnBlock } from '@/lib/api'
+import { getRandomQuiz, getFighterQuiz, getRandomPunish, getRandomDamage, getRandomOnBlock, submitGlobalScore } from '@/lib/api'
 import { playCorrect, playWrong, getSoundEnabled, toggleSound } from '@/lib/sounds'
 import { checkAndUnlock, updateLifetime, RARITY_COLOR, type Achievement, type LifetimeDelta } from '@/lib/achievements'
 import type { QuizQuestion } from '@/types'
@@ -249,6 +249,12 @@ function QuizPlay() {
     if (mode === 'fighter' && slug) ctx.slug = slug
     const newly = checkAndUnlock(ctx)
     if (newly.length > 0) setNewAchievements(newly)
+
+    // Auto-submit to global leaderboard if pseudo set
+    if (total > 0) {
+      const pseudo = localStorage.getItem('fda_pseudo')?.trim()
+      if (pseudo) submitGlobalScore(pseudo, score, total).catch(() => {})
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionPhase])
 
@@ -973,6 +979,14 @@ function QuizPlay() {
                       {question.move_name} — {question.answer}f startup · {question.on_block_value} on block
                     </div>
                   )}
+                  {state === 'wrong' && (() => {
+                    const fact = getFunFact(question, mode)
+                    return fact ? (
+                      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.44rem', letterSpacing: '1px', color: '#f59e0b', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(245,158,11,0.2)' }}>
+                        💡 {fact}
+                      </div>
+                    ) : null
+                  })()}
                 </div>
               )}
               <button onClick={handleNextQuestion} style={{
@@ -1011,6 +1025,40 @@ function QuizPlay() {
 
 export default function QuizPlayPage() {
   return <Suspense><QuizPlay /></Suspense>
+}
+
+function getFunFact(q: { answer: string; on_block_value?: string | null; move_name: string }, mode: string): string | null {
+  if (mode === 'damage') {
+    const dmg = parseInt(q.answer)
+    if (!isNaN(dmg)) {
+      if (dmg >= 2000) return `${q.move_name} deals ${dmg} pts — one of the hardest-hitting moves`
+      if (dmg <= 400)  return `${q.move_name} is a weak poke at only ${dmg} pts damage`
+    }
+    return null
+  }
+  if (mode === 'onblock') {
+    const v = parseInt(q.answer.replace('+', ''))
+    if (!isNaN(v)) {
+      if (v <= -10) return `${q.move_name} is ${q.answer} on block — severely punishable`
+      if (v >= 4)   return `${q.move_name} is ${q.answer} on block — leaves you at advantage`
+    }
+    return null
+  }
+  if (mode === 'punish') return null
+  // Startup modes
+  const startup = parseInt(q.answer)
+  if (!isNaN(startup)) {
+    if (startup <= 4)  return `${q.move_name} is ${startup}f — among the fastest moves in SF6`
+    if (startup >= 25) return `${q.move_name} is ${startup}f — a slow, committal move`
+  }
+  if (q.on_block_value) {
+    const ob = parseInt(q.on_block_value.replace('+', ''))
+    if (!isNaN(ob)) {
+      if (ob <= -10) return `${q.move_name} is ${q.on_block_value} on block — very punishable`
+      if (ob >= 4)   return `${q.move_name} is ${q.on_block_value} on block — leaves you at advantage`
+    }
+  }
+  return null
 }
 
 function ReviewSection({ history, show, onToggle, modeColor, isDamage, t }: {
