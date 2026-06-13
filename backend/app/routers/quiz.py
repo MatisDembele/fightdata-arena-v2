@@ -34,6 +34,25 @@ def random_damage_question(db: Session = Depends(get_db)):
     return question
 
 
+@router.get("/random/onblock", response_model=QuizQuestion)
+def random_onblock_question(db: Session = Depends(get_db)):
+    question = quiz_service.generate_random_onblock_question(db)
+    if not question:
+        raise HTTPException(status_code=404, detail="Pas assez de données pour générer un quiz on block")
+    return question
+
+
+@router.get("/weekly", response_model=list[QuizQuestion])
+def weekly_questions(db: Session = Depends(get_db)):
+    from datetime import timedelta
+    today = datetime.now(timezone.utc).date()
+    monday = today - timedelta(days=today.weekday())
+    questions = quiz_service.generate_weekly_questions(db, str(monday))
+    if not questions:
+        raise HTTPException(status_code=404, detail="Impossible de générer le weekly challenge")
+    return questions
+
+
 @router.get("/daily", response_model=list[QuizQuestion])
 def daily_questions(db: Session = Depends(get_db)):
     today = datetime.now(timezone.utc).date()

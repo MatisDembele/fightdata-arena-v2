@@ -207,6 +207,39 @@ const en = {
   'stats.achievements':          'ACHIEVEMENTS',
   'stats.achievements_progress': '{n}/{total} unlocked',
   'play.achievement_unlocked':   'ACHIEVEMENT UNLOCKED',
+
+  // on block mode
+  'quiz.mode_onblock_sub':  'Exact on-block value',
+  'quiz.mode_onblock_desc': 'Guess the exact on-block value (e.g. -4, +1). Positive = safe, negative = punishable.',
+  // custom mode
+  'quiz.mode_custom_sub':   'Pick your fighters',
+  'quiz.mode_custom_desc':  'Select 2-5 fighters and get questions from their moves. Perfect for match prep.',
+  'quiz.select_fighters':   'SELECT FIGHTERS',
+  'quiz.custom_confirm':    'CONFIRM ({n} fighters)',
+  'quiz.custom_min':        'Pick at least 2 fighters',
+  // weekly mode
+  'quiz.mode_weekly_sub':  '20 questions · resets Monday',
+  'quiz.mode_weekly_desc': 'A harder weekly challenge. 20 questions, everyone gets the same set. Compete for the weekly top.',
+  // play — on block
+  'play.mode_onblock_label':            'ON BLOCK',
+  'play.feedback_correct_onblock':      'Correct! {move} is {n} on block.',
+  'play.feedback_wrong_onblock':        'Wrong. {move} is {n} on block.',
+  // play — review
+  'play.review_answers':  'REVIEW ANSWERS',
+  'play.review_hide':     'HIDE REVIEW',
+  'play.your_answer':     'YOUR ANSWER',
+  // weekly
+  'weekly.title':          'WEEKLY CHALLENGE',
+  'weekly.day_label':      'WEEK {n}',
+  'weekly.already_played': 'Already completed this week.',
+  'weekly.streak':         '🔥 {n}-week streak',
+  'weekly.copy_result':    'COPY RESULT',
+  'weekly.copied':         'COPIED!',
+  'weekly.leaderboard':    'WEEKLY LEADERBOARD',
+  'weekly.leaderboard_name':  'Your name…',
+  'weekly.leaderboard_join':  'JOIN',
+  'weekly.leaderboard_ok':    'SUBMITTED',
+  'weekly.leaderboard_empty': 'No entries yet.',
 } as const
 
 type DictKey = keyof typeof en
@@ -416,6 +449,39 @@ const fr: Record<DictKey, string> = {
   'stats.achievements':          'SUCCÈS',
   'stats.achievements_progress': '{n}/{total} débloqués',
   'play.achievement_unlocked':   'SUCCÈS DÉBLOQUÉ',
+
+  // on block mode
+  'quiz.mode_onblock_sub':  'Valeur exacte on block',
+  'quiz.mode_onblock_desc': 'Devine la valeur exacte on block (ex: -4, +1). Positif = safe, négatif = punissable.',
+  // custom mode
+  'quiz.mode_custom_sub':   'Choisis tes persos',
+  'quiz.mode_custom_desc':  'Sélectionne 2-5 personnages et joue uniquement sur leurs moves. Parfait pour préparer un match.',
+  'quiz.select_fighters':   'SÉLECTIONNER LES PERSOS',
+  'quiz.custom_confirm':    'CONFIRMER ({n} persos)',
+  'quiz.custom_min':        'Sélectionne au moins 2 persos',
+  // weekly mode
+  'quiz.mode_weekly_sub':  '20 questions · reset le lundi',
+  'quiz.mode_weekly_desc': 'Un challenge hebdomadaire plus difficile. 20 questions, tout le monde a le même set. Vise le top hebdo.',
+  // play — on block
+  'play.mode_onblock_label':            'ON BLOCK',
+  'play.feedback_correct_onblock':      'Correct ! {move} est {n} on block.',
+  'play.feedback_wrong_onblock':        'Faux. {move} est {n} on block.',
+  // play — review
+  'play.review_answers':  'REVOIR LES RÉPONSES',
+  'play.review_hide':     'MASQUER',
+  'play.your_answer':     'TA RÉPONSE',
+  // weekly
+  'weekly.title':          'WEEKLY CHALLENGE',
+  'weekly.day_label':      'SEMAINE {n}',
+  'weekly.already_played': 'Déjà complété cette semaine.',
+  'weekly.streak':         '🔥 Streak {n} semaines',
+  'weekly.copy_result':    'COPIER RÉSULTAT',
+  'weekly.copied':         'COPIÉ !',
+  'weekly.leaderboard':    'LEADERBOARD HEBDO',
+  'weekly.leaderboard_name':  'Ton nom…',
+  'weekly.leaderboard_join':  'REJOINDRE',
+  'weekly.leaderboard_ok':    'SOUMIS',
+  'weekly.leaderboard_empty': 'Aucune entrée pour le moment.',
 }
 
 const dict: Record<string, Record<DictKey, string>> = { en, fr }

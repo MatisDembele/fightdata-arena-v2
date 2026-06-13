@@ -34,6 +34,8 @@ const QUIZ_MODES = [
   { key: 'punish',   label: 'PUNISH',        color: '#ffe000' },
   { key: 'hardcore', label: 'HARDCORE',      color: '#ff6a00' },
   { key: 'damage',   label: 'DAMAGE',        color: '#f59e0b' },
+  { key: 'onblock',  label: 'ON BLOCK',      color: '#00b4d8' },
+  { key: 'custom',   label: 'CUSTOM',        color: '#c77dff' },
 ]
 
 function todayStr()     { return new Date().toISOString().split('T')[0] }
@@ -192,19 +194,26 @@ export default function StatsPage() {
             </div>
           </Section>
 
-          {/* Fighter breakdown */}
+          {/* Fighter heatmap */}
           {fighters.length > 0 && (
-            <Section title="FIGHTER BREAKDOWN" color="#00f0ff">
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            <Section title="FIGHTER HEATMAP" color="#00f0ff">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))', gap: '5px' }}>
                 {fighters.map(({ slug, stats: s }) => {
-                  const color = getFighterColor(slug)
+                  const pct = s.bestAccuracy / 100
+                  const r = Math.round(255 * (1 - pct) + 74 * pct)
+                  const g = Math.round(45 * (1 - pct) + 222 * pct)
+                  const b = Math.round(120 * (1 - pct) + 128 * pct)
+                  const color = `rgb(${r},${g},${b})`
                   return (
-                    <div key={slug} style={{ padding: '6px 10px', background: `${color}11`, border: `1px solid ${color}33`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                      <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.7rem', letterSpacing: '1px', color, textTransform: 'uppercase' }}>
+                    <div key={slug} style={{ padding: '8px 4px', background: `${color}18`, border: `1px solid ${color}44`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
+                      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '0.5px', color, textTransform: 'uppercase', textAlign: 'center', lineHeight: 1.2 }}>
                         {slug}
                       </div>
-                      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', color: 'rgba(255,255,255,0.4)', letterSpacing: '1px' }}>
-                        {s.bestAccuracy}% / {s.totalGames}g
+                      <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '1px', color }}>
+                        {s.bestAccuracy}%
+                      </div>
+                      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.35rem', color: 'rgba(255,255,255,0.25)' }}>
+                        {s.totalGames}g
                       </div>
                     </div>
                   )

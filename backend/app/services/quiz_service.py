@@ -273,3 +273,91 @@ def generate_daily_questions(db: Session, date_str: str) -> list[QuizQuestion]:
             questions.append(q)
 
     return questions
+
+
+def _pick_onblock_distractors(correct: int, pool: set[int], rng: random.Random) -> list[int]:
+    close = sorted(
+        [v for v in pool if v != correct and abs(v - correct) <= 4],
+        key=lambda v: abs(v - correct),
+    )
+    rng.shuffle(close)
+    chosen = close[:3]
+    if len(chosen) < 3:
+        used = pool | set(chosen) | {correct}
+        for offset in [2, -2, 4, -4, 6, -6, 1, -1, 3, -3, 8, -8]:
+            if len(chosen) == 3:
+                break
+            c = correct + offset
+            if c not in used:
+                chosen.append(c)
+                used.add(c)
+    if len(chosen) < 3:
+        for v in sorted(pool, key=lambda v: abs(v - correct)):
+            if len(chosen) == 3:
+                break
+            if v not in chosen and v != correct:
+                chosen.append(v)
+    return chosen[:3]
+
+
+def _fmt_ob(v: int) -> str:
+    return f"+{v}" if v > 0 else str(v)
+
+
+def generate_onblock_question(db: Session, slug: str) -> QuizQuestion | None:
+    fighter = db.query(Fighter).filter(Fighter.slug == slug).first()
+    if not fighter:
+        return None
+    candidates = (
+        db.query(Move)
+        .filter(Move.fighter_id == fighter.id, Move.gif_path.isnot(None))
+        .all()
+    )
+    candidates = [m for m in candidates if _parse_on_block(m.on_block) is not None]
+    if len(candidates) < 4:
+        return None
+    rng = random.Random()
+    correct_move = rng.choice(candidates)
+    correct_int = _parse_on_block(correct_move.on_block)
+    pool_ints = {_parse_on_block(m.on_block) for m in candidates if _parse_on_block(m.on_block) != correct_int}
+    pool_ints.discard(None)
+    distractors = _pick_onblock_distractors(correct_int, pool_ints, rng)
+    choices = [_fmt_ob(v) for v in sorted(distractors + [correct_int])]
+    return QuizQuestion(
+        move_name=correct_move.move_name,
+        section=correct_move.section,
+        gif_url=correct_move.gif_url,
+        gif_path=correct_move.gif_path,
+        question=f"Quelle est la valeur on block de {correct_move.move_name} ?",
+        choices=choices,
+        answer=_fmt_ob(correct_int),
+        fighter_slug=slug,
+        on_block_value=correct_move.on_block,
+    )
+
+
+def generate_random_onblock_question(db: Session) -> QuizQuestion | None:
+    fighters = db.query(Fighter).all()
+    if not fighters:
+        return None
+    random.shuffle(fighters)
+    for fighter in fighters:
+        q = generate_onblock_question(db, fighter.slug)
+        if q:
+            return q
+    return None
+
+
+def generate_weekly_questions(db: Session, week_str: str) -> list[QuizQuestion]:
+    rng = random.Random(week_str)
+    fighters = db.query(Fighter).all()
+    fighters_copy = list(fighters)
+    rng.shuffle(fighters_copy)
+    questions: list[QuizQuestion] = []
+    for fighter in fighters_copy:
+        if len(questions) >= 20:
+            break
+        q = _generate_startup_question_rng(db, fighter.slug, rng)
+        if q:
+            questions.append(q)
+    return questions

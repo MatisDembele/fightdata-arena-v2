@@ -81,3 +81,31 @@ export async function getDailyLeaderboard(): Promise<LeaderboardEntry[]> {
   if (!res.ok) throw new Error('Erreur leaderboard')
   return res.json()
 }
+
+export async function getRandomOnBlock() {
+  const res = await fetch(`${API_URL}/api/quiz/random/onblock`)
+  if (!res.ok) throw new Error('Erreur quiz on block')
+  return res.json()
+}
+
+export async function getWeeklyQuiz(): Promise<QuizQuestion[]> {
+  const res = await fetch(`${API_URL}/api/quiz/weekly`)
+  if (!res.ok) throw new Error('Erreur weekly quiz')
+  return res.json()
+}
+
+export async function submitWeeklyScore(player_name: string, score: number, accuracy: number) {
+  const res = await fetch(`${API_URL}/api/weekly/score`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ player_name, score, accuracy }),
+  })
+  if (!res.ok) throw new Error('Erreur submit weekly score')
+  return res.json()
+}
+
+export async function getWeeklyLeaderboard(): Promise<LeaderboardEntry[]> {
+  const res = await fetch(`${API_URL}/api/weekly/leaderboard`)
+  if (!res.ok) throw new Error('Erreur weekly leaderboard')
+  return res.json()
+}

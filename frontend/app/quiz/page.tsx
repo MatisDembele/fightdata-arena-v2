@@ -12,9 +12,11 @@ export default function QuizSelectPage() {
   const router                          = useRouter()
   const [active, setActive]             = useState(0)
   const [showFighters, setShowFighters] = useState(false)
+  const [showCustom, setShowCustom]     = useState(false)
   const [fighters, setFighters]         = useState<Fighter[]>([])
   const [search, setSearch]             = useState('')
   const [loadingF, setLoadingF]         = useState(false)
+  const [selectedFighters, setSelectedFighters] = useState<string[]>([])
   const { t } = useLanguage()
 
   const QUIZ_MODES = [
@@ -81,6 +83,33 @@ export default function QuizSelectPage() {
       href: '/quiz/play?mode=damage',
       icon: '💥',
     },
+    {
+      id: 'onblock',
+      label: 'ON BLOCK',
+      sub: t('quiz.mode_onblock_sub'),
+      desc: t('quiz.mode_onblock_desc'),
+      color: '#00b4d8', colorAlt: '#0077b6',
+      href: '/quiz/play?mode=onblock',
+      icon: '🛡️',
+    },
+    {
+      id: 'custom',
+      label: 'CUSTOM',
+      sub: t('quiz.mode_custom_sub'),
+      desc: t('quiz.mode_custom_desc'),
+      color: '#c77dff', colorAlt: '#7b2fff',
+      href: null,
+      icon: '🎨',
+    },
+    {
+      id: 'weekly',
+      label: 'WEEKLY',
+      sub: t('quiz.mode_weekly_sub'),
+      desc: t('quiz.mode_weekly_desc'),
+      color: '#ff6a00', colorAlt: '#d97706',
+      href: '/quiz/weekly',
+      icon: '📆',
+    },
   ]
 
   const current = QUIZ_MODES[active]
@@ -88,6 +117,13 @@ export default function QuizSelectPage() {
   const handleModeClick = async (mode: typeof QUIZ_MODES[0]) => {
     if (mode.id === 'fighter') {
       setShowFighters(true)
+      if (fighters.length === 0) {
+        setLoadingF(true)
+        try { setFighters(await getFighters()) }
+        finally { setLoadingF(false) }
+      }
+    } else if (mode.id === 'custom') {
+      setShowCustom(true)
       if (fighters.length === 0) {
         setLoadingF(true)
         try { setFighters(await getFighters()) }
@@ -113,7 +149,137 @@ export default function QuizSelectPage() {
         overflowY: 'auto',
       }}>
 
-        {!showFighters ? (
+        {showCustom ? (
+          /* Custom fighter selector */
+          <div style={{ width: '100%', maxWidth: '900px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+              <button onClick={() => { setShowCustom(false); setSelectedFighters([]) }} style={{
+                background: 'none', border: '1px solid rgba(255,255,255,0.15)',
+                color: 'rgba(255,255,255,0.5)', cursor: 'pointer',
+                padding: '8px 16px', fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: '0.85rem', letterSpacing: '2px',
+              }}>{t('quiz.back')}</button>
+              <h2 style={{
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: '1.8rem', letterSpacing: '5px', color: '#fff',
+                textShadow: '0 0 16px #c77dff',
+              }}>{t('quiz.select_fighters')}</h2>
+            </div>
+
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder={t('quiz.search')}
+              style={{
+                width: '100%', padding: '11px 18px', marginBottom: '20px',
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                color: '#fff', outline: 'none',
+                fontFamily: "'Share Tech Mono', monospace",
+                fontSize: '0.8rem', letterSpacing: '2px',
+              }}
+            />
+
+            {loadingF ? (
+              <div style={{
+                textAlign: 'center', padding: '40px',
+                fontFamily: "'Share Tech Mono', monospace",
+                color: 'rgba(255,255,255,0.3)', letterSpacing: '4px',
+              }}>{t('quiz.loading')}</div>
+            ) : (
+              <>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))',
+                  gap: '6px',
+                  paddingBottom: '80px',
+                }}>
+                  {fighters.filter(f => f.name.toLowerCase().includes(search.toLowerCase())).map(fighter => {
+                    const portrait  = getFighterPortrait(fighter.slug)
+                    const color     = getFighterColor(fighter.slug)
+                    const isSel     = selectedFighters.includes(fighter.slug)
+                    return (
+                      <div
+                        key={fighter.slug}
+                        onClick={() => setSelectedFighters(prev =>
+                          prev.includes(fighter.slug)
+                            ? prev.filter(s => s !== fighter.slug)
+                            : [...prev, fighter.slug]
+                        )}
+                        style={{
+                          textDecoration: 'none',
+                          display: 'flex', flexDirection: 'column', alignItems: 'center',
+                          background: isSel ? `${color}20` : 'rgba(255,255,255,0.03)',
+                          border: `1px solid ${isSel ? color : 'rgba(255,255,255,0.07)'}`,
+                          boxShadow: isSel ? `0 0 12px ${color}44` : 'none',
+                          overflow: 'hidden', transition: 'all 0.15s', cursor: 'pointer',
+                        }}
+                      >
+                        <div style={{
+                          width: '100%', height: '90px',
+                          background: `linear-gradient(180deg, ${color}28, ${color}0d)`,
+                          overflow: 'hidden', position: 'relative',
+                        }}>
+                          {portrait && (
+                            <img
+                              src={portrait} alt={fighter.name}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
+                              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+                            />
+                          )}
+                          {isSel && (
+                            <div style={{
+                              position: 'absolute', top: '4px', right: '4px',
+                              width: '18px', height: '18px',
+                              background: color, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: '0.7rem', color: '#000', fontWeight: 700,
+                            }}>✓</div>
+                          )}
+                        </div>
+                        <div style={{
+                          padding: '6px 4px',
+                          fontFamily: "'Rajdhani', sans-serif",
+                          fontSize: '0.7rem', fontWeight: 700,
+                          letterSpacing: '0.5px', textTransform: 'uppercase',
+                          color: isSel ? color : 'rgba(255,255,255,0.75)', textAlign: 'center',
+                        }}>{fighter.name}</div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Sticky confirm bar */}
+                <div style={{
+                  position: 'fixed', bottom: 0, left: 0, right: 0,
+                  padding: '14px 20px',
+                  background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(12px)',
+                  borderTop: '1px solid rgba(255,255,255,0.08)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
+                }}>
+                  {selectedFighters.length < 2 ? (
+                    <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.3)' }}>
+                      {t('quiz.custom_min')}
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => router.push(`/quiz/play?mode=custom&fighters=${selectedFighters.join(',')}`)}
+                      style={{
+                        padding: '13px 28px',
+                        background: 'linear-gradient(90deg, #7b2fff, #c77dff)',
+                        border: 'none', cursor: 'pointer',
+                        fontFamily: "'Bebas Neue', sans-serif",
+                        fontSize: '1rem', letterSpacing: '4px', color: '#fff',
+                        boxShadow: '0 0 20px #c77dff33',
+                      }}
+                    >
+                      {t('quiz.custom_confirm', { n: selectedFighters.length })}
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        ) : !showFighters ? (
           <>
             <div style={{ textAlign: 'center', marginBottom: '32px' }}>
               <h1 style={{
