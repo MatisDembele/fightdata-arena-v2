@@ -58,3 +58,26 @@ export async function getDailyQuiz(): Promise<QuizQuestion[]> {
   if (!res.ok) throw new Error('Erreur daily quiz')
   return res.json()
 }
+
+export async function submitDailyScore(player_name: string, score: number, accuracy: number) {
+  const res = await fetch(`${API_URL}/api/daily/score`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ player_name, score, accuracy }),
+  })
+  if (!res.ok) throw new Error('Erreur submit score')
+  return res.json()
+}
+
+export interface LeaderboardEntry {
+  rank: number
+  player_name: string
+  score: number
+  accuracy: number
+}
+
+export async function getDailyLeaderboard(): Promise<LeaderboardEntry[]> {
+  const res = await fetch(`${API_URL}/api/daily/leaderboard`)
+  if (!res.ok) throw new Error('Erreur leaderboard')
+  return res.json()
+}

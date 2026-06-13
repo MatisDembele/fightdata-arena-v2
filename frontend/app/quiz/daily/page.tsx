@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
-import { getDailyQuiz } from '@/lib/api'
+import { getDailyQuiz, submitDailyScore, getDailyLeaderboard, type LeaderboardEntry } from '@/lib/api'
 import type { QuizQuestion } from '@/types'
 import { track } from '@vercel/analytics'
 import { useLanguage } from '@/lib/i18n'
@@ -88,6 +88,10 @@ function DailyPage() {
   const [loading, setLoading]     = useState(false)
   const [loadError, setLoadError] = useState(false)
   const [alreadyPlayed, setAlreadyPlayed] = useState<DailyResult | null>(null)
+  const [leaderboard, setLeaderboard]     = useState<LeaderboardEntry[]>([])
+  const [lbName, setLbName]               = useState('')
+  const [lbSubmitted, setLbSubmitted]     = useState(false)
+  const [lbSubmitting, setLbSubmitting]   = useState(false)
   const answersRef = useRef<boolean[]>([])
   const { t } = useLanguage()
 
@@ -110,6 +114,20 @@ function DailyPage() {
       img.src = next.gif_url
     }
   }, [idx, questions])
+
+  const fetchLeaderboard = useCallback(() => {
+    getDailyLeaderboard().then(setLeaderboard).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (phase !== 'finished') return
+    // Pre-fill name from pseudo if available
+    const stored = localStorage.getItem('fda_pseudo')?.trim()
+    if (stored) setLbName(stored)
+    // Slight delay so any just-submitted score has propagated
+    const t = setTimeout(fetchLeaderboard, 900)
+    return () => clearTimeout(t)
+  }, [phase, fetchLeaderboard])
 
   const loadQuestions = useCallback(async () => {
     setLoading(true)
@@ -163,15 +181,40 @@ function DailyPage() {
     if (idx + 1 >= questions.length) {
       const finalAnswers = answersRef.current
       const finalScore   = finalAnswers.filter(Boolean).length
+      const accuracy     = Math.round(finalScore / finalAnswers.length * 100)
       const streakData   = saveResultAndStreak(finalAnswers, finalScore)
-      track('daily_played', { score: finalScore, accuracy: Math.round(finalScore / finalAnswers.length * 100) })
+      track('daily_played', { score: finalScore, accuracy })
       setStreak(streakData.streak)
       setScore(finalScore)
+      // Auto-submit to leaderboard if pseudo already set
+      const pseudo = localStorage.getItem('fda_pseudo')?.trim()
+      if (pseudo) {
+        setLbName(pseudo)
+        setLbSubmitted(true)
+        submitDailyScore(pseudo, finalScore, accuracy).catch(() => {})
+      }
       setPhase('finished')
     } else {
       setIdx(i => i + 1)
       setSelected(null)
       setState('idle')
+    }
+  }
+
+  const handleLbSubmit = async () => {
+    const name = lbName.trim()
+    if (!name || lbSubmitting || lbSubmitted) return
+    setLbSubmitting(true)
+    try {
+      const acc = answers.length ? Math.round(score / answers.length * 100) : 0
+      await submitDailyScore(name, score, acc)
+      localStorage.setItem('fda_pseudo', name)
+      setLbSubmitted(true)
+      fetchLeaderboard()
+    } catch {
+      // silent
+    } finally {
+      setLbSubmitting(false)
     }
   }
 
@@ -286,6 +329,92 @@ function DailyPage() {
           }}>
             {copied ? t('daily.copied') : t('daily.copy_result')}
           </button>
+
+          {/* Leaderboard */}
+          <div style={{ width: '100%', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '4px', color: COLOR }}>
+              {t('daily.leaderboard')}
+            </div>
+
+            {/* Name submit — only if not yet submitted */}
+            {!lbSubmitted && (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  value={lbName}
+                  onChange={e => setLbName(e.target.value.slice(0, 24))}
+                  onKeyDown={e => e.key === 'Enter' && handleLbSubmit()}
+                  placeholder={t('daily.leaderboard_name')}
+                  maxLength={24}
+                  style={{
+                    flex: 1, padding: '9px 14px',
+                    background: 'rgba(255,255,255,0.04)',
+                    border: `1px solid ${COLOR}44`,
+                    color: '#fff', outline: 'none',
+                    fontFamily: "'Share Tech Mono', monospace",
+                    fontSize: '0.75rem', letterSpacing: '2px',
+                  }}
+                />
+                <button
+                  onClick={handleLbSubmit}
+                  disabled={!lbName.trim() || lbSubmitting}
+                  style={{
+                    padding: '9px 16px',
+                    background: lbName.trim() ? `linear-gradient(90deg, ${COLOR_ALT}, ${COLOR})` : 'rgba(255,255,255,0.06)',
+                    border: 'none', cursor: lbName.trim() ? 'pointer' : 'default',
+                    fontFamily: "'Bebas Neue', sans-serif",
+                    fontSize: '0.8rem', letterSpacing: '2px',
+                    color: lbName.trim() ? '#000' : 'rgba(255,255,255,0.2)',
+                    transition: 'all 0.2s', whiteSpace: 'nowrap',
+                  }}
+                >
+                  {lbSubmitting ? '...' : t('daily.leaderboard_join')}
+                </button>
+              </div>
+            )}
+
+            {lbSubmitted && (
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: COLOR }}>
+                {t('daily.leaderboard_ok')} — {lbName}
+              </div>
+            )}
+
+            {/* Top 10 */}
+            {leaderboard.length === 0 ? (
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.2)' }}>
+                {t('daily.leaderboard_empty')}
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {leaderboard.map(entry => {
+                  const isMe = lbSubmitted && entry.player_name === lbName
+                  return (
+                    <div key={entry.rank} style={{
+                      display: 'grid', gridTemplateColumns: '28px 1fr 48px',
+                      padding: '7px 12px', alignItems: 'center', gap: '8px',
+                      background: isMe ? `${COLOR}12` : entry.rank <= 3 ? 'rgba(255,255,255,0.03)' : 'transparent',
+                      border: `1px solid ${isMe ? COLOR + '44' : 'rgba(255,255,255,0.05)'}`,
+                    }}>
+                      <span style={{
+                        fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '1px',
+                        color: entry.rank === 1 ? '#ffd700' : entry.rank === 2 ? '#c0c0c0' : entry.rank === 3 ? '#cd7f32' : 'rgba(255,255,255,0.3)',
+                      }}>#{entry.rank}</span>
+                      <span style={{
+                        fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '1px',
+                        color: isMe ? COLOR : 'rgba(255,255,255,0.7)',
+                        textShadow: isMe ? `0 0 8px ${COLOR}` : 'none',
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>{entry.player_name}</span>
+                      <span style={{
+                        fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '1px',
+                        color: isMe ? COLOR : 'rgba(255,255,255,0.5)', textAlign: 'right',
+                      }}>{entry.score}/10</span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
           <Link href="/" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
             {t('daily.home')}
           </Link>

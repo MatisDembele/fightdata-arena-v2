@@ -114,8 +114,13 @@ const en = {
   'daily.score':           'SCORE',
   'daily.question':        'QUESTION',
   'daily.correct':         'CORRECT',
-  'daily.see_results':     'SEE RESULTS →',
-  'daily.next_question':   'NEXT QUESTION →',
+  'daily.see_results':         'SEE RESULTS →',
+  'daily.next_question':       'NEXT QUESTION →',
+  'daily.leaderboard':         "TODAY'S TOP 10",
+  'daily.leaderboard_name':    'YOUR NAME',
+  'daily.leaderboard_join':    'JOIN THE LEADERBOARD →',
+  'daily.leaderboard_ok':      '✓ SUBMITTED',
+  'daily.leaderboard_empty':   'No scores yet today — be the first!',
 
   // multiplayer lobby
   'multi.title':              'MULTIPLAYER',
@@ -315,8 +320,13 @@ const fr: Record<DictKey, string> = {
   'daily.score':           'SCORE',
   'daily.question':        'QUESTION',
   'daily.correct':         'CORRECT',
-  'daily.see_results':     'VOIR LES RÉSULTATS →',
-  'daily.next_question':   'QUESTION SUIVANTE →',
+  'daily.see_results':         'VOIR LES RÉSULTATS →',
+  'daily.next_question':       'QUESTION SUIVANTE →',
+  'daily.leaderboard':         'TOP 10 DU JOUR',
+  'daily.leaderboard_name':    'TON PSEUDO',
+  'daily.leaderboard_join':    'REJOINDRE LE CLASSEMENT →',
+  'daily.leaderboard_ok':      '✓ ENREGISTRÉ',
+  'daily.leaderboard_empty':   'Aucun score pour le moment — sois le premier !',
 
   // multiplayer lobby
   'multi.title':             'MULTIJOUEUR',
