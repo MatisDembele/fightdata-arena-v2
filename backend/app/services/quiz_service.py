@@ -348,6 +348,49 @@ def generate_random_onblock_question(db: Session) -> QuizQuestion | None:
     return None
 
 
+def generate_onhit_question(db: Session, slug: str) -> QuizQuestion | None:
+    fighter = db.query(Fighter).filter(Fighter.slug == slug).first()
+    if not fighter:
+        return None
+    candidates = (
+        db.query(Move)
+        .filter(Move.fighter_id == fighter.id, Move.gif_path.isnot(None))
+        .all()
+    )
+    candidates = [m for m in candidates if _parse_on_block(m.on_hit) is not None]
+    if len(candidates) < 4:
+        return None
+    rng = random.Random()
+    correct_move = rng.choice(candidates)
+    correct_int = _parse_on_block(correct_move.on_hit)
+    pool_ints = {_parse_on_block(m.on_hit) for m in candidates if _parse_on_block(m.on_hit) != correct_int}
+    pool_ints.discard(None)
+    distractors = _pick_onblock_distractors(correct_int, pool_ints, rng)
+    choices = [_fmt_ob(v) for v in sorted(distractors + [correct_int])]
+    return QuizQuestion(
+        move_name=correct_move.move_name,
+        section=correct_move.section,
+        gif_url=correct_move.gif_url,
+        gif_path=correct_move.gif_path,
+        question=f"Quelle est la valeur on hit de {correct_move.move_name} ?",
+        choices=choices,
+        answer=_fmt_ob(correct_int),
+        fighter_slug=slug,
+    )
+
+
+def generate_random_onhit_question(db: Session) -> QuizQuestion | None:
+    fighters = db.query(Fighter).all()
+    if not fighters:
+        return None
+    random.shuffle(fighters)
+    for fighter in fighters:
+        q = generate_onhit_question(db, fighter.slug)
+        if q:
+            return q
+    return None
+
+
 def generate_seeded_questions(db: Session, seed: str, n: int = 10) -> list[QuizQuestion]:
     rng = random.Random(seed)
     fighters = db.query(Fighter).all()

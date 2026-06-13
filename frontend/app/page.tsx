@@ -37,7 +37,7 @@ export default function Home() {
   const STATS = [
     { val: '30',   label: t('home.stat_chars') },
     { val: '1562', label: t('home.stat_moves') },
-    { val: '12',   label: t('home.stat_modes') },
+    { val: '13',   label: t('home.stat_modes') },
   ]
 
   const current = MODES[active]

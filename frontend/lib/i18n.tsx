@@ -266,6 +266,12 @@ const en = {
   // flash mode
   'quiz.mode_flash_sub':  'Beat the clock — faster every round',
   'quiz.mode_flash_desc': '3 lives. Timer shrinks each question. Wrong answer or timeout costs a life. How far can you go?',
+  // on hit mode
+  'quiz.mode_onhit_sub':         'On hit frame advantage',
+  'quiz.mode_onhit_desc':        "How positive or negative is the move on hit? Know your advantage states to control neutral.",
+  'play.mode_onhit_label':       'ON HIT',
+  'play.feedback_correct_onhit': '✓ Correct! {move} is {n} on hit.',
+  'play.feedback_wrong_onhit':   '✗ Wrong! {move} is {n} on hit.',
   // profile
   'nav.profile':          'PROFILE',
   'profile.title':        'PROFILE',
@@ -544,6 +550,12 @@ const fr: Record<DictKey, string> = {
   // flash mode
   'quiz.mode_flash_sub':  'Contre-la-montre — plus rapide à chaque question',
   'quiz.mode_flash_desc': "3 vies. Le chrono se réduit à chaque question. Mauvaise réponse ou timeout = 1 vie perdue. Jusqu'où tu tiens ?",
+  // on hit mode
+  'quiz.mode_onhit_sub':         'Avantage on hit',
+  'quiz.mode_onhit_desc':        "Combien de frames d'avantage ou de désavantage on hit ? Maîtrise les états d'avantage pour contrôler le neutral.",
+  'play.mode_onhit_label':       'ON HIT',
+  'play.feedback_correct_onhit': '✓ Exact ! {move} est {n} on hit.',
+  'play.feedback_wrong_onhit':   '✗ Raté ! {move} est {n} on hit.',
   // profile
   'nav.profile':          'PROFIL',
   'profile.title':        'PROFIL',

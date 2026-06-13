@@ -105,6 +105,12 @@ export async function getRandomOnBlock() {
   return res.json()
 }
 
+export async function getRandomOnHit() {
+  const res = await fetch(`${API_URL}/api/quiz/random/onhit`)
+  if (!res.ok) throw new Error('Erreur quiz on hit')
+  return res.json()
+}
+
 export async function getWeeklyQuiz(): Promise<QuizQuestion[]> {
   const res = await fetch(`${API_URL}/api/quiz/weekly`)
   if (!res.ok) throw new Error('Erreur weekly quiz')

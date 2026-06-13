@@ -128,6 +128,15 @@ export default function QuizSelectPage() {
       href: '/quiz/flash',
       icon: '⚡',
     },
+    {
+      id: 'onhit',
+      label: 'ON HIT',
+      sub: t('quiz.mode_onhit_sub'),
+      desc: t('quiz.mode_onhit_desc'),
+      color: '#f97316', colorAlt: '#ea580c',
+      href: '/quiz/play?mode=onhit',
+      icon: '🎯',
+    },
   ]
 
   const current = QUIZ_MODES[active]
