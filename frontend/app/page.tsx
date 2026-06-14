@@ -34,7 +34,7 @@ export default function Home() {
       desc: t('home.challenges_desc'),
     },
     {
-      id: 'profile', label: 'PROFILE', sub: t('home.profile_sub'),
+      id: 'profile', label: t('nav.profile'), sub: t('home.profile_sub'),
       href: '/profile', external: false,
       color: '#c084fc', colorAlt: '#7c3aed',
       desc: t('home.profile_desc'),
