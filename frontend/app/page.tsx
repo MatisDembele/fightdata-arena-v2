@@ -268,6 +268,13 @@ export default function Home() {
         </div>
 
       </div>
+
+      {/* Fondu bas vers le footer */}
+      <div style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0, height: '120px',
+        background: 'linear-gradient(to bottom, transparent, rgba(4,0,12,0.97))',
+        zIndex: 5, pointerEvents: 'none',
+      }} />
     </div>
     <Footer />
     </>

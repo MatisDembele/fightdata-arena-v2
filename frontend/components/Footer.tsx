@@ -18,7 +18,6 @@ export default function Footer() {
 
   const [category, setCategory] = useState<Category>('mode')
   const [message,  setMessage]  = useState('')
-  const [copied,   setCopied]   = useState(false)
   const [sent,     setSent]     = useState(false)
 
   const catLabel = (key: Category) => {
@@ -36,20 +35,11 @@ export default function Footer() {
     setTimeout(() => setSent(false), 3000)
   }
 
-  async function copyEmail() {
-    try {
-      await navigator.clipboard.writeText(CREATOR_EMAIL)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch { /* ignore */ }
-  }
-
   return (
     <footer style={{
       borderTop: '1px solid rgba(255,255,255,0.06)',
-      background: 'rgba(4,0,12,0.95)',
+      background: 'rgba(4,0,12,0.97)',
       padding: '48px 24px 36px',
-      marginTop: '40px',
     }}>
       <div style={{
         maxWidth: '900px', margin: '0 auto',
@@ -99,37 +89,6 @@ export default function Footer() {
             {t('home.patch')}
           </div>
 
-          {/* Email */}
-          <div style={{
-            padding: '10px 14px',
-            background: 'rgba(255,45,120,0.06)',
-            border: '1px solid rgba(255,45,120,0.2)',
-            display: 'flex', flexDirection: 'column', gap: '6px',
-          }}>
-            <div style={{
-              fontFamily: "'Share Tech Mono', monospace",
-              fontSize: '0.42rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)',
-            }}>{t('contact.email_label')}</div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-              <span style={{
-                fontFamily: "'Share Tech Mono', monospace",
-                fontSize: '0.6rem', letterSpacing: '1px', color: '#ff2d78',
-              }}>{CREATOR_EMAIL}</span>
-              <button
-                onClick={copyEmail}
-                style={{
-                  flexShrink: 0, padding: '4px 10px',
-                  background: 'none',
-                  border: `1px solid ${copied ? '#4ade80' : 'rgba(255,45,120,0.4)'}`,
-                  cursor: 'pointer',
-                  fontFamily: "'Bebas Neue', sans-serif",
-                  fontSize: '0.55rem', letterSpacing: '2px',
-                  color: copied ? '#4ade80' : 'rgba(255,45,120,0.8)',
-                  transition: 'all 0.2s', whiteSpace: 'nowrap',
-                }}
-              >{copied ? t('contact.copied') : t('contact.copy_email')}</button>
-            </div>
-          </div>
         </div>
 
         {/* Right — idea form */}
