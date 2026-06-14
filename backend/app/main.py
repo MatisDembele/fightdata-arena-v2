@@ -1,7 +1,7 @@
 import asyncio
 import time
 from pathlib import Path
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
@@ -55,18 +55,21 @@ app.add_middleware(
 _GIF_DIR = Path(__file__).parent.parent.parent / "data" / "gifs"
 
 
+_GIF_CACHE_HEADERS = {"Cache-Control": "public, max-age=31536000, immutable", "Vary": "Accept"}
+
 @app.get("/gifs/{path:path}")
-async def serve_gif(path: str):
+async def serve_gif(path: str, request: Request):
     file_path = (_GIF_DIR / path).resolve()
     if not str(file_path).startswith(str(_GIF_DIR.resolve())):
         raise HTTPException(status_code=403)
     if not file_path.exists() or not file_path.is_file():
         raise HTTPException(status_code=404)
-    return FileResponse(
-        str(file_path),
-        media_type="image/gif",
-        headers={"Cache-Control": "public, max-age=31536000, immutable"},
-    )
+    # Serve WebP if the browser accepts it and a converted file exists alongside the GIF
+    if "image/webp" in request.headers.get("Accept", ""):
+        webp_path = file_path.with_suffix(".webp")
+        if webp_path.exists():
+            return FileResponse(str(webp_path), media_type="image/webp", headers=_GIF_CACHE_HEADERS)
+    return FileResponse(str(file_path), media_type="image/gif", headers=_GIF_CACHE_HEADERS)
 
 app.include_router(fighters.router, prefix="/api")
 app.include_router(quiz.router, prefix="/api")

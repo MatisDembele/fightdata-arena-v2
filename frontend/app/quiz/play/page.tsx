@@ -152,9 +152,11 @@ function QuizPlay() {
 
   useEffect(() => { if (sessionPhase === 'playing') loadQuestion() }, [loadQuestion, sessionPhase])
 
+  // Prefetch next question's GIF as soon as current question is displayed,
+  // giving the full answer time (~15s) instead of only the 3.5s result delay.
   useEffect(() => {
-    if (state !== 'idle') prefetchNext()
-  }, [state, prefetchNext])
+    if (question && !loading) prefetchNext()
+  }, [question, loading, prefetchNext])
 
   useEffect(() => {
     if (state === 'idle' || !question) return
