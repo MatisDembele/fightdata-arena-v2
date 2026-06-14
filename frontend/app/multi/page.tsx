@@ -60,12 +60,22 @@ function MultiLobbyContent() {
     }
   }
 
-  function handleJoin() {
+  async function handleJoin() {
     if (!name.trim()) return setError(t('multi.err_name'))
     if (!code.trim()) return setError(t('multi.err_code'))
+    const trimmed = code.trim().toUpperCase()
+    try {
+      const res  = await fetch(`${API_URL}/api/multi/rooms/${trimmed}`)
+      const data = await res.json()
+      if (!data.exists)        return setError(t('multi.err_not_found'))
+      if (data.is_full)        return setError(t('multi.err_full'))
+      if (data.game_started)   return setError(t('multi.err_started'))
+    } catch {
+      // réseau: on tente quand même
+    }
     persistPlayer(name.trim(), avatar)
     track('multi_game_joined')
-    router.push(`/multi/${code.trim().toUpperCase()}?name=${encodeURIComponent(name.trim())}&avatar=${avatar}`)
+    router.push(`/multi/${trimmed}?name=${encodeURIComponent(name.trim())}&avatar=${avatar}`)
   }
 
   const inputStyle: React.CSSProperties = {

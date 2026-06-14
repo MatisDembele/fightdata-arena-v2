@@ -197,3 +197,17 @@ def create_room():
             rooms[code] = Room(code)
             return {"room_code": code}
     return {"error": "Impossible de créer une room"}, 500
+
+
+@router.get("/rooms/{room_code}")
+def get_room(room_code: str):
+    code = room_code.upper()
+    if code not in rooms:
+        return {"exists": False}
+    room = rooms[code]
+    return {
+        "exists": True,
+        "players": list(room.players.keys()),
+        "is_full": room.is_full(),
+        "game_started": room.game_started,
+    }
