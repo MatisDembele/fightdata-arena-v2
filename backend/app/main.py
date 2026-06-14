@@ -27,6 +27,7 @@ with engine.connect() as _conn:
         ("daily_scores",  "elapsed_seconds", "FLOAT"),
         ("weekly_scores", "elapsed_seconds", "FLOAT"),
         ("users",         "avatar",          "VARCHAR"),
+        ("user_profiles", "mode_bests",      "JSON"),
     ]:
         try:
             _existing = {c["name"] for c in _sa_inspect(engine).get_columns(_table)}

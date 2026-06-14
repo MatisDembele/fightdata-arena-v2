@@ -21,6 +21,28 @@ export function invalidateLeaderboardCache(key: string): void {
   delete _lbCache[key]
 }
 
+function collectModeBests(): Record<string, unknown> {
+  const bests: Record<string, unknown> = {}
+  const modes = ['random','allrandom','fighter','input','punish','hardcore','damage','onblock','onhit','recovery','mistakes','duel']
+  for (const m of modes) {
+    const key = m === 'custom' ? 'fda_best_custom' : `fda_best_${m}`
+    const raw = localStorage.getItem(key)
+    if (raw) bests[m] = JSON.parse(raw)
+  }
+  const sv = localStorage.getItem('fda_survival_best')
+  if (sv) bests['survival'] = JSON.parse(sv)
+  const fl = localStorage.getItem('fda_flash_best')
+  if (fl) bests['flash'] = JSON.parse(fl)
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i)
+    if (k?.startsWith('fda_best_fighter_')) {
+      const raw = localStorage.getItem(k)
+      if (raw) bests[`fighter_${k.replace('fda_best_fighter_', '')}`] = JSON.parse(raw)
+    }
+  }
+  return bests
+}
+
 export async function syncProfile(token: string): Promise<void> {
   if (typeof window === 'undefined') return
   await fetch(`${API_URL}/api/auth/sync`, {
@@ -30,6 +52,7 @@ export async function syncProfile(token: string): Promise<void> {
       achievements: JSON.parse(localStorage.getItem('fda_achievements') || '{}'),
       lifetime:     JSON.parse(localStorage.getItem('fda_lifetime')     || '{}'),
       history:      JSON.parse(localStorage.getItem('fda_history')      || '[]'),
+      mode_bests:   collectModeBests(),
     }),
   })
 }
