@@ -5,7 +5,8 @@ export const alt = 'Fight Data Arena — SF6 Frame Data'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
-type FontEntry = { name: string; data: ArrayBuffer; style: 'normal' | 'italic'; weight: number }
+type FontWeight = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900
+type FontEntry  = { name: string; data: ArrayBuffer; style: 'normal' | 'italic'; weight: FontWeight }
 
 async function loadFont(family: string): Promise<ArrayBuffer | null> {
   try {
