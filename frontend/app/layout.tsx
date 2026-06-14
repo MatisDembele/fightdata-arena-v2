@@ -31,8 +31,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <link rel="preconnect" href="https://ultimateframedata.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://ultimateframedata.com" />
+        {process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.includes('localhost') && (
+          <>
+            <link rel="preconnect" href={process.env.NEXT_PUBLIC_API_URL} crossOrigin="anonymous" />
+            <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_API_URL} />
+          </>
+        )}
       </head>
       <body>
         <div className="sf6-bg" />

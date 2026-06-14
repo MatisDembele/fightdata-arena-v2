@@ -86,9 +86,12 @@ function WeeklyPage() {
 
   useEffect(() => {
     const next = questions[idx + 1]
-    if (next?.gif_url) {
+    const gifSrc = next?.gif_path
+      ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/${next.gif_path}`
+      : next?.gif_url
+    if (gifSrc) {
       const img = new Image()
-      img.src = next.gif_url
+      img.src = gifSrc
     }
   }, [idx, questions])
 
@@ -469,6 +472,7 @@ function WeeklyPage() {
         ) : (
           <QuestionCard
             gifUrl={question.gif_url}
+            gifPath={question.gif_path}
             moveName={question.move_name}
             color={COLOR}
             header={

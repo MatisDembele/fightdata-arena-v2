@@ -1,7 +1,9 @@
 import asyncio
 import time
+from pathlib import Path
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.database import Base, engine, SessionLocal
 from app.routers import fighters, quiz, multi, daily, weekly, global_lb, flash, survival
@@ -38,6 +40,10 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type"],
 )
+
+_GIF_DIR = Path(__file__).parent.parent.parent / "data" / "gifs"
+if _GIF_DIR.exists():
+    app.mount("/gifs", StaticFiles(directory=str(_GIF_DIR)), name="gifs")
 
 app.include_router(fighters.router, prefix="/api")
 app.include_router(quiz.router, prefix="/api")

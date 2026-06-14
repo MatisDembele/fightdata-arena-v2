@@ -24,17 +24,21 @@ export function makeChoiceStyle(
   return { ...base, opacity: 0.3 }
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
 interface GifSectionProps {
   gifUrl?: string
+  gifPath?: string
   moveName: string
   color: string
   fallback?: string
 }
 
-export function GifSection({ gifUrl, moveName, color, fallback = 'HITBOX PREVIEW' }: GifSectionProps) {
+export function GifSection({ gifUrl, gifPath, moveName, color, fallback = 'HITBOX PREVIEW' }: GifSectionProps) {
+  const src = gifPath ? `${API_URL}/${gifPath}` : gifUrl
   const [loaded, setLoaded] = useState(false)
 
-  useEffect(() => { setLoaded(false) }, [gifUrl])
+  useEffect(() => { setLoaded(false) }, [src])
 
   const corners: CSSProperties[] = [
     { top: '7px', left: '7px', borderTop: `1px solid ${color}`, borderLeft: `1px solid ${color}` },
@@ -44,7 +48,7 @@ export function GifSection({ gifUrl, moveName, color, fallback = 'HITBOX PREVIEW
   ]
   return (
     <div style={{ height: '180px', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
-      {gifUrl ? (
+      {src ? (
         <>
           {!loaded && (
             <div style={{
@@ -55,7 +59,7 @@ export function GifSection({ gifUrl, moveName, color, fallback = 'HITBOX PREVIEW
             }} />
           )}
           <img
-            src={gifUrl}
+            src={src}
             alt={moveName}
             fetchPriority="high"
             onLoad={() => setLoaded(true)}
@@ -78,6 +82,7 @@ export function GifSection({ gifUrl, moveName, color, fallback = 'HITBOX PREVIEW
 
 interface QuestionCardProps {
   gifUrl?: string
+  gifPath?: string
   moveName: string
   color: string
   header: ReactNode
@@ -88,14 +93,14 @@ interface QuestionCardProps {
 }
 
 export default function QuestionCard({
-  gifUrl, moveName, color,
+  gifUrl, gifPath, moveName, color,
   header, questionText, choices, feedback,
   style,
 }: QuestionCardProps) {
   return (
     <div style={{ width: '100%', maxWidth: '500px', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)', ...style }}>
       {header}
-      <GifSection gifUrl={gifUrl} moveName={moveName} color={color} />
+      <GifSection gifUrl={gifUrl} gifPath={gifPath} moveName={moveName} color={color} />
       <div style={{ padding: '16px 18px 12px' }}>{questionText}</div>
       <div style={{ padding: '0 18px' }}>{choices}</div>
       <div style={{ padding: '12px 18px 18px' }}>{feedback}</div>

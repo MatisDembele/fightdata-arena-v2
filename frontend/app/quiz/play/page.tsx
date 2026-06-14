@@ -134,9 +134,12 @@ function QuizPlay() {
       const q = await fetchUnique()
       if (prefetchTokenRef.current === myToken) {
         nextQuestionRef.current = q
-        if (q.gif_url) {
+        const gifSrc = q.gif_path
+          ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/${q.gif_path}`
+          : q.gif_url
+        if (gifSrc) {
           const img = new Image()
-          img.src = q.gif_url
+          img.src = gifSrc
         }
       }
     } catch {
@@ -895,7 +898,7 @@ function QuizPlay() {
             )}
 
             {/* GIF */}
-            <GifSection gifUrl={question.gif_url} moveName={question.move_name} color={modeColor} fallback={t('play.hitbox_preview')} />
+            <GifSection gifUrl={question.gif_url} gifPath={question.gif_path} moveName={question.move_name} color={modeColor} fallback={t('play.hitbox_preview')} />
 
             {/* Question */}
             <div style={{ padding: '16px 18px 12px' }}>

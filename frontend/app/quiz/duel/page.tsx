@@ -232,7 +232,7 @@ function DuelQuiz() {
               </span>
             </div>
 
-            <GifSection gifUrl={question.gif_url} moveName={question.move_name} color={COLOR} fallback="HITBOX PREVIEW" />
+            <GifSection gifUrl={question.gif_url} gifPath={question.gif_path} moveName={question.move_name} color={COLOR} fallback="HITBOX PREVIEW" />
 
             <div style={{ padding: '16px 18px 12px' }}>
               <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1rem', fontWeight: 600, lineHeight: 1.4, color: 'rgba(255,255,255,0.9)' }}>

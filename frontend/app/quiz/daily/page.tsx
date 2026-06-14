@@ -119,10 +119,13 @@ function DailyPage() {
 
   useEffect(() => {
     const next = questions[idx + 1]
-    if (!next?.gif_url) return
+    const gifSrc = next?.gif_path
+      ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/${next.gif_path}`
+      : next?.gif_url
+    if (!gifSrc) return
     const img = new Image()
     img.onerror = () => {}
-    img.src = next.gif_url
+    img.src = gifSrc
   }, [idx, questions])
 
   const fetchLeaderboard = useCallback(() => {
@@ -516,6 +519,7 @@ function DailyPage() {
         ) : (
           <QuestionCard
             gifUrl={question.gif_url}
+            gifPath={question.gif_path}
             moveName={question.move_name}
             color={COLOR}
             header={
