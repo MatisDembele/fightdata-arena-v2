@@ -38,7 +38,7 @@ const en = {
   'quiz.mode_allrandom_sub':   'All data types — full roster',
   'quiz.mode_allrandom_desc':  'Every question type at once: startup, on block, on hit, recovery, damage. The most complete training mode.',
   'quiz.mode_fighter_sub':     'MCQ — Focus one fighter',
-  'quiz.mode_fighter_desc':    'Pick a character and master their startup frame data in depth.',
+  'quiz.mode_fighter_desc':    'Pick a character and master their complete frame data in depth.',
   'quiz.mode_input_sub':       'Type the exact startup value',
   'quiz.mode_input_desc':      'No multiple choice — type the exact startup value yourself. Tests true recall, not recognition.',
   'quiz.mode_punish_sub':      'Punishable or safe on block?',
@@ -260,8 +260,8 @@ const en = {
   'quiz.mode_weekly_desc': 'A harder weekly challenge. 20 questions, everyone gets the same set. Compete for the weekly top.',
   // play — on block
   'play.mode_onblock_label':            'ON BLOCK',
-  'play.feedback_correct_onblock':      'Correct! {move} is {n} on block.',
-  'play.feedback_wrong_onblock':        'Wrong. {move} is {n} on block.',
+  'play.feedback_correct_onblock':      '✓ Correct! {move} is {n} on block.',
+  'play.feedback_wrong_onblock':        '✗ Wrong! {move} is {n} on block.',
   // play — review
   'play.review_answers':  'REVIEW ANSWERS',
   'play.review_hide':     'HIDE REVIEW',
@@ -422,7 +422,7 @@ const fr: Record<DictKey, string> = {
   'quiz.mode_random_desc':     'Guess les startup frames sur tout le roster SF6. QCM, tous les persos — idéal pour construire une base solide.',
   'quiz.mode_allrandom_sub':   'Tous les types de données — roster complet',
   'quiz.mode_allrandom_desc':  'Chaque type de question à la fois : startup, on block, on hit, recovery, damage. Le mode d\'entraînement le plus complet.',
-  'quiz.mode_fighter_sub':     'QCM — Focus un perso',
+  'quiz.mode_fighter_sub':     'QCM — Focus sur un perso',
   'quiz.mode_fighter_desc':    'Choisis un personnage et maîtrise ses frames en profondeur.',
   'quiz.mode_input_sub':       'Frappe la valeur exacte',
   'quiz.mode_input_desc':      'Pas de choix multiples — tu dois taper toi-même la valeur exacte du startup. Mode exigeant.',
@@ -645,8 +645,8 @@ const fr: Record<DictKey, string> = {
   'quiz.mode_weekly_desc': 'Un challenge hebdomadaire plus difficile. 20 questions, tout le monde a le même set. Vise le top hebdo.',
   // play — on block
   'play.mode_onblock_label':            'ON BLOCK',
-  'play.feedback_correct_onblock':      'Correct ! {move} est {n} on block.',
-  'play.feedback_wrong_onblock':        'Faux. {move} est {n} on block.',
+  'play.feedback_correct_onblock':      '✓ Correct ! {move} est {n} on block.',
+  'play.feedback_wrong_onblock':        '✗ Faux. {move} est {n} on block.',
   // play — review
   'play.review_answers':  'REVOIR LES RÉPONSES',
   'play.review_hide':     'MASQUER',
@@ -693,7 +693,7 @@ const fr: Record<DictKey, string> = {
   'play.feedback_wrong_onhit':   '✗ Raté ! {move} est {n} on hit.',
   // recovery mode
   'quiz.mode_recovery_sub':         'Deviner les frames de recovery',
-  'quiz.mode_recovery_desc':        "Combien de frames de recovery ? Sais quand ton adversaire est vulnérable après un coup.",
+  'quiz.mode_recovery_desc':        "Combien de frames de recovery ? Sache quand ton adversaire est vulnérable après un coup.",
   'play.mode_recovery_label':       'RECOVERY',
   'play.q_recovery':                'recovery',
   'play.feedback_correct_recovery': '✓ Exact ! {move} a {n}f de recovery.',
