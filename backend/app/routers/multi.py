@@ -6,7 +6,14 @@ from typing import Optional
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
-from app.services.quiz_service import generate_random_question, generate_random_punish_question
+from app.services.quiz_service import (
+    generate_random_question,
+    generate_random_punish_question,
+    generate_random_damage_question,
+    generate_random_onblock_question,
+    generate_random_onhit_question,
+    generate_random_recovery_question,
+)
 
 # WebSocket endpoint is registered directly on the main app (main.py)
 # to work around FastAPI's router prefix + WebSocket routing issue.
@@ -15,7 +22,7 @@ router = APIRouter()
 
 MAX_PLAYERS = 6
 VALID_QUESTIONS = (5, 10, 15, 20)
-GAME_MODES = ("startup", "punish")
+GAME_MODES = ("startup", "punish", "damage", "onblock", "onhit", "recovery")
 
 
 def _make_code() -> str:
@@ -160,7 +167,14 @@ async def _next_question(room: Room, db: Session):
         })
         return
 
-    q = generate_random_punish_question(db) if room.game_mode == "punish" else generate_random_question(db)
+    _generators = {
+        "punish":   generate_random_punish_question,
+        "damage":   generate_random_damage_question,
+        "onblock":  generate_random_onblock_question,
+        "onhit":    generate_random_onhit_question,
+        "recovery": generate_random_recovery_question,
+    }
+    q = _generators.get(room.game_mode, generate_random_question)(db)
     if not q:
         await _broadcast(room, {"type": "error", "message": "Impossible de générer une question."})
         return

@@ -30,6 +30,20 @@ const COLOR_WIN = '#4ade80'
 const COLOR_LOS = '#ff2d78'
 const SLOT_COLORS = ['#ff2d78', '#00f0ff', '#ffe000', '#4ade80', '#c084fc', '#f59e0b']
 
+const MULTI_MODES = [
+  { id: 'startup',  label: 'STARTUP',  color: '#ff2d78', suffix: ' frames' },
+  { id: 'damage',   label: 'DAMAGE',   color: '#f59e0b', suffix: ''        },
+  { id: 'onblock',  label: 'ON BLOCK', color: '#c084fc', suffix: ''        },
+  { id: 'punish',   label: 'PUNISH',   color: '#ffe000', suffix: ''        },
+  { id: 'onhit',    label: 'ON HIT',   color: '#4ade80', suffix: ''        },
+  { id: 'recovery', label: 'RECOVERY', color: '#00f0ff', suffix: ' frames' },
+] as const
+type MultiModeId = typeof MULTI_MODES[number]['id']
+
+function getModeConfig(id: string) {
+  return MULTI_MODES.find(m => m.id === id) ?? MULTI_MODES[0]
+}
+
 function playerColor(name: string): string {
   const hash = name.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
   return SLOT_COLORS[hash % SLOT_COLORS.length]
@@ -257,7 +271,8 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
     })
   }
 
-  const isPunish = gameMode === 'punish'
+  const isPunish   = gameMode === 'punish'
+  const modeConfig = getModeConfig(gameMode)
 
   const punishBtnStyle = (value: 'punissable' | 'safe'): React.CSSProperties => {
     const isPunishable = value === 'punissable'
@@ -278,16 +293,37 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
   const feedbackText = () => {
     if (!correctAnswer || !selected) return ''
     const isCorrect = selected === correctAnswer
-    if (isPunish) {
-      const label = correctAnswer === 'punissable' ? t('room.punishable_label') : t('room.safe_label')
-      const ob = onBlockValue ? ` (${t('room.on_block_prefix')}${onBlockValue})` : ''
-      return isCorrect
-        ? t('room.feedback_correct_punish', { move: question?.move_name ?? '', label, ob })
-        : t('room.feedback_wrong_punish',   { move: question?.move_name ?? '', label, ob })
+    const move = question?.move_name ?? ''
+    const answer = correctAnswer
+    switch (gameMode) {
+      case 'punish': {
+        const label = correctAnswer === 'punissable' ? t('room.punishable_label') : t('room.safe_label')
+        const ob = onBlockValue ? ` (${t('room.on_block_prefix')}${onBlockValue})` : ''
+        return isCorrect
+          ? t('room.feedback_correct_punish',   { move, label, ob })
+          : t('room.feedback_wrong_punish',     { move, label, ob })
+      }
+      case 'damage':
+        return isCorrect
+          ? t('room.feedback_correct_damage',   { answer })
+          : t('room.feedback_wrong_damage',     { answer })
+      case 'onblock':
+        return isCorrect
+          ? t('room.feedback_correct_onblock',  { move, answer })
+          : t('room.feedback_wrong_onblock',    { move, answer })
+      case 'onhit':
+        return isCorrect
+          ? t('room.feedback_correct_onhit',    { move, answer })
+          : t('room.feedback_wrong_onhit',      { move, answer })
+      case 'recovery':
+        return isCorrect
+          ? t('room.feedback_correct_recovery', { move, answer })
+          : t('room.feedback_wrong_recovery',   { move, answer })
+      default: // startup
+        return isCorrect
+          ? t('room.feedback_correct_startup',  { answer })
+          : t('room.feedback_wrong_startup',    { answer })
     }
-    return isCorrect
-      ? t('room.feedback_correct_startup', { answer: correctAnswer })
-      : t('room.feedback_wrong_startup',   { answer: correctAnswer })
   }
 
   const backBtnStyle: React.CSSProperties = {
@@ -385,15 +421,15 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
               <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)' }}>
                 {t('multi.game_mode')}
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                {[{ id: 'startup', label: 'STARTUP', c: '#ff2d78' }, { id: 'punish', label: 'PUNISH', c: '#ffe000' }].map(m => (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+                {MULTI_MODES.map(m => (
                   <button key={m.id} onClick={() => sendSetMode(m.id)} style={{
-                    flex: 1, padding: '8px', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '3px',
-                    border: `1px solid ${gameMode === m.id ? m.c : 'rgba(255,255,255,0.1)'}`,
-                    background: gameMode === m.id ? `${m.c}15` : 'transparent',
-                    color: gameMode === m.id ? m.c : 'rgba(255,255,255,0.3)',
+                    padding: '7px 4px', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', letterSpacing: '2px',
+                    border: `1px solid ${gameMode === m.id ? m.color : 'rgba(255,255,255,0.1)'}`,
+                    background: gameMode === m.id ? `${m.color}15` : 'transparent',
+                    color: gameMode === m.id ? m.color : 'rgba(255,255,255,0.3)',
                     cursor: 'pointer', transition: 'all 0.2s',
-                    textShadow: gameMode === m.id ? `0 0 8px ${m.c}55` : 'none',
+                    textShadow: gameMode === m.id ? `0 0 8px ${m.color}55` : 'none',
                   }}>
                     {m.label}
                   </button>
@@ -424,8 +460,8 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
               <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.52rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', padding: '4px 10px', border: '1px solid rgba(255,255,255,0.07)' }}>
                 {totalQuestions} Q
               </div>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.52rem', letterSpacing: '3px', color: gameMode === 'punish' ? '#ffe000' : '#ff2d78', padding: '4px 10px', border: `1px solid ${gameMode === 'punish' ? 'rgba(255,224,0,0.2)' : 'rgba(255,45,120,0.2)'}` }}>
-                {gameMode.toUpperCase()}
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.52rem', letterSpacing: '3px', color: modeConfig.color, padding: '4px 10px', border: `1px solid ${modeConfig.color}33` }}>
+                {modeConfig.label}
               </div>
             </div>
           )}
@@ -537,8 +573,8 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
               <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '4px', color: COLOR, textShadow: `0 0 8px ${COLOR}55` }}>
                 Q{questionNumber}/{totalQuestions}
               </span>
-              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: '#ff2d78', marginLeft: '12px', opacity: 0.6 }}>
-                {isPunish ? 'PUNISH' : 'STARTUP'}
+              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: modeConfig.color, marginLeft: '12px', opacity: 0.6 }}>
+                {modeConfig.label}
               </span>
             </div>
             <Scoreboard scores={scores} playerName={playerName} avatars={avatars} color={COLOR} youLabel={t('room.you')} />
@@ -550,7 +586,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
             <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1rem', fontWeight: 600, color: 'rgba(255,255,255,0.9)', margin: 0 }}>
               {isPunish
                 ? <><strong style={{ color: '#fff' }}>{question.move_name}</strong> {t('room.q_is_it')} <span style={{ color: COLOR_LOS }}>{t('room.q_punishable_on_block')}</span></>
-                : <>{t('room.q_what_is')} <span style={{ color: COLOR }}>startup</span> {t('room.q_of')} <strong style={{ color: '#fff' }}>{question.move_name}</strong> ?</>
+                : <>{t('room.q_what_is')} <span style={{ color: modeConfig.color }}>{modeConfig.label.toLowerCase()}</span> {t('room.q_of')} <strong style={{ color: '#fff' }}>{question.move_name}</strong> ?</>
               }
             </p>
           </div>
@@ -561,7 +597,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
                 {question.choices.map((choice, i) => (
                   <button key={choice} onClick={() => sendAnswer(choice)} style={{ ...makeChoiceStyle(choice, correctAnswer, selected, !correctAnswer), cursor: selected || correctAnswer ? 'default' : 'pointer' }}>
                     <span style={{ width: '20px', height: '20px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.18)', fontSize: '0.62rem' }}>{String.fromCharCode(65 + i)}</span>
-                    {choice} frames
+                    {choice}{modeConfig.suffix}
                   </button>
                 ))}
               </div>
