@@ -3,6 +3,7 @@ import Script from 'next/script'
 import { Analytics } from '@vercel/analytics/react'
 import Providers from '@/components/Providers'
 import FrameGuide from '@/components/FrameGuide'
+import PageBackground from '@/components/PageBackground'
 import './globals.css'
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <div className="sf6-bg" />
+        <PageBackground />
         <div className="sf6-grid" />
         <Providers>
           <div style={{ position: 'relative', zIndex: 10, minHeight: '100vh' }}>

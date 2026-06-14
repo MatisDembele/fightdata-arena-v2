@@ -28,7 +28,7 @@ export default function Home() {
       desc: t('home.multi_desc'),
     },
     {
-      id: 'challenges', label: 'CHALLENGES', sub: t('home.challenges_sub'),
+      id: 'challenges', label: 'CHALLENGE', sub: t('home.challenges_sub'),
       href: '/challenges', external: false,
       color: '#00ff88', colorAlt: '#00b894',
       desc: t('home.challenges_desc'),

@@ -20,7 +20,7 @@ export default function Navbar() {
   const links: { href: string; label: string; color: string; external?: boolean }[] = [
     { href: '/',            label: t('nav.home'),   color: 'var(--yellow)' },
     { href: '/quiz',        label: 'QUIZ',          color: '#ff2d78' },
-    { href: '/challenges',  label: 'CHALLENGES',    color: '#00ff88' },
+    { href: '/challenges',  label: 'CHALLENGE',     color: '#00ff88' },
     { href: '/multi',       label: 'MULTI',         color: '#ffe000' },
     { href: '/profile',     label: t('nav.profile'), color: '#c084fc' },
   ]
