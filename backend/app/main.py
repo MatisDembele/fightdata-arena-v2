@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse
 
 from sqlalchemy import inspect as _sa_inspect, text as _sa_text
 from app.database import Base, engine, SessionLocal
-from app.routers import fighters, quiz, multi, daily, weekly, global_lb, flash, survival
+from app.routers import fighters, quiz, multi, daily, weekly, global_lb, flash, survival, auth
 from app.routers.multi import rooms, _broadcast, _send, _next_question, _reset_room, GAME_MODES, VALID_QUESTIONS
 
 
@@ -49,7 +49,7 @@ app.add_middleware(
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 _GIF_DIR = Path(__file__).parent.parent.parent / "data" / "gifs"
@@ -71,6 +71,7 @@ async def serve_gif(path: str, request: Request):
             return FileResponse(str(webp_path), media_type="image/webp", headers=_GIF_CACHE_HEADERS)
     return FileResponse(str(file_path), media_type="image/gif", headers=_GIF_CACHE_HEADERS)
 
+app.include_router(auth.router, prefix="/api")
 app.include_router(fighters.router, prefix="/api")
 app.include_router(quiz.router, prefix="/api")
 app.include_router(daily.router, prefix="/api")

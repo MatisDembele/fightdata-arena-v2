@@ -3,10 +3,14 @@ import { useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useLanguage } from '@/lib/i18n'
+import { useAuth } from '@/components/AuthProvider'
+import DiscordIcon from '@/components/DiscordIcon'
+import { getDiscordOAuthUrl } from '@/lib/auth'
 
 export default function Navbar() {
   const path = usePathname()
   const { lang, setLang, t } = useLanguage()
+  const { user, logout, isLoading } = useAuth()
 
   useEffect(() => {
     const CURRENT_V = 1
@@ -139,6 +143,58 @@ export default function Navbar() {
           )
         })}
       </div>
+
+      {/* Auth button */}
+      {!isLoading && (
+        <div style={{
+          display: 'flex', alignItems: 'center',
+          padding: '0 12px',
+          borderRight: '1px solid rgba(255,255,255,0.07)',
+          position: 'relative', zIndex: 2,
+          gap: '8px',
+        }}>
+          {user ? (
+            <>
+              <DiscordIcon size={13} />
+              <span style={{
+                fontFamily: "'Share Tech Mono', monospace",
+                fontSize: '0.6rem', letterSpacing: '2px',
+                color: 'rgba(255,255,255,0.7)',
+                maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>{user.username}</span>
+              <button
+                onClick={logout}
+                style={{
+                  background: 'none', border: '1px solid rgba(255,255,255,0.12)',
+                  color: 'rgba(255,255,255,0.3)', cursor: 'pointer',
+                  fontFamily: "'Share Tech Mono', monospace",
+                  fontSize: '0.45rem', letterSpacing: '2px',
+                  padding: '3px 7px',
+                  transition: 'all 0.15s',
+                }}
+              >✕</button>
+            </>
+          ) : (
+            <a
+              href={getDiscordOAuthUrl()}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '7px',
+                background: '#5865F2', color: '#fff',
+                padding: '5px 11px',
+                fontFamily: "'Share Tech Mono', monospace",
+                fontSize: '0.55rem', letterSpacing: '2px',
+                textDecoration: 'none',
+                transition: 'opacity 0.15s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+            >
+              <DiscordIcon size={13} />
+              CONNECT
+            </a>
+          )}
+        </div>
+      )}
 
       {/* Lang toggle */}
       <div style={{
