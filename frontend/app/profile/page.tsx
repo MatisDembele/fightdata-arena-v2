@@ -382,6 +382,11 @@ export default function ProfilePage() {
             </div>
           </Section>
 
+          {/* ── RGPD — SUPPRIMER LE COMPTE ── */}
+          {user && token && (
+            <DeleteAccountSection token={token} onDeleted={() => { window.location.href = '/' }} />
+          )}
+
           {/* ── ACHIEVEMENTS ── */}
           <Section title={`${t('stats.achievements')} — ${t('stats.achievements_progress', { n: unlockedCount, total: ACHIEVEMENTS.length })}`} color="#f59e0b" isDesktop={isDesktop}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -418,6 +423,60 @@ export default function ProfilePage() {
         </div>
       </main>
     </>
+  )
+}
+
+function DeleteAccountSection({ token, onDeleted }: { token: string; onDeleted: () => void }) {
+  const [confirm, setConfirm] = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  async function handleDelete() {
+    setLoading(true)
+    try {
+      await fetch(`${API_URL}/api/auth/me`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      })
+      const keysToRemove = Object.keys(localStorage).filter(k => k.startsWith('fda_'))
+      keysToRemove.forEach(k => localStorage.removeItem(k))
+      onDeleted()
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={{ borderTop: '1px solid rgba(255,0,0,0.1)', paddingTop: '24px' }}>
+      {!confirm ? (
+        <button
+          onClick={() => setConfirm(true)}
+          style={{ background: 'none', border: '1px solid rgba(255,50,50,0.2)', color: 'rgba(255,80,80,0.5)', cursor: 'pointer', padding: '8px 16px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '3px', transition: 'all 0.15s' }}
+        >
+          SUPPRIMER MON COMPTE
+        </button>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', background: 'rgba(255,0,0,0.05)', border: '1px solid rgba(255,50,50,0.2)' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.6)' }}>
+            Cette action est irréversible. Toutes vos données cloud (succès, statistiques, historique) seront définitivement supprimées.
+          </div>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              onClick={handleDelete}
+              disabled={loading}
+              style={{ background: 'rgba(255,50,50,0.15)', border: '1px solid rgba(255,50,50,0.5)', color: '#ff5050', cursor: loading ? 'default' : 'pointer', padding: '8px 16px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '2px', opacity: loading ? 0.5 : 1 }}
+            >
+              {loading ? 'SUPPRESSION...' : 'CONFIRMER LA SUPPRESSION'}
+            </button>
+            <button
+              onClick={() => setConfirm(false)}
+              style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', padding: '8px 16px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '2px' }}
+            >
+              ANNULER
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 

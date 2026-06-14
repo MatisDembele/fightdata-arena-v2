@@ -1,5 +1,5 @@
 'use client'
-import { useEffect } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useLanguage } from '@/lib/i18n'
@@ -11,6 +11,19 @@ export default function Navbar() {
   const path = usePathname()
   const { lang, setLang, t } = useLanguage()
   const { user, logout, isLoading } = useAuth()
+  const [showConsent, setShowConsent] = useState(false)
+  const consentRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!showConsent) return
+    function handleClick(e: MouseEvent) {
+      if (consentRef.current && !consentRef.current.contains(e.target as Node)) {
+        setShowConsent(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [showConsent])
 
   useEffect(() => {
     const CURRENT_V = 1
@@ -175,23 +188,51 @@ export default function Navbar() {
               >✕</button>
             </>
           ) : (
-            <a
-              href={getDiscordOAuthUrl()}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '7px',
-                background: '#5865F2', color: '#fff',
-                padding: '5px 11px',
-                fontFamily: "'Share Tech Mono', monospace",
-                fontSize: '0.55rem', letterSpacing: '2px',
-                textDecoration: 'none',
-                transition: 'opacity 0.15s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
-              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-            >
-              <DiscordIcon size={13} />
-              CONNECT
-            </a>
+            <div ref={consentRef} style={{ position: 'relative' }}>
+              <button
+                onClick={() => setShowConsent(v => !v)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '7px',
+                  background: '#5865F2', color: '#fff',
+                  padding: '5px 11px', border: 'none', cursor: 'pointer',
+                  fontFamily: "'Share Tech Mono', monospace",
+                  fontSize: '0.55rem', letterSpacing: '2px',
+                  transition: 'opacity 0.15s',
+                  opacity: showConsent ? '0.85' : '1',
+                }}
+              >
+                <DiscordIcon size={13} />
+                CONNECT
+              </button>
+              {showConsent && (
+                <div style={{
+                  position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+                  width: '260px', background: 'rgba(10,0,20,0.97)',
+                  border: '1px solid rgba(88,101,242,0.4)',
+                  padding: '14px', zIndex: 999,
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+                }}>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '3px', color: '#5865F2', marginBottom: '8px' }}>DONNÉES COLLECTÉES</div>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, marginBottom: '12px' }}>
+                    Votre identifiant Discord et pseudo sont sauvegardés pour conserver votre progression. Aucune donnée sensible (email, avatar) n'est collectée.{' '}
+                    <Link href="/privacy" style={{ color: '#5865F2' }} onClick={() => setShowConsent(false)}>Politique de confidentialité</Link>
+                  </div>
+                  <a
+                    href={getDiscordOAuthUrl()}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
+                      background: '#5865F2', color: '#fff', padding: '8px',
+                      fontFamily: "'Share Tech Mono', monospace",
+                      fontSize: '0.52rem', letterSpacing: '2px',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    <DiscordIcon size={12} />
+                    CONTINUER AVEC DISCORD
+                  </a>
+                </div>
+              )}
+            </div>
           )}
         </div>
       )}

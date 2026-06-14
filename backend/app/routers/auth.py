@@ -112,3 +112,14 @@ def sync_profile(
     profile.history = body.history[:30]
     db.commit()
     return {"ok": True}
+
+
+@router.delete("/me")
+def delete_account(payload: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.discord_id == payload["sub"]).first()
+    if not user:
+        raise HTTPException(404, "Utilisateur introuvable")
+    db.query(UserProfile).filter(UserProfile.user_id == user.id).delete()
+    db.delete(user)
+    db.commit()
+    return {"ok": True}
