@@ -8,7 +8,6 @@ export default function Navbar() {
   const path = usePathname()
   const { lang, setLang, t } = useLanguage()
 
-  // Storage versioning — run once on mount for future migrations
   useEffect(() => {
     const CURRENT_V = 1
     const stored = parseInt(localStorage.getItem('_fda_v') || '0', 10)
@@ -17,12 +16,12 @@ export default function Navbar() {
     }
   }, [])
 
-  const links: { href: string; label: string; color: string; external?: boolean }[] = [
-    { href: '/',            label: t('nav.home'),   color: 'var(--yellow)' },
-    { href: '/quiz',        label: 'QUIZ',          color: '#ff2d78' },
-    { href: '/challenges',  label: 'CHALLENGE',     color: '#00ff88' },
-    { href: '/multi',       label: 'MULTI',         color: '#ffe000' },
-    { href: '/profile',     label: t('nav.profile'), color: '#c084fc' },
+  const links: { href: string; label: string; color: string; colorAlt: string; external?: boolean }[] = [
+    { href: '/',           label: t('nav.home'),    color: '#ffe000', colorAlt: '#ff6a00' },
+    { href: '/quiz',       label: 'QUIZ',           color: '#ff2d78', colorAlt: '#9b1fff' },
+    { href: '/challenges', label: 'CHALLENGE',      color: '#00ff88', colorAlt: '#00b894' },
+    { href: '/multi',      label: 'MULTI',          color: '#ffe000', colorAlt: '#ff6a00' },
+    { href: '/profile',    label: t('nav.profile'), color: '#c084fc', colorAlt: '#7c3aed' },
   ]
 
   return (
@@ -32,11 +31,11 @@ export default function Navbar() {
       background: 'rgba(4,0,12,0.97)',
       backdropFilter: 'blur(16px)',
       position: 'sticky', top: 0, zIndex: 100,
-      overflow: 'hidden',
+      overflow: 'visible',
       borderBottom: '1px solid rgba(255,255,255,0.05)',
     }}>
 
-      {/* Top gold line — SF6 signature */}
+      {/* Top gold line */}
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0, height: '2px', zIndex: 1,
         background: 'var(--yellow)',
@@ -67,11 +66,12 @@ export default function Navbar() {
         }}>FIGHT DATA ARENA</span>
       </Link>
 
-      {/* Nav links — full-height cells */}
+      {/* Nav links */}
       <div style={{
         display: 'flex', alignItems: 'stretch', flex: 1,
         position: 'relative', zIndex: 2,
         paddingLeft: '8px',
+        overflow: 'visible',
       }}>
         {links.map(link => {
           const isActive = !link.external && (
@@ -83,37 +83,53 @@ export default function Navbar() {
           const extraProps = link.external
             ? { href: link.href, target: '_blank', rel: 'noopener noreferrer' }
             : { href: link.href }
-          const c = link.color
+          const { color: c, colorAlt: cAlt } = link
           return (
             <Tag
               key={link.href}
               {...extraProps}
               className={`nav-item${isActive ? ' active' : ''}`}
             >
+              {/* Fond card — même gradient que les cards de l'accueil */}
               {isActive && (
                 <div style={{
                   position: 'absolute', inset: 0,
-                  background: `linear-gradient(180deg, ${c}18 0%, ${c}06 100%)`,
+                  background: `linear-gradient(180deg, ${c}18, ${cAlt}28)`,
+                  transition: 'all 0.3s',
                 }} />
               )}
+              {/* Ligne haute — même style que le bord supérieur des cards */}
               {isActive && (
                 <div style={{
-                  position: 'absolute', bottom: 0, left: 0, right: 0, height: '2px',
-                  background: c,
-                  boxShadow: `0 0 10px ${c}, 0 0 20px ${c}66`,
+                  position: 'absolute', top: 0, left: '15%', right: '15%', height: '2px',
+                  background: `linear-gradient(90deg, transparent, ${c}, transparent)`,
+                  boxShadow: `0 0 10px ${c}`,
+                }} />
+              )}
+              {/* Triangle bas — indicateur pointant vers le contenu */}
+              {isActive && (
+                <div style={{
+                  position: 'absolute', bottom: '-7px', left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: 0, height: 0,
+                  borderLeft: '7px solid transparent',
+                  borderRight: '7px solid transparent',
+                  borderTop: `7px solid ${c}`,
+                  filter: `drop-shadow(0 0 5px ${c})`,
+                  zIndex: 3,
                 }} />
               )}
               <span style={{
                 position: 'relative', zIndex: 1,
-                color: isActive ? c : undefined,
-                textShadow: isActive ? `0 0 12px ${c}99` : 'none',
+                color: isActive ? '#fff' : undefined,
+                textShadow: isActive ? `0 0 20px ${c}, 0 0 40px ${c}55` : 'none',
               }}>{link.label}</span>
             </Tag>
           )
         })}
       </div>
 
-      {/* Lang toggle — full-height cells */}
+      {/* Lang toggle */}
       <div style={{
         display: 'flex', alignItems: 'stretch',
         position: 'relative', zIndex: 2,

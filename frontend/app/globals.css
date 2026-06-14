@@ -255,12 +255,12 @@ body {
   text-decoration: none;
   padding: 0 24px;
   transition: color 0.2s;
-  overflow: hidden;
+  overflow: visible;
   color: rgba(255,255,255,0.35);
   border-right: 1px solid rgba(255,255,255,0.06);
 }
 .nav-item:hover { color: rgba(255,255,255,0.75); }
-.nav-item.active { color: var(--yellow); }
+.nav-item.active { color: #fff; }
 
 .nav-lang-btn {
   position: relative;
