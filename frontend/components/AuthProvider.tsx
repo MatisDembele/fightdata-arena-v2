@@ -135,6 +135,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const logout = useCallback(() => {
+    Object.keys(localStorage).filter(k => k.startsWith('fda_')).forEach(k => localStorage.removeItem(k))
     clearAuth()
     setUser(null)
     setToken(null)
