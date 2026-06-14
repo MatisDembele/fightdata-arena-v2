@@ -4,6 +4,12 @@ export interface AuthUser {
   id: number
   discord_id: string
   username: string
+  avatar: string | null
+}
+
+export function getDiscordAvatarUrl(user: AuthUser, size = 128): string | null {
+  if (!user.avatar) return null
+  return `https://cdn.discordapp.com/avatars/${user.discord_id}/${user.avatar}.png?size=${size}`
 }
 
 export interface AuthState {

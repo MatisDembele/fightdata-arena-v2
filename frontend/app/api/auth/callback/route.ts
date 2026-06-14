@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
     const data = (await res.json()) as {
       token: string
-      user: { id: number; username: string; discord_id: string }
+      user: { id: number; username: string; discord_id: string; avatar: string | null }
     }
 
     // Pass auth data to client page via query params — page immediately
@@ -31,6 +31,7 @@ export async function GET(req: NextRequest) {
     dest.searchParams.set('uid', String(data.user.id))
     dest.searchParams.set('username', data.user.username)
     dest.searchParams.set('did', data.user.discord_id)
+    if (data.user.avatar) dest.searchParams.set('avatar', data.user.avatar)
     return NextResponse.redirect(dest)
   } catch {
     return NextResponse.redirect(new URL('/?auth=error', req.url))

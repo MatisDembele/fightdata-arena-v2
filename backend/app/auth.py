@@ -12,11 +12,12 @@ _ALGO = "HS256"
 _EXPIRE_DAYS = 60
 
 
-def create_token(user_id: int, discord_id: str, username: str) -> str:
+def create_token(user_id: int, discord_id: str, username: str, avatar: Optional[str] = None) -> str:
     payload = {
         "sub": discord_id,
         "user_id": user_id,
         "username": username,
+        "avatar": avatar,
         "exp": datetime.now(timezone.utc) + timedelta(days=_EXPIRE_DAYS),
     }
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=_ALGO)

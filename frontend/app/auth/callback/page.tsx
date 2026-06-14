@@ -14,9 +14,10 @@ function CallbackInner() {
     const uid      = params.get('uid')
     const username = params.get('username')
     const did      = params.get('did')
+    const avatar   = params.get('avatar')
 
     if (token && uid && username && did) {
-      login(token, { id: Number(uid), username, discord_id: did }).then(() => {
+      login(token, { id: Number(uid), username, discord_id: did, avatar: avatar ?? null }).then(() => {
         router.replace('/profile')
       })
     } else {

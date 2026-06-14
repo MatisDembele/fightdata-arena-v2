@@ -8,6 +8,7 @@ import { useLanguage, type DictKey } from '@/lib/i18n'
 import { MODE_COLORS } from '@/lib/constants'
 import { useAuth } from '@/components/AuthProvider'
 import DiscordIcon from '@/components/DiscordIcon'
+import { getDiscordAvatarUrl } from '@/lib/auth'
 import { getDiscordOAuthUrl } from '@/lib/auth'
 import type { QuizQuestion } from '@/types'
 
@@ -166,6 +167,7 @@ export default function ProfilePage() {
   const lifetimeAcc   = lifetime.questions > 0 ? Math.round((lifetime.totalCorrect / lifetime.questions) * 100) : 0
   const unlockedCount = Object.keys(achievements).length
   const color         = pseudo ? avatarColor(pseudo) : '#888'
+  const discordAvatar = user ? getDiscordAvatarUrl(user, 128) : null
   const streakActive  = dailyStreak && (dailyStreak.last_played === todayStr() || dailyStreak.last_played === yesterdayStr())
   const streak        = streakActive ? dailyStreak!.streak : 0
   const percentileRank = globalRank && globalLb.length > 0
@@ -216,12 +218,28 @@ export default function ProfilePage() {
               {/* Avatar */}
               <div style={{
                 width: isDesktop ? '96px' : '72px', height: isDesktop ? '96px' : '72px', flexShrink: 0,
-                background: `${color}18`, border: `2px solid ${color}`,
+                background: discordAvatar ? 'transparent' : `${color}18`,
+                border: `2px solid ${discordAvatar ? '#5865F2' : color}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
+                overflow: 'hidden',
               }}>
-                <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '2.6rem' : '2rem', color, textShadow: `0 0 14px ${color}88` }}>
-                  {pseudo ? pseudo.slice(0, 2).toUpperCase() : '??'}
-                </span>
+                {discordAvatar ? (
+                  <img
+                    src={discordAvatar}
+                    alt={pseudo || 'avatar'}
+                    width={isDesktop ? 96 : 72}
+                    height={isDesktop ? 96 : 72}
+                    style={{ display: 'block', objectFit: 'cover' }}
+                    onError={e => {
+                      // Fallback to initials if image fails to load
+                      (e.currentTarget as HTMLImageElement).style.display = 'none'
+                    }}
+                  />
+                ) : (
+                  <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '2.6rem' : '2rem', color, textShadow: `0 0 14px ${color}88` }}>
+                    {pseudo ? pseudo.slice(0, 2).toUpperCase() : '??'}
+                  </span>
+                )}
                 {user && (
                   <div style={{
                     position: 'absolute', bottom: '-10px', left: '50%', transform: 'translateX(-50%)',

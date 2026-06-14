@@ -23,11 +23,15 @@ async def _heartbeat(websocket: WebSocket):
 Base.metadata.create_all(bind=engine)
 
 with engine.connect() as _conn:
-    for _table, _col in [("daily_scores", "elapsed_seconds"), ("weekly_scores", "elapsed_seconds")]:
+    for _table, _col, _type in [
+        ("daily_scores",  "elapsed_seconds", "FLOAT"),
+        ("weekly_scores", "elapsed_seconds", "FLOAT"),
+        ("users",         "avatar",          "VARCHAR"),
+    ]:
         try:
             _existing = {c["name"] for c in _sa_inspect(engine).get_columns(_table)}
             if _col not in _existing:
-                _conn.execute(_sa_text(f"ALTER TABLE {_table} ADD COLUMN {_col} FLOAT"))
+                _conn.execute(_sa_text(f"ALTER TABLE {_table} ADD COLUMN {_col} {_type}"))
                 _conn.commit()
         except Exception:
             pass

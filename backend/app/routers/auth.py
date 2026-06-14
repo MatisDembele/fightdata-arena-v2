@@ -60,25 +60,26 @@ async def discord_callback(code: str, redirect_uri: Optional[str] = None, db: Se
         d = user_res.json()
 
     discord_id: str = d["id"]
-    # global_name is the display name on new accounts; username is the handle
     username: str = d.get("global_name") or d.get("username") or "Player"
+    avatar: Optional[str] = d.get("avatar")  # hash string or None
 
     # Upsert user
     user = db.query(User).filter(User.discord_id == discord_id).first()
     if not user:
-        user = User(discord_id=discord_id, username=username)
+        user = User(discord_id=discord_id, username=username, avatar=avatar)
         db.add(user)
         db.flush()
         db.add(UserProfile(user_id=user.id))
     else:
         user.username = username
+        user.avatar = avatar
     db.commit()
     db.refresh(user)
 
-    token = create_token(user.id, user.discord_id, user.username)
+    token = create_token(user.id, user.discord_id, user.username, user.avatar)
     return {
         "token": token,
-        "user": {"id": user.id, "username": user.username, "discord_id": user.discord_id},
+        "user": {"id": user.id, "username": user.username, "discord_id": user.discord_id, "avatar": user.avatar},
     }
 
 
@@ -89,7 +90,7 @@ def get_me(payload: dict = Depends(get_current_user), db: Session = Depends(get_
         raise HTTPException(404, "Utilisateur introuvable")
     profile = db.query(UserProfile).filter(UserProfile.user_id == user.id).first()
     return {
-        "user": {"id": user.id, "username": user.username, "discord_id": user.discord_id},
+        "user": {"id": user.id, "username": user.username, "discord_id": user.discord_id, "avatar": user.avatar},
         "profile": {
             "achievements": profile.achievements if profile else {},
             "lifetime": profile.lifetime if profile else {},
