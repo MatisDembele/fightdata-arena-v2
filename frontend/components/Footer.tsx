@@ -41,57 +41,9 @@ export default function Footer() {
       background: 'rgba(4,0,12,0.97)',
       padding: '48px 24px 36px',
     }}>
-      <div style={{
-        maxWidth: '900px', margin: '0 auto',
-        display: 'grid',
-        gridTemplateColumns: 'clamp(200px, 35%, 320px) 1fr',
-        gap: '48px',
-      }}>
+      <div style={{ maxWidth: '600px', margin: '0 auto' }}>
 
-        {/* Left — project info */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div>
-            <div style={{
-              fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: '1.4rem', letterSpacing: '6px', color: '#fff',
-              textShadow: '0 0 12px rgba(255,45,120,0.4)',
-            }}>FIGHT DATA ARENA</div>
-            <div style={{
-              fontFamily: "'Share Tech Mono', monospace",
-              fontSize: '0.48rem', letterSpacing: '4px',
-              color: 'rgba(255,255,255,0.2)', marginTop: '4px',
-            }}>STREET FIGHTER 6 // FRAME DATA QUIZ</div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            {[
-              { label: t('home.stat_chars'),   val: '30' },
-              { label: t('home.stat_moves'),   val: '1562' },
-              { label: t('home.stat_modes'),   val: '14' },
-            ].map(({ label, val }) => (
-              <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)' }}>
-                  {label}
-                </span>
-                <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.5)' }}>
-                  {val}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          <div style={{
-            fontFamily: "'Share Tech Mono', monospace",
-            fontSize: '0.42rem', letterSpacing: '2px',
-            color: 'rgba(255,255,255,0.12)',
-            paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)',
-          }}>
-            {t('home.patch')}
-          </div>
-
-        </div>
-
-        {/* Right — idea form */}
+        {/* Feedback form */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
           <div style={{
