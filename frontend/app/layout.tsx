@@ -29,11 +29,13 @@ export const metadata: Metadata = {
     description: '30 characters · 1562 moves · 14 modes. Test your SF6 frame data knowledge with Daily, Weekly, Survival, Multiplayer challenges and more.',
     type: 'website',
     siteName: 'Fight Data Arena',
+    images: [{ url: '/opengraph-image?v=3', width: 1200, height: 630, alt: 'Fight Data Arena' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Fight Data Arena — SF6 Frame Data Quiz',
     description: '30 characters · 1562 moves · 14 modes. Test your SF6 frame data knowledge with Daily, Weekly, Survival, Multiplayer challenges and more.',
+    images: ['/opengraph-image?v=3'],
   },
 }
 
