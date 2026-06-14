@@ -24,6 +24,13 @@ interface WeeklyResult {
   score: number
 }
 
+function formatTime(s: number): string {
+  const m = Math.floor(s / 60)
+  const sec = Math.round(s % 60)
+  if (m > 0) return `${m}m${String(sec).padStart(2, '0')}s`
+  return `${sec}s`
+}
+
 function mondayStr(): string {
   const today = new Date()
   const day   = today.getUTCDay()
@@ -70,7 +77,9 @@ function WeeklyPage() {
   const [lbSubmitted, setLbSubmitted]     = useState(false)
   const [lbSubmitting, setLbSubmitting]   = useState(false)
   const [newAchievements, setNewAchievements] = useState<Achievement[]>([])
-  const answersRef = useRef<boolean[]>([])
+  const answersRef   = useRef<boolean[]>([])
+  const startTimeRef = useRef<number>(0)
+  const elapsedRef   = useRef<number | null>(null)
   const { t } = useLanguage()
 
   useEffect(() => {
@@ -130,6 +139,7 @@ function WeeklyPage() {
   }, [])
 
   const startPlaying = () => {
+    startTimeRef.current = Date.now()
     loadQuestions()
     setPhase('playing')
   }
@@ -168,6 +178,8 @@ function WeeklyPage() {
       const finalAnswers = answersRef.current
       const finalScore   = finalAnswers.filter(Boolean).length
       const accuracy     = Math.round(finalScore / finalAnswers.length * 100)
+      const elapsed      = startTimeRef.current ? Math.round((Date.now() - startTimeRef.current) / 100) / 10 : undefined
+      elapsedRef.current = elapsed ?? null
       saveResult(finalAnswers, finalScore)
       track('weekly_played', { score: finalScore, accuracy })
       setScore(finalScore)
@@ -178,7 +190,7 @@ function WeeklyPage() {
       if (pseudo) {
         setLbName(pseudo)
         setLbSubmitted(true)
-        submitWeeklyScore(pseudo, finalScore, accuracy).catch(() => {})
+        submitWeeklyScore(pseudo, finalScore, accuracy, elapsed).catch(() => {})
         submitGlobalScore(pseudo, finalScore, finalAnswers.length).catch(() => {})
       }
       setPhase('finished')
@@ -195,7 +207,7 @@ function WeeklyPage() {
     setLbSubmitting(true)
     try {
       const acc = answers.length ? Math.round(score / answers.length * 100) : 0
-      await submitWeeklyScore(name, score, acc)
+      await submitWeeklyScore(name, score, acc, elapsedRef.current ?? undefined)
       localStorage.setItem('fda_pseudo', name)
       setLbSubmitted(true)
       fetchLeaderboard()
@@ -391,7 +403,7 @@ function WeeklyPage() {
                   const isMe = lbSubmitted && entry.player_name === lbName
                   return (
                     <div key={entry.rank} style={{
-                      display: 'grid', gridTemplateColumns: '28px 1fr 56px',
+                      display: 'grid', gridTemplateColumns: '28px 1fr 48px 56px',
                       padding: '7px 12px', alignItems: 'center', gap: '8px',
                       background: isMe ? `${COLOR}12` : entry.rank <= 3 ? 'rgba(255,255,255,0.03)' : 'transparent',
                       border: `1px solid ${isMe ? COLOR + '44' : 'rgba(255,255,255,0.05)'}`,
@@ -406,6 +418,10 @@ function WeeklyPage() {
                         textShadow: isMe ? `0 0 8px ${COLOR}` : 'none',
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                       }}>{entry.player_name}</span>
+                      <span style={{
+                        fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '1px',
+                        color: 'rgba(255,255,255,0.25)', textAlign: 'right',
+                      }}>{entry.elapsed_seconds != null ? formatTime(entry.elapsed_seconds) : '—'}</span>
                       <span style={{
                         fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '1px',
                         color: isMe ? COLOR : 'rgba(255,255,255,0.5)', textAlign: 'right',

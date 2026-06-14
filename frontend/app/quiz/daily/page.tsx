@@ -28,6 +28,13 @@ interface DailyStreak {
   last_played: string
 }
 
+function formatTime(s: number): string {
+  const m = Math.floor(s / 60)
+  const sec = Math.round(s % 60)
+  if (m > 0) return `${m}m${String(sec).padStart(2, '0')}s`
+  return `${sec}s`
+}
+
 function dayNumber(): number {
   const start = new Date('2026-01-01').getTime()
   const today = new Date().setHours(0, 0, 0, 0)
@@ -102,7 +109,9 @@ function DailyPage() {
   const [lbSubmitted, setLbSubmitted]     = useState(false)
   const [lbSubmitting, setLbSubmitting]   = useState(false)
   const [newAchievements, setNewAchievements] = useState<Achievement[]>([])
-  const answersRef = useRef<boolean[]>([])
+  const answersRef   = useRef<boolean[]>([])
+  const startTimeRef = useRef<number>(0)
+  const elapsedRef   = useRef<number | null>(null)
   const { t } = useLanguage()
 
   useEffect(() => {
@@ -175,6 +184,7 @@ function DailyPage() {
   }, [])
 
   const startPlaying = () => {
+    startTimeRef.current = Date.now()
     loadQuestions()
     setPhase('playing')
   }
@@ -213,6 +223,8 @@ function DailyPage() {
       const finalAnswers = answersRef.current
       const finalScore   = finalAnswers.filter(Boolean).length
       const accuracy     = Math.round(finalScore / finalAnswers.length * 100)
+      const elapsed      = startTimeRef.current ? Math.round((Date.now() - startTimeRef.current) / 100) / 10 : undefined
+      elapsedRef.current = elapsed ?? null
       const streakData   = saveResultAndStreak(finalAnswers, finalScore)
       track('daily_played', { score: finalScore, accuracy })
       setStreak(streakData.streak)
@@ -222,7 +234,7 @@ function DailyPage() {
       if (pseudo) {
         setLbName(pseudo)
         setLbSubmitted(true)
-        submitDailyScore(pseudo, finalScore, accuracy).catch(() => {})
+        submitDailyScore(pseudo, finalScore, accuracy, elapsed).catch(() => {})
       }
       setPhase('finished')
     } else {
@@ -238,7 +250,7 @@ function DailyPage() {
     setLbSubmitting(true)
     try {
       const acc = answers.length ? Math.round(score / answers.length * 100) : 0
-      await submitDailyScore(name, score, acc)
+      await submitDailyScore(name, score, acc, elapsedRef.current ?? undefined)
       localStorage.setItem('fda_pseudo', name)
       setLbSubmitted(true)
       fetchLeaderboard()
@@ -441,7 +453,7 @@ function DailyPage() {
                   const isMe = lbSubmitted && entry.player_name === lbName
                   return (
                     <div key={entry.rank} style={{
-                      display: 'grid', gridTemplateColumns: '28px 1fr 48px',
+                      display: 'grid', gridTemplateColumns: '28px 1fr 48px 52px',
                       padding: '7px 12px', alignItems: 'center', gap: '8px',
                       background: isMe ? `${COLOR}12` : entry.rank <= 3 ? 'rgba(255,255,255,0.03)' : 'transparent',
                       border: `1px solid ${isMe ? COLOR + '44' : 'rgba(255,255,255,0.05)'}`,
@@ -456,6 +468,10 @@ function DailyPage() {
                         textShadow: isMe ? `0 0 8px ${COLOR}` : 'none',
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                       }}>{entry.player_name}</span>
+                      <span style={{
+                        fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '1px',
+                        color: 'rgba(255,255,255,0.25)', textAlign: 'right',
+                      }}>{entry.elapsed_seconds != null ? formatTime(entry.elapsed_seconds) : '—'}</span>
                       <span style={{
                         fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '1px',
                         color: isMe ? COLOR : 'rgba(255,255,255,0.5)', textAlign: 'right',

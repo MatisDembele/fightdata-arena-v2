@@ -78,11 +78,11 @@ export async function getDailyQuiz(): Promise<QuizQuestion[]> {
   return res.json()
 }
 
-export async function submitDailyScore(player_name: string, score: number, accuracy: number) {
+export async function submitDailyScore(player_name: string, score: number, accuracy: number, elapsed_seconds?: number) {
   const res = await fetch(`${API_URL}/api/daily/score`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ player_name, score, accuracy }),
+    body: JSON.stringify({ player_name, score, accuracy, elapsed_seconds }),
   })
   if (!res.ok) throw new Error('Erreur submit score')
   return res.json()
@@ -93,6 +93,7 @@ export interface LeaderboardEntry {
   player_name: string
   score: number
   accuracy: number
+  elapsed_seconds?: number
 }
 
 export async function getDailyLeaderboard(): Promise<LeaderboardEntry[]> {
@@ -123,11 +124,11 @@ export async function getWeeklyQuiz(): Promise<QuizQuestion[]> {
   return res.json()
 }
 
-export async function submitWeeklyScore(player_name: string, score: number, accuracy: number) {
+export async function submitWeeklyScore(player_name: string, score: number, accuracy: number, elapsed_seconds?: number) {
   const res = await fetch(`${API_URL}/api/weekly/score`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ player_name, score, accuracy }),
+    body: JSON.stringify({ player_name, score, accuracy, elapsed_seconds }),
   })
   if (!res.ok) throw new Error('Erreur submit weekly score')
   return res.json()

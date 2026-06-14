@@ -5,6 +5,7 @@ from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
+from sqlalchemy import inspect as _sa_inspect, text as _sa_text
 from app.database import Base, engine, SessionLocal
 from app.routers import fighters, quiz, multi, daily, weekly, global_lb, flash, survival
 from app.routers.multi import rooms, _broadcast, _send, _next_question, _reset_room
@@ -20,6 +21,16 @@ async def _heartbeat(websocket: WebSocket):
         pass
 
 Base.metadata.create_all(bind=engine)
+
+with engine.connect() as _conn:
+    for _table, _col in [("daily_scores", "elapsed_seconds"), ("weekly_scores", "elapsed_seconds")]:
+        try:
+            _existing = {c["name"] for c in _sa_inspect(engine).get_columns(_table)}
+            if _col not in _existing:
+                _conn.execute(_sa_text(f"ALTER TABLE {_table} ADD COLUMN {_col} FLOAT"))
+                _conn.commit()
+        except Exception:
+            pass
 
 app = FastAPI(
     title="Fight Data Arena API",

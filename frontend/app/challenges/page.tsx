@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import { useLanguage } from '@/lib/i18n'
+import { getDailyLeaderboard, getWeeklyLeaderboard, type LeaderboardEntry } from '@/lib/api'
 
 interface DailyResult  { date: string;  answers: boolean[]; score: number }
 interface WeeklyResult { week: string;  answers: boolean[]; score: number }
@@ -58,6 +59,13 @@ function formatDate(): string {
   return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 
+function formatTime(s: number): string {
+  const m = Math.floor(s / 60)
+  const sec = Math.round(s % 60)
+  if (m > 0) return `${m}m${String(sec).padStart(2, '0')}s`
+  return `${sec}s`
+}
+
 export default function ChallengesPage() {
   const { t } = useLanguage()
 
@@ -66,6 +74,8 @@ export default function ChallengesPage() {
   const [streak,       setStreak]       = useState(0)
   const [dailyMs,      setDailyMs]      = useState(0)
   const [weeklyMs,     setWeeklyMs]     = useState(0)
+  const [dailyLb,      setDailyLb]      = useState<LeaderboardEntry[]>([])
+  const [weeklyLb,     setWeeklyLb]     = useState<LeaderboardEntry[]>([])
 
   useEffect(() => {
     try {
@@ -86,6 +96,10 @@ export default function ChallengesPage() {
       setDailyMs(msUntilMidnight())
       setWeeklyMs(msUntilMonday())
     }, 1000)
+
+    getDailyLeaderboard().then(setDailyLb).catch(() => {})
+    getWeeklyLeaderboard().then(setWeeklyLb).catch(() => {})
+
     return () => clearInterval(tick)
   }, [])
 
@@ -109,7 +123,7 @@ export default function ChallengesPage() {
           </div>
 
           {/* Cards */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
             {/* DAILY */}
             <ChallengeCard
@@ -127,6 +141,7 @@ export default function ChallengesPage() {
               resetLabel={`Resets in ${formatCountdown(dailyMs)}`}
               href="/quiz/daily"
               icon="📅"
+              leaderboard={dailyLb}
             />
 
             {/* WEEKLY */}
@@ -145,6 +160,7 @@ export default function ChallengesPage() {
               resetLabel={`Resets in ${formatCountdown(weeklyMs)}`}
               href="/quiz/weekly"
               icon="📆"
+              leaderboard={weeklyLb}
             />
           </div>
 
@@ -174,102 +190,147 @@ interface CardProps {
   resetLabel: string
   href: string
   icon: string
+  leaderboard: LeaderboardEntry[]
 }
 
-function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accuracy, answers, streakLabel, resetLabel, href, icon }: CardProps) {
+function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accuracy, answers, streakLabel, resetLabel, href, icon, leaderboard }: CardProps) {
+  const pseudo = typeof window !== 'undefined' ? localStorage.getItem('fda_pseudo')?.trim() ?? '' : ''
+
   return (
     <div style={{
       border: `1px solid ${played ? color + '44' : 'rgba(255,255,255,0.08)'}`,
       background: played ? `${color}08` : 'rgba(255,255,255,0.02)',
-      padding: '24px',
       position: 'relative',
       overflow: 'hidden',
     }}>
       {/* Top accent */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: played ? `linear-gradient(90deg, ${colorAlt}, ${color})` : 'rgba(255,255,255,0.06)' }} />
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
+      <div style={{ padding: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
 
-        {/* Left — identity + status */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-            <span style={{ fontSize: '1.4rem', lineHeight: 1 }}>{icon}</span>
-            <div>
-              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.6rem', letterSpacing: '4px', color: played ? color : '#fff', textShadow: played ? `0 0 14px ${color}66` : 'none', lineHeight: 1 }}>
-                {title}
-              </div>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '3px', color: played ? color + 'aa' : 'rgba(255,255,255,0.25)', marginTop: '2px' }}>
-                {sub}
-              </div>
-            </div>
-          </div>
-
-          {/* Played: emoji grid */}
-          {played && answers && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', marginTop: '12px', marginBottom: '8px' }}>
-              {answers.map((ok, i) => (
-                <div key={i} style={{ width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', background: ok ? 'rgba(74,222,128,0.15)' : 'rgba(255,45,120,0.12)', border: `1px solid ${ok ? '#4ade8055' : '#ff2d7855'}` }}>
-                  {ok ? '✅' : '❌'}
+          {/* Left — identity + status */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+              <span style={{ fontSize: '1.4rem', lineHeight: 1 }}>{icon}</span>
+              <div>
+                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.6rem', letterSpacing: '4px', color: played ? color : '#fff', textShadow: played ? `0 0 14px ${color}66` : 'none', lineHeight: 1 }}>
+                  {title}
                 </div>
-              ))}
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '3px', color: played ? color + 'aa' : 'rgba(255,255,255,0.25)', marginTop: '2px' }}>
+                  {sub}
+                </div>
+              </div>
             </div>
-          )}
 
-          {/* Meta */}
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: played ? '4px' : '12px' }}>
-            {streakLabel && (
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '2px', color: '#ffe000' }}>
-                {streakLabel}
+            {/* Played: emoji grid */}
+            {played && answers && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', marginTop: '12px', marginBottom: '8px' }}>
+                {answers.map((ok, i) => (
+                  <div key={i} style={{ width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', background: ok ? 'rgba(74,222,128,0.15)' : 'rgba(255,45,120,0.12)', border: `1px solid ${ok ? '#4ade8055' : '#ff2d7855'}` }}>
+                    {ok ? '✅' : '❌'}
+                  </div>
+                ))}
               </div>
             )}
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.44rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.2)' }}>
-              {resetLabel}
+
+            {/* Meta */}
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: played ? '4px' : '12px' }}>
+              {streakLabel && (
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '2px', color: '#ffe000' }}>
+                  {streakLabel}
+                </div>
+              )}
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.44rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.2)' }}>
+                {resetLabel}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Right — score or CTA */}
-        <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'space-between', gap: '12px', minWidth: '100px' }}>
-          {played && score !== null ? (
-            <>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '2.5rem', letterSpacing: '2px', lineHeight: 1, color: color, textShadow: `0 0 16px ${color}66` }}>
-                  {score}<span style={{ fontSize: '1rem', opacity: 0.5 }}>/{total}</span>
-                </div>
-                {accuracy !== null && (
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.3)', marginTop: '2px' }}>
-                    {accuracy}% accuracy
+          {/* Right — score or CTA */}
+          <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'space-between', gap: '12px', minWidth: '100px' }}>
+            {played && score !== null ? (
+              <>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '2.5rem', letterSpacing: '2px', lineHeight: 1, color: color, textShadow: `0 0 16px ${color}66` }}>
+                    {score}<span style={{ fontSize: '1rem', opacity: 0.5 }}>/{total}</span>
                   </div>
-                )}
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '2px', color: color + '88', marginTop: '4px' }}>
-                  ✓ DONE
+                  {accuracy !== null && (
+                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.3)', marginTop: '2px' }}>
+                      {accuracy}% accuracy
+                    </div>
+                  )}
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '2px', color: color + '88', marginTop: '4px' }}>
+                    ✓ DONE
+                  </div>
                 </div>
-              </div>
+                <Link href={href} style={{
+                  padding: '7px 14px',
+                  background: 'none', border: `1px solid ${color}44`,
+                  color: color + '99', textDecoration: 'none',
+                  fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '2px',
+                  whiteSpace: 'nowrap',
+                }}>
+                  VIEW →
+                </Link>
+              </>
+            ) : (
               <Link href={href} style={{
-                padding: '7px 14px',
-                background: 'none', border: `1px solid ${color}44`,
-                color: color + '99', textDecoration: 'none',
-                fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '2px',
+                padding: '14px 20px',
+                background: `linear-gradient(135deg, ${colorAlt}, ${color})`,
+                color: '#fff', textDecoration: 'none',
+                fontFamily: "'Bebas Neue', sans-serif", fontSize: '1rem', letterSpacing: '4px',
+                boxShadow: `0 0 20px ${color}33`,
                 whiteSpace: 'nowrap',
+                display: 'block', textAlign: 'center',
               }}>
-                VIEW →
+                PLAY →
               </Link>
-            </>
-          ) : (
-            <Link href={href} style={{
-              padding: '14px 20px',
-              background: `linear-gradient(135deg, ${colorAlt}, ${color})`,
-              color: '#fff', textDecoration: 'none',
-              fontFamily: "'Bebas Neue', sans-serif", fontSize: '1rem', letterSpacing: '4px',
-              boxShadow: `0 0 20px ${color}33`,
-              whiteSpace: 'nowrap',
-              display: 'block', textAlign: 'center',
-            }}>
-              PLAY →
-            </Link>
-          )}
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Leaderboard */}
+      {leaderboard.length > 0 && (
+        <div style={{ borderTop: `1px solid ${color}18`, padding: '12px 24px 16px' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '4px', color: color + '88', marginBottom: '8px' }}>
+            TOP {leaderboard.length} TODAY
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+            {leaderboard.slice(0, 5).map(entry => {
+              const isMe = pseudo && entry.player_name === pseudo
+              return (
+                <div key={entry.rank} style={{
+                  display: 'grid', gridTemplateColumns: '22px 1fr 44px 44px',
+                  padding: '5px 10px', alignItems: 'center', gap: '8px',
+                  background: isMe ? `${color}10` : 'transparent',
+                  border: `1px solid ${isMe ? color + '33' : 'rgba(255,255,255,0.04)'}`,
+                }}>
+                  <span style={{
+                    fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.72rem', letterSpacing: '1px',
+                    color: entry.rank === 1 ? '#ffd700' : entry.rank === 2 ? '#c0c0c0' : entry.rank === 3 ? '#cd7f32' : 'rgba(255,255,255,0.25)',
+                  }}>#{entry.rank}</span>
+                  <span style={{
+                    fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '1px',
+                    color: isMe ? color : 'rgba(255,255,255,0.6)',
+                    textShadow: isMe ? `0 0 8px ${color}` : 'none',
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  }}>{entry.player_name}</span>
+                  <span style={{
+                    fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '1px',
+                    color: 'rgba(255,255,255,0.2)', textAlign: 'right',
+                  }}>{entry.elapsed_seconds != null ? formatTime(entry.elapsed_seconds) : '—'}</span>
+                  <span style={{
+                    fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.78rem', letterSpacing: '1px',
+                    color: isMe ? color : 'rgba(255,255,255,0.4)', textAlign: 'right',
+                  }}>{entry.score}/{total}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
