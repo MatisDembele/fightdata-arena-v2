@@ -327,6 +327,30 @@ const en = {
   'guide.plus_desc':     'You recover before your opponent — you get to move, attack, or pressure first.',
   'guide.minus':         'MINUS (−)',
   'guide.minus_desc':    'You recover after your opponent — they can act first. Large negatives are punishable.',
+  // challenges
+  'challenge.resets_in':     'Resets in {time}',
+  'challenge.done':          '✓ DONE',
+  'challenge.view':          'VIEW →',
+  'challenge.top_daily':     "TODAY'S TOP {n}",
+  'challenge.top_weekly':    "WEEK'S TOP {n}",
+  // profile — extra
+  'profile.col_best':        'BEST',
+  'profile.col_acc':         'ACC',
+  'profile.col_games':       'GAMES',
+  'profile.fighter_heatmap': 'FIGHTER HEATMAP',
+  'profile.save':            'SAVE',
+  'profile.global_rank':     'GLOBAL RANK',
+  'profile.mistake_saved':   'MISTAKE SAVED',
+  'profile.mistakes_saved':  'MISTAKES SAVED',
+  'profile.bank_empty':      'Play any mode to fill your bank',
+  'profile.time_days':       '{n}d ago',
+  'profile.time_hours':      '{n}h ago',
+  'profile.time_mins':       '{n}m ago',
+  'profile.time_now':        'just now',
+  'profile.questions_label': 'QUESTIONS',
+  'profile.streak_label':    'DAY STREAK',
+  'profile.mistakes_label':  'MISTAKES',
+  'profile.edit':            'EDIT',
 } as const
 
 type DictKey = keyof typeof en
@@ -656,6 +680,30 @@ const fr: Record<DictKey, string> = {
   'guide.plus_desc':     "Tu récupères avant l'adversaire — tu agis, attaques ou presses en premier.",
   'guide.minus':         'MINUS (−)',
   'guide.minus_desc':    "Tu récupères après l'adversaire — il peut agir en premier. Les grands négatifs sont punissables.",
+  // challenges
+  'challenge.resets_in':     'Reset dans {time}',
+  'challenge.done':          '✓ TERMINÉ',
+  'challenge.view':          'VOIR →',
+  'challenge.top_daily':     'TOP {n} DU JOUR',
+  'challenge.top_weekly':    'TOP {n} DE LA SEMAINE',
+  // profile — extra
+  'profile.col_best':        'RECORD',
+  'profile.col_acc':         'PRÉC',
+  'profile.col_games':       'PARTIES',
+  'profile.fighter_heatmap': 'HEATMAP FIGHTERS',
+  'profile.save':            'ENREGISTRER',
+  'profile.global_rank':     'RANG MONDIAL',
+  'profile.mistake_saved':   'ERREUR SAUVEGARDÉE',
+  'profile.mistakes_saved':  'ERREURS SAUVEGARDÉES',
+  'profile.bank_empty':      "Joue dans n'importe quel mode pour remplir ta banque",
+  'profile.time_days':       'il y a {n}j',
+  'profile.time_hours':      'il y a {n}h',
+  'profile.time_mins':       'il y a {n}min',
+  'profile.time_now':        "à l'instant",
+  'profile.questions_label': 'QUESTIONS',
+  'profile.streak_label':    'JOURS DE SÉRIE',
+  'profile.mistakes_label':  'ERREURS',
+  'profile.edit':            'ÉDITER',
 }
 
 const dict: Record<string, Record<DictKey, string>> = { en, fr }

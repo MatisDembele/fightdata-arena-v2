@@ -34,12 +34,15 @@ function avatarColor(p: string): string {
   return pal[p.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % pal.length]
 }
 
-function timeAgo(iso: string): string {
-  const d = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000)
-  const h = Math.floor((Date.now() - new Date(iso).getTime()) / 3600000)
-  const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
-  if (d > 0) return `${d}d ago`; if (h > 0) return `${h}h ago`
-  if (m > 0) return `${m}m ago`; return 'just now'
+function timeAgo(iso: string, t: (key: DictKey, vars?: Record<string, string | number>) => string): string {
+  const diff = Date.now() - new Date(iso).getTime()
+  const d = Math.floor(diff / 86400000)
+  const h = Math.floor(diff / 3600000)
+  const m = Math.floor(diff / 60000)
+  if (d > 0) return t('profile.time_days',  { n: d })
+  if (h > 0) return t('profile.time_hours', { n: h })
+  if (m > 0) return t('profile.time_mins',  { n: m })
+  return t('profile.time_now')
 }
 
 function todayStr() { return new Date().toISOString().split('T')[0] }
@@ -124,7 +127,7 @@ export default function ProfilePage() {
     <>
       <Navbar />
       <main style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 60px)' }}>
-        <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.3)', letterSpacing: '4px', fontSize: '0.7rem' }}>LOADING...</div>
+        <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.3)', letterSpacing: '4px', fontSize: '0.7rem' }}>{t('play.loading')}</div>
       </main>
     </>
   )
@@ -150,7 +153,7 @@ export default function ProfilePage() {
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <input value={editPseudo} onChange={e => setEditPseudo(e.target.value)} onKeyDown={e => e.key === 'Enter' && savePseudo()} maxLength={20} autoFocus
                     style={{ flex: 1, padding: '8px 12px', background: 'rgba(255,255,255,0.07)', border: `1px solid ${color}55`, color: '#fff', outline: 'none', fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.4rem', letterSpacing: '4px' }} />
-                  <button onClick={savePseudo} style={{ padding: '8px 16px', background: color, border: 'none', color: '#000', cursor: 'pointer', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', letterSpacing: '2px' }}>SAVE</button>
+                  <button onClick={savePseudo} style={{ padding: '8px 16px', background: color, border: 'none', color: '#000', cursor: 'pointer', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', letterSpacing: '2px' }}>{t('profile.save')}</button>
                   <button onClick={() => setEditing(false)} style={{ padding: '8px 12px', background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem' }}>✕</button>
                 </div>
               ) : (
@@ -159,9 +162,9 @@ export default function ProfilePage() {
                     <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(1.6rem,5vw,2.5rem)', letterSpacing: '6px', color: '#fff', textShadow: `0 0 14px ${color}55`, lineHeight: 1 }}>
                       {pseudo || '—'}
                     </div>
-                    <button onClick={() => setEditing(true)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', padding: '4px 10px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '2px' }}>EDIT</button>
+                    <button onClick={() => setEditing(true)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', padding: '4px 10px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '2px' }}>{t('profile.edit')}</button>
                   </div>
-                  {globalRank && <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '3px', color: '#ffd700', marginTop: '6px' }}>GLOBAL RANK #{globalRank}</div>}
+                  {globalRank && <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '3px', color: '#ffd700', marginTop: '6px' }}>{t('profile.global_rank')} #{globalRank}</div>}
                   {!pseudo && <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.25)', marginTop: '6px', lineHeight: 1.5 }}>{t('profile.no_pseudo')}</div>}
                 </>
               )}
@@ -172,11 +175,11 @@ export default function ProfilePage() {
           <Section title={t('profile.lifetime')} color={color}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '1px', background: 'rgba(255,255,255,0.05)' }}>
               {[
-                { val: lifetime.questions.toLocaleString(), label: 'QUESTIONS' },
-                { val: `${lifetimeAcc}%`,                   label: 'ACCURACY' },
-                { val: streak > 0 ? `${streak}${streak >= 2 ? ' 🔥' : ''}` : '0', label: 'DAY STREAK' },
-                { val: String(unlockedCount),                label: 'ACHIEVEMENTS' },
-                { val: String(mistakesCount),                label: 'MISTAKES' },
+                { val: lifetime.questions.toLocaleString(), label: t('profile.questions_label') },
+                { val: `${lifetimeAcc}%`,                   label: t('stats.accuracy') },
+                { val: streak > 0 ? `${streak}${streak >= 2 ? ' 🔥' : ''}` : '0', label: t('profile.streak_label') },
+                { val: String(unlockedCount),                label: t('stats.achievements') },
+                { val: String(mistakesCount),                label: t('profile.mistakes_label') },
               ].map((s, i) => (
                 <div key={i} style={{ padding: '16px 12px', background: '#0d0015', textAlign: 'center' }}>
                   <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(1.4rem,4vw,2rem)', letterSpacing: '2px', color, textShadow: `0 0 10px ${color}66` }}>{s.val}</div>
@@ -190,8 +193,8 @@ export default function ProfilePage() {
           <Section title={t('profile.by_mode')} color={color}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 60px 60px 50px', gap: '8px', padding: '7px 14px', background: 'rgba(255,255,255,0.04)' }}>
-                {['MODE','BEST','ACC','GAMES'].map(h => (
-                  <div key={h} style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.4rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.25)', textAlign: h === 'MODE' ? 'left' : 'center' }}>{h}</div>
+                {(['MODE', t('profile.col_best'), t('profile.col_acc'), t('profile.col_games')] as string[]).map((h, i) => (
+                  <div key={i} style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.4rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.25)', textAlign: i === 0 ? 'left' : 'center' }}>{h}</div>
                 ))}
               </div>
               {QUIZ_MODES.map((m, i) => {
@@ -217,7 +220,7 @@ export default function ProfilePage() {
 
           {/* ── FIGHTER HEATMAP ── */}
           {fighters.length > 0 && (
-            <Section title="FIGHTER HEATMAP" color="#00f0ff">
+            <Section title={t('profile.fighter_heatmap')} color="#00f0ff">
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))', gap: '5px' }}>
                 {fighters.map(({ slug, stats: s }) => {
                   const pct = s.bestAccuracy / 100
@@ -279,15 +282,15 @@ export default function ProfilePage() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr 60px 60px 50px', gap: '8px', padding: '7px 14px', background: 'rgba(255,255,255,0.04)' }}>
-                  {['DATE','MODE','SCORE','ACC','COMBO'].map(h => (
-                    <div key={h} style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.4rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.25)' }}>{h}</div>
+                  {(['DATE','MODE','SCORE', t('profile.col_acc'),'COMBO'] as string[]).map((h, i) => (
+                    <div key={i} style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.4rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.25)' }}>{h}</div>
                   ))}
                 </div>
                 {history.slice(0, 20).map((rec, i) => {
                   const c = MODE_COLORS[rec.mode] || '#888'
                   return (
                     <div key={i} style={{ display: 'grid', gridTemplateColumns: '80px 1fr 60px 60px 50px', gap: '8px', padding: '9px 14px', background: i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent', borderBottom: '1px solid rgba(255,255,255,0.03)', alignItems: 'center' }}>
-                      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.3)' }}>{timeAgo(rec.date)}</div>
+                      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.3)' }}>{timeAgo(rec.date, t)}</div>
                       <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.75rem', letterSpacing: '1px', color: c }}>
                         {MODE_LABEL[rec.mode] ?? rec.mode.toUpperCase()}{rec.fighter ? ` // ${rec.fighter.toUpperCase()}` : ''}
                       </div>
@@ -306,14 +309,14 @@ export default function ProfilePage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.15)', flexWrap: 'wrap' }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.8rem', letterSpacing: '3px', color: '#f43f5e', textShadow: '0 0 12px rgba(244,63,94,0.5)' }}>{mistakesCount}</div>
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.3)', marginTop: '2px' }}>{mistakesCount === 1 ? 'MISTAKE SAVED' : 'MISTAKES SAVED'}</div>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.3)', marginTop: '2px' }}>{t(mistakesCount === 1 ? 'profile.mistake_saved' : 'profile.mistakes_saved')}</div>
               </div>
               {mistakesCount > 0 ? (
                 <Link href="/quiz/play?mode=mistakes" style={{ padding: '10px 20px', background: 'linear-gradient(90deg, #be123c, #f43f5e)', border: 'none', color: '#fff', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '3px', textDecoration: 'none', display: 'inline-block' }}>
                   {t('profile.mistakes_play')}
                 </Link>
               ) : (
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.2)' }}>Play any mode to fill your bank</div>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.2)' }}>{t('profile.bank_empty')}</div>
               )}
             </div>
           </Section>

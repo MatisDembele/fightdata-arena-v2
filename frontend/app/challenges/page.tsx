@@ -125,7 +125,6 @@ export default function ChallengesPage() {
           {/* Cards */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
-            {/* DAILY */}
             <ChallengeCard
               title="DAILY"
               sub={formatDate()}
@@ -136,15 +135,13 @@ export default function ChallengesPage() {
               total={10}
               accuracy={dailyAcc}
               answers={dailyResult?.answers ?? null}
-              streak={streak}
-              streakLabel={streak >= 2 ? `🔥 ${streak}-day streak` : null}
-              resetLabel={`Resets in ${formatCountdown(dailyMs)}`}
+              streakLabel={streak >= 2 ? `🔥 ${t('daily.streak', { n: streak })}` : null}
+              resetLabel={t('challenge.resets_in', { time: formatCountdown(dailyMs) })}
               href="/quiz/daily"
               icon="📅"
               leaderboard={dailyLb}
             />
 
-            {/* WEEKLY */}
             <ChallengeCard
               title="WEEKLY"
               sub={`W${weekNumber()}`}
@@ -155,9 +152,8 @@ export default function ChallengesPage() {
               total={20}
               accuracy={weeklyAcc}
               answers={weeklyResult?.answers ?? null}
-              streak={null}
               streakLabel={null}
-              resetLabel={`Resets in ${formatCountdown(weeklyMs)}`}
+              resetLabel={t('challenge.resets_in', { time: formatCountdown(weeklyMs) })}
               href="/quiz/weekly"
               icon="📆"
               leaderboard={weeklyLb}
@@ -185,7 +181,6 @@ interface CardProps {
   total: number
   accuracy: number | null
   answers: boolean[] | null
-  streak: number | null
   streakLabel: string | null
   resetLabel: string
   href: string
@@ -194,7 +189,11 @@ interface CardProps {
 }
 
 function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accuracy, answers, streakLabel, resetLabel, href, icon, leaderboard }: CardProps) {
+  const { t } = useLanguage()
   const pseudo = typeof window !== 'undefined' ? localStorage.getItem('fda_pseudo')?.trim() ?? '' : ''
+  const lbTitle = title === 'DAILY'
+    ? t('challenge.top_daily',  { n: Math.min(leaderboard.length, 5) })
+    : t('challenge.top_weekly', { n: Math.min(leaderboard.length, 5) })
 
   return (
     <div style={{
@@ -209,7 +208,7 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
       <div style={{ padding: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
 
-          {/* Left — identity + status */}
+          {/* Left */}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
               <span style={{ fontSize: '1.4rem', lineHeight: 1 }}>{icon}</span>
@@ -223,7 +222,6 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
               </div>
             </div>
 
-            {/* Played: emoji grid */}
             {played && answers && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', marginTop: '12px', marginBottom: '8px' }}>
                 {answers.map((ok, i) => (
@@ -234,7 +232,6 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
               </div>
             )}
 
-            {/* Meta */}
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: played ? '4px' : '12px' }}>
               {streakLabel && (
                 <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '2px', color: '#ffe000' }}>
@@ -247,7 +244,7 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
             </div>
           </div>
 
-          {/* Right — score or CTA */}
+          {/* Right */}
           <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'space-between', gap: '12px', minWidth: '100px' }}>
             {played && score !== null ? (
               <>
@@ -257,11 +254,11 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
                   </div>
                   {accuracy !== null && (
                     <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.3)', marginTop: '2px' }}>
-                      {accuracy}% accuracy
+                      {accuracy}% {t('stats.accuracy').toLowerCase()}
                     </div>
                   )}
                   <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '2px', color: color + '88', marginTop: '4px' }}>
-                    ✓ DONE
+                    {t('challenge.done')}
                   </div>
                 </div>
                 <Link href={href} style={{
@@ -271,7 +268,7 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
                   fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '2px',
                   whiteSpace: 'nowrap',
                 }}>
-                  VIEW →
+                  {t('challenge.view')}
                 </Link>
               </>
             ) : (
@@ -284,7 +281,7 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
                 whiteSpace: 'nowrap',
                 display: 'block', textAlign: 'center',
               }}>
-                PLAY →
+                {t('quiz.play')}
               </Link>
             )}
           </div>
@@ -295,7 +292,7 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
       {leaderboard.length > 0 && (
         <div style={{ borderTop: `1px solid ${color}18`, padding: '12px 24px 16px' }}>
           <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '4px', color: color + '88', marginBottom: '8px' }}>
-            TOP {leaderboard.length} TODAY
+            {lbTitle}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
             {leaderboard.slice(0, 5).map(entry => {
