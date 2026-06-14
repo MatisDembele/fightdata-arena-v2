@@ -16,13 +16,16 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'first_input',     icon: '⌨️', name: 'TYPE FIGHTER',       desc: 'Get a correct answer in INPUT mode.',         rarity: 'common' },
   { id: 'first_multi_win', icon: '⚔️', name: 'FIRST VICTORY',     desc: 'Win your first multiplayer match.',           rarity: 'common' },
   { id: 'first_onblock',   icon: '🛡️', name: 'BLOCK CHECKER',     desc: 'Get a correct answer in ON BLOCK mode.',      rarity: 'common' },
-  { id: 'first_weekly',    icon: '📆', name: 'WEEK ONE',           desc: 'Complete your first weekly challenge.',       rarity: 'common' },
+  { id: 'first_onhit',    icon: '🎯', name: 'HIT CHECK',          desc: 'Get a correct answer in ON HIT mode.',        rarity: 'common' },
+  { id: 'first_recovery', icon: '⏱️', name: 'RECOVERY CHECK',     desc: 'Get a correct answer in RECOVERY mode.',      rarity: 'common' },
+  { id: 'first_weekly',   icon: '📆', name: 'WEEK ONE',           desc: 'Complete your first weekly challenge.',       rarity: 'common' },
   // RARE
   { id: 'perfect_random',   icon: '🎯', name: 'STARTUP GOD',      desc: 'Score 10/10 in RANDOM mode.',                 rarity: 'rare' },
   { id: 'perfect_daily',    icon: '✨', name: 'PERFECT DAY',      desc: 'Score 10/10 on a daily challenge.',            rarity: 'rare' },
   { id: 'perfect_hardcore', icon: '⚡', name: 'SPEED DEMON',      desc: 'Score 10/10 in HARDCORE mode.',               rarity: 'rare' },
   { id: 'perfect_damage',   icon: '💥', name: 'DAMAGE DEALER',    desc: 'Score 10/10 in DAMAGE mode.',                 rarity: 'rare' },
   { id: 'onblock_ace',      icon: '🔒', name: 'BLOCK ACE',        desc: 'Score 10/10 in ON BLOCK mode.',               rarity: 'rare' },
+  { id: 'onhit_ace',        icon: '⚡', name: 'ON HIT ACE',       desc: 'Score 10/10 in ON HIT mode.',                 rarity: 'rare' },
   { id: 'custom_perfect',   icon: '🎨', name: 'MATCHUP READY',    desc: '100% accuracy in a CUSTOM session (10+ Q).',  rarity: 'rare' },
   { id: 'all_modes',        icon: '🧠', name: 'LAB MONSTER',      desc: 'Play all 7 original quiz modes.',             rarity: 'rare' },
   { id: 'streak_3',         icon: '🔥', name: 'DAILY ×3',         desc: 'Reach a 3-day daily streak.',                 rarity: 'rare' },
@@ -198,7 +201,9 @@ export function checkAndUnlock(ctx: CheckContext): Achievement[] {
   if (dailyScore !== undefined) u('first_daily')
   if (mode === 'punish'  && score && score > 0) u('first_punish')
   if (mode === 'input'   && score && score > 0) u('first_input')
-  if (mode === 'onblock' && score && score > 0) u('first_onblock')
+  if (mode === 'onblock'   && score && score > 0) u('first_onblock')
+  if (mode === 'onhit'     && score && score > 0) u('first_onhit')
+  if (mode === 'recovery'  && score && score > 0) u('first_recovery')
   if (multiWon) u('first_multi_win')
   if (weeklyScore !== undefined) u('first_weekly')
 
@@ -208,6 +213,7 @@ export function checkAndUnlock(ctx: CheckContext): Achievement[] {
   if (mode === 'hardcore' && score === 10 && total === 10) u('perfect_hardcore')
   if (mode === 'damage'   && score === 10 && total === 10) u('perfect_damage')
   if (mode === 'onblock'  && score === 10 && total === 10) u('onblock_ace')
+  if (mode === 'onhit'   && score === 10 && total === 10) u('onhit_ace')
   if (mode === 'custom'   && total && total >= 10 && score === total) u('custom_perfect')
 
   // RARE — combos & survival

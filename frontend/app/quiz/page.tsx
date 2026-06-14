@@ -137,6 +137,15 @@ export default function QuizSelectPage() {
       href: '/quiz/play?mode=onhit',
       icon: '🎯',
     },
+    {
+      id: 'recovery',
+      label: 'RECOVERY',
+      sub: t('quiz.mode_recovery_sub'),
+      desc: t('quiz.mode_recovery_desc'),
+      color: '#3b82f6', colorAlt: '#1d4ed8',
+      href: '/quiz/play?mode=recovery',
+      icon: '⏱️',
+    },
   ]
 
   const current = QUIZ_MODES[active]

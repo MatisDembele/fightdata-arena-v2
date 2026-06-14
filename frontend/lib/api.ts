@@ -111,6 +111,12 @@ export async function getRandomOnHit() {
   return res.json()
 }
 
+export async function getRandomRecovery() {
+  const res = await fetch(`${API_URL}/api/quiz/random/recovery`)
+  if (!res.ok) throw new Error('Erreur quiz recovery')
+  return res.json()
+}
+
 export async function getWeeklyQuiz(): Promise<QuizQuestion[]> {
   const res = await fetch(`${API_URL}/api/quiz/weekly`)
   if (!res.ok) throw new Error('Erreur weekly quiz')

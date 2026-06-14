@@ -41,7 +41,8 @@ const QUIZ_MODES = [
   { key: 'hardcore', label: 'HARDCORE',      color: '#ff6a00' },
   { key: 'damage',   label: 'DAMAGE',        color: '#f59e0b' },
   { key: 'onblock',  label: 'ON BLOCK',      color: '#00b4d8' },
-  { key: 'onhit',   label: 'ON HIT',        color: '#f97316' },
+  { key: 'onhit',    label: 'ON HIT',        color: '#f97316' },
+  { key: 'recovery', label: 'RECOVERY',      color: '#3b82f6' },
   { key: 'custom',   label: 'CUSTOM',        color: '#c77dff' },
 ]
 

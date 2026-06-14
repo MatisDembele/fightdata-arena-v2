@@ -24,6 +24,7 @@ export default function Navbar() {
     { href: '/multi',       label: 'MULTI' },
     { href: '/stats',       label: t('nav.stats') },
     { href: '/profile',     label: t('nav.profile') },
+    { href: '/contact',     label: t('nav.contact') },
   ]
 
   return (

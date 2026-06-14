@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
-import { getRandomQuiz, getFighterQuiz, getRandomPunish, getRandomDamage, getRandomOnBlock, getRandomOnHit, submitGlobalScore } from '@/lib/api'
+import { getRandomQuiz, getFighterQuiz, getRandomPunish, getRandomDamage, getRandomOnBlock, getRandomOnHit, getRandomRecovery, submitGlobalScore } from '@/lib/api'
 import { playCorrect, playWrong, getSoundEnabled, toggleSound } from '@/lib/sounds'
 import { checkAndUnlock, updateLifetime, RARITY_COLOR, type Achievement, type LifetimeDelta } from '@/lib/achievements'
 import type { QuizQuestion } from '@/types'
@@ -59,6 +59,7 @@ function QuizPlay() {
   const isDamage    = mode === 'damage'
   const isOnBlock   = mode === 'onblock'
   const isOnHit     = mode === 'onhit'
+  const isRecovery  = mode === 'recovery'
   const isCustom    = mode === 'custom'
   const isMistakes  = mode === 'mistakes'
 
@@ -78,8 +79,9 @@ function QuizPlay() {
       if (entries.length === 0) throw new Error('no_mistakes')
       return entries[Math.floor(Math.random() * entries.length)].question
     }
-    if (isOnBlock) return getRandomOnBlock()
-    if (isOnHit)   return getRandomOnHit()
+    if (isOnBlock)  return getRandomOnBlock()
+    if (isOnHit)    return getRandomOnHit()
+    if (isRecovery) return getRandomRecovery()
     if (isPunish) return getRandomPunish()
     if (isDamage) return getRandomDamage()
     if (isCustom) {
@@ -90,7 +92,7 @@ function QuizPlay() {
     }
     if (mode === 'fighter' && slug) return getFighterQuiz(slug)
     return getRandomQuiz()
-  }, [mode, slug, isPunish, isDamage, isOnBlock, isOnHit, isCustom, isMistakes, params])
+  }, [mode, slug, isPunish, isDamage, isOnBlock, isOnHit, isRecovery, isCustom, isMistakes, params])
 
   const fetchUnique = useCallback(async (): Promise<QuizQuestion> => {
     for (let i = 0; i < 4; i++) {
@@ -366,6 +368,7 @@ function QuizPlay() {
         damage:   'DAMAGE',
         onblock:  'ON BLOCK',
         onhit:    'ON HIT',
+        recovery: 'RECOVERY',
         custom:   'CUSTOM',
         mistakes: 'ERROR BANK',
       }
@@ -417,6 +420,7 @@ function QuizPlay() {
     damage:   'DAMAGE MODE',
     onblock:  t('play.mode_onblock_label'),
     onhit:    t('play.mode_onhit_label'),
+    recovery: t('play.mode_recovery_label'),
     custom:   'CUSTOM MODE',
     mistakes: t('play.mode_mistakes_label'),
   }[mode] ?? 'QUIZ'
@@ -471,6 +475,7 @@ function QuizPlay() {
       damage:   t('quiz.mode_damage_sub'),
       onblock:  t('quiz.mode_onblock_sub'),
       onhit:    t('quiz.mode_onhit_sub'),
+      recovery: t('quiz.mode_recovery_sub'),
       custom:   t('quiz.mode_custom_sub'),
       mistakes: isMistakes ? t('play.mistakes_bank', { n: mistakesCount }) : '',
     } as Record<string, string>)[mode] ?? ''
@@ -867,7 +872,7 @@ function QuizPlay() {
                 </p>
               ) : (
                 <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1rem', fontWeight: 600, lineHeight: 1.4, color: 'rgba(255,255,255,0.9)' }}>
-                  {t('play.q_what_is')} <span style={{ color: modeColor }}>{isDamage ? t('play.q_damage') : 'startup'}</span> {t('play.q_of')}{' '}
+                  {t('play.q_what_is')} <span style={{ color: modeColor }}>{isDamage ? t('play.q_damage') : isRecovery ? t('play.q_recovery') : 'startup'}</span> {t('play.q_of')}{' '}
                   <strong style={{ color: '#fff' }}>{question.move_name}</strong> ?
                 </p>
               )}
@@ -1005,6 +1010,10 @@ function QuizPlay() {
                     state === 'correct'
                       ? t('play.feedback_correct_onhit', { move: question.move_name, n: question.answer })
                       : t('play.feedback_wrong_onhit', { move: question.move_name, n: question.answer })
+                  ) : isRecovery ? (
+                    state === 'correct'
+                      ? t('play.feedback_correct_recovery', { move: question.move_name, n: question.answer })
+                      : t('play.feedback_wrong_recovery', { move: question.move_name, n: question.answer })
                   ) : isPunish ? (
                     state === 'correct'
                       ? t('play.feedback_correct_punish', { move: question.move_name, label: t(isPunishable ? 'play.punishable_label' : 'play.safe_label'), value: question.on_block_value ?? '' })
@@ -1024,7 +1033,7 @@ function QuizPlay() {
                       ? t('play.feedback_timeout', { n: question.answer })
                       : t('play.feedback_wrong_startup', { n: question.answer })
                   )}
-                  {!isPunish && !isDamage && !isOnBlock && !isOnHit && question.on_block_value && (
+                  {!isPunish && !isDamage && !isOnBlock && !isOnHit && !isRecovery && question.on_block_value && (
                     <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.4)', marginTop: '6px' }}>
                       {question.move_name} — {question.answer}f startup · {question.on_block_value} on block
                     </div>
@@ -1099,6 +1108,14 @@ function getFunFact(q: { answer: string; on_block_value?: string | null; move_na
     if (!isNaN(v)) {
       if (v >= 20)  return `${q.move_name} is ${q.answer} on hit — massive advantage`
       if (v <= -4)  return `${q.move_name} is ${q.answer} on hit — even unsafe on hit`
+    }
+    return null
+  }
+  if (mode === 'recovery') {
+    const r = parseInt(q.answer)
+    if (!isNaN(r)) {
+      if (r <= 10) return `${q.move_name} has only ${r}f recovery — lightning fast`
+      if (r >= 40) return `${q.move_name} has ${r}f recovery — lots of vulnerability after this move`
     }
     return null
   }

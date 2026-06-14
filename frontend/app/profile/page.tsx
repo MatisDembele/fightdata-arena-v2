@@ -26,11 +26,11 @@ interface LifetimeStats {
 }
 
 
-const QUIZ_MODES = ['random', 'fighter', 'input', 'punish', 'hardcore', 'survival', 'damage', 'onblock', 'custom', 'mistakes', 'flash']
+const QUIZ_MODES = ['random', 'fighter', 'input', 'punish', 'hardcore', 'survival', 'damage', 'onblock', 'onhit', 'custom', 'mistakes', 'flash', 'recovery']
 const MODE_LABEL: Record<string, string> = {
   random: 'RANDOM', fighter: 'FIGHTER', input: 'INPUT', punish: 'PUNISH', hardcore: 'HARDCORE',
-  survival: 'SURVIVAL', damage: 'DAMAGE', onblock: 'ON BLOCK', custom: 'CUSTOM', mistakes: 'ERROR BANK',
-  flash: 'FLASH',
+  survival: 'SURVIVAL', damage: 'DAMAGE', onblock: 'ON BLOCK', onhit: 'ON HIT', custom: 'CUSTOM',
+  mistakes: 'ERROR BANK', flash: 'FLASH', recovery: 'RECOVERY',
 }
 // Modes where the BEST column is not a session score but a highscore count
 const HIGHSCORE_MODES = new Set(['survival', 'flash'])

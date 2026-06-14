@@ -50,6 +50,14 @@ def random_onhit_question(db: Session = Depends(get_db)):
     return question
 
 
+@router.get("/random/recovery", response_model=QuizQuestion)
+def random_recovery_question(db: Session = Depends(get_db)):
+    question = quiz_service.generate_random_recovery_question(db)
+    if not question:
+        raise HTTPException(status_code=404, detail="Pas assez de données pour générer un quiz recovery")
+    return question
+
+
 @router.get("/weekly", response_model=list[QuizQuestion])
 def weekly_questions(db: Session = Depends(get_db)):
     from datetime import timedelta
