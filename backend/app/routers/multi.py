@@ -46,7 +46,7 @@ class Room:
         self.ready_players: set[str] = set()
         self.host: str = ""
         self.game_started: bool = False
-        self.rematch_votes: set[str] = set()
+        self.mode_votes: dict[str, str] = {}   # player → chosen mode
         self.timeout_task: Optional[asyncio.Task] = None
         self.lock = asyncio.Lock()
 
@@ -101,7 +101,7 @@ def _reset_room(room: Room):
     room.question_number = 0
     room.current_question = None
     room.question_sent_at = 0.0
-    room.rematch_votes = set()
+    room.mode_votes = {}
     room.ready_players = set()
     room.game_started = False
 

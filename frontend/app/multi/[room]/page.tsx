@@ -82,9 +82,9 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
   const [linkCopied, setLinkCopied]           = useState(false)
   const [error, setError]                     = useState('')
   const [gameMode, setGameMode]               = useState('startup')
-  const [rematchWaiting, setRematchWaiting]   = useState(false)
-  const [rematchVotes, setRematchVotes]       = useState(0)
-  const [rematchNeeded, setRematchNeeded]     = useState(0)
+  const [modeVotes, setModeVotes]     = useState<Record<string, number>>({})
+  const [playerVotes, setPlayerVotes] = useState<Record<string, string>>({})
+  const [myVote, setMyVote]           = useState<string | null>(null)
   const [newAchievements, setNewAchievements] = useState<Achievement[]>([])
   const [leftNote, setLeftNote]               = useState('')
   const [countdown, setCountdown]             = useState(0)
@@ -172,9 +172,9 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         setPhase('gameover')
       }
 
-      if (msg.type === 'rematch_requested') {
-        setRematchVotes(msg.votes ?? 1)
-        setRematchNeeded(msg.needed ?? 2)
+      if (msg.type === 'mode_vote_update') {
+        setModeVotes(msg.votes ?? {})
+        setPlayerVotes(msg.player_votes ?? {})
       }
 
       if (msg.type === 'rematch_start') {
@@ -188,8 +188,9 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         setPlayerAnswers({})
         setAnsweredCount(0)
         setQuestionNumber(0)
-        setRematchWaiting(false)
-        setRematchVotes(0)
+        setMyVote(null)
+        setModeVotes({})
+        setPlayerVotes({})
         if (msg.avatars) setAvatars(msg.avatars)
         if (msg.players) setPlayers(msg.players)
         if (msg.host) setHost(msg.host)
@@ -241,10 +242,10 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
     wsRef.current.send(JSON.stringify({ type: 'answer', value }))
   }
 
-  function sendRematch() {
-    if (!wsRef.current || rematchWaiting) return
-    setRematchWaiting(true)
-    wsRef.current.send(JSON.stringify({ type: 'rematch' }))
+  function sendVoteMode(mode: string) {
+    if (myVote || !wsRef.current) return
+    setMyVote(mode)
+    wsRef.current.send(JSON.stringify({ type: 'vote_mode', mode }))
   }
 
   function sendToggleReady() {
@@ -784,29 +785,58 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
             </div>
           )}
 
-          {/* Rematch */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center' }}>
-            {!rematchWaiting ? (
-              <button onClick={sendRematch} style={{ ...backBtnStyle, border: '1px solid #00f0ff', color: '#00f0ff', textShadow: '0 0 8px rgba(0,240,255,0.4)', padding: '12px 40px', fontSize: '1.1rem' }}>
-                {t('room.rematch')}
-              </button>
-            ) : (
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.35)', textAlign: 'center' }}>
-                {rematchVotes < rematchNeeded
-                  ? t('multi.rematch_votes', { n: rematchVotes, total: rematchNeeded })
-                  : t('room.rematch_waiting')
-                }
-              </div>
-            )}
-            {rematchVotes > 0 && !rematchWaiting && (
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: '#00f0ff', opacity: 0.6 }}>
-                {t('multi.rematch_votes', { n: rematchVotes, total: rematchNeeded })}
-              </div>
-            )}
-            <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
-              <button onClick={() => router.push('/multi')} style={backBtnStyle}>{t('room.lobby')}</button>
-              <button onClick={() => router.push('/')} style={{ ...backBtnStyle, border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.4)', textShadow: 'none' }}>{t('room.home')}</button>
+          {/* Mode vote for next game */}
+          <div style={{ width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.46rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.22)', textAlign: 'center' }}>
+              {myVote
+                ? t('multi.vote_count', { n: Object.keys(playerVotes).length, total: players.length })
+                : t('multi.vote_mode')}
             </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '7px' }}>
+              {MULTI_MODES.map(m => {
+                const count    = modeVotes[m.id] ?? 0
+                const isMyVote = myVote === m.id
+                const hasVotes = count > 0
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => sendVoteMode(m.id)}
+                    disabled={!!myVote}
+                    style={{
+                      position: 'relative', padding: '11px 6px',
+                      border: `1px solid ${isMyVote ? m.color : hasVotes ? `${m.color}44` : 'rgba(255,255,255,0.09)'}`,
+                      background: isMyVote ? `${m.color}18` : hasVotes ? `${m.color}08` : 'transparent',
+                      color: isMyVote ? m.color : hasVotes ? `${m.color}cc` : 'rgba(255,255,255,0.22)',
+                      fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '2px',
+                      cursor: myVote ? 'default' : 'pointer', transition: 'all 0.2s',
+                      textShadow: isMyVote ? `0 0 10px ${m.color}66` : 'none',
+                      boxShadow: isMyVote ? `0 0 12px ${m.color}22` : 'none',
+                    }}
+                  >
+                    {m.label}
+                    {hasVotes && (
+                      <span style={{
+                        position: 'absolute', top: '3px', right: '5px',
+                        fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem',
+                        color: isMyVote ? m.color : `${m.color}99`,
+                      }}>
+                        {count}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+            {myVote && (
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.44rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.18)', textAlign: 'center' }}>
+                {t('multi.vote_waiting')}
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button onClick={() => router.push('/multi')} style={backBtnStyle}>{t('room.lobby')}</button>
+            <button onClick={() => router.push('/')} style={{ ...backBtnStyle, border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.4)', textShadow: 'none' }}>{t('room.home')}</button>
           </div>
 
         </div>

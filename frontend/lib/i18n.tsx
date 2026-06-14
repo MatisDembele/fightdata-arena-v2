@@ -158,6 +158,9 @@ const en = {
   'multi.player_left_msg':    '{name} LEFT THE GAME',
   'multi.answered_count':     '{n}/{total} ANSWERED',
   'multi.rematch_votes':      '{n}/{total} WANT A REMATCH',
+  'multi.vote_mode':          'VOTE FOR THE NEXT MODE',
+  'multi.vote_count':         '{n}/{total} VOTED',
+  'multi.vote_waiting':       'Waiting for others...',
   'multi.slot_empty':         'OPEN',
   'multi.ready_count':        '{n}/{total} READY',
 
@@ -532,6 +535,9 @@ const fr: Record<DictKey, string> = {
   'multi.player_left_msg':   '{name} A QUITTÉ LA PARTIE',
   'multi.answered_count':    '{n}/{total} ONT RÉPONDU',
   'multi.rematch_votes':     '{n}/{total} VEULENT UNE REVANCHE',
+  'multi.vote_mode':         'VOTE POUR LE PROCHAIN MODE',
+  'multi.vote_count':        '{n}/{total} ONT VOTÉ',
+  'multi.vote_waiting':      'En attente des autres...',
   'multi.slot_empty':        'LIBRE',
   'multi.ready_count':       '{n}/{total} PRÊTS',
 

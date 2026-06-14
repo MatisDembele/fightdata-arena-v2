@@ -244,20 +244,35 @@ async def websocket_endpoint(
                     await asyncio.sleep(3.5)
                     await _next_question(room, db)
 
-            elif data.get("type") == "rematch":
+            elif data.get("type") == "vote_mode":
+                chosen = data.get("mode", "startup")
+                if chosen not in GAME_MODES:
+                    continue
                 all_voted = False
                 async with room.lock:
-                    room.rematch_votes.add(player_name)
-                    all_voted = len(room.rematch_votes) == len(room.players)
+                    room.mode_votes[player_name] = chosen
+                    all_voted = len(room.mode_votes) >= len(room.players)
+
+                # Tally votes per mode
+                vote_counts = {m: 0 for m in GAME_MODES}
+                for v in room.mode_votes.values():
+                    if v in vote_counts:
+                        vote_counts[v] += 1
 
                 if not all_voted:
                     await _broadcast(room, {
-                        "type": "rematch_requested",
-                        "player": player_name,
-                        "votes": len(room.rematch_votes),
-                        "needed": len(room.players),
+                        "type": "mode_vote_update",
+                        "votes": vote_counts,
+                        "player_votes": dict(room.mode_votes),
+                        "voted": len(room.mode_votes),
+                        "total": len(room.players),
                     })
                 else:
+                    # Pick winner — random on tie
+                    import random as _rand
+                    max_v = max(vote_counts.values())
+                    winners = [m for m, c in vote_counts.items() if c == max_v]
+                    room.game_mode = _rand.choice(winners)
                     _reset_room(room)
                     await _broadcast(room, {
                         "type": "rematch_start",
