@@ -21,9 +21,13 @@ class SyncPayload(BaseModel):
 
 
 @router.get("/discord/callback")
-async def discord_callback(code: str, db: Session = Depends(get_db)):
+async def discord_callback(code: str, redirect_uri: Optional[str] = None, db: Session = Depends(get_db)):
     if not settings.DISCORD_CLIENT_ID or not settings.DISCORD_CLIENT_SECRET:
         raise HTTPException(503, "Discord OAuth non configuré")
+
+    # Use the redirect_uri passed by the frontend (mirrors the one used in the authorize URL)
+    # Fall back to the env setting if not provided
+    actual_redirect_uri = redirect_uri or settings.DISCORD_REDIRECT_URI
 
     async with httpx.AsyncClient() as client:
         # Exchange authorization code for access token
@@ -34,7 +38,7 @@ async def discord_callback(code: str, db: Session = Depends(get_db)):
                 "client_secret": settings.DISCORD_CLIENT_SECRET,
                 "grant_type": "authorization_code",
                 "code": code,
-                "redirect_uri": settings.DISCORD_REDIRECT_URI,
+                "redirect_uri": actual_redirect_uri,
             },
             headers={"Content-Type": "application/x-www-form-urlencoded"},
             timeout=10.0,
