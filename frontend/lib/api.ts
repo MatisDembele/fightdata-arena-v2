@@ -178,6 +178,26 @@ export async function getFlashLeaderboard(): Promise<FlashLeaderboardEntry[]> {
   return cachedGet<FlashLeaderboardEntry[]>('flash_lb', `${API_URL}/api/flash/leaderboard`)
 }
 
+export interface SurvivalLeaderboardEntry {
+  rank: number
+  player_name: string
+  best_score: number
+}
+
+export async function submitSurvivalScore(player_name: string, best_score: number) {
+  const res = await fetch(`${API_URL}/api/survival/score`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ player_name, best_score }),
+  })
+  if (!res.ok) throw new Error('Erreur submit survival score')
+  return res.json()
+}
+
+export async function getSurvivalLeaderboard(): Promise<SurvivalLeaderboardEntry[]> {
+  return cachedGet<SurvivalLeaderboardEntry[]>('survival_lb', `${API_URL}/api/survival/leaderboard`)
+}
+
 export async function getSeededQuiz(seed: string, n = 10): Promise<QuizQuestion[]> {
   const res = await fetch(`${API_URL}/api/quiz/seeded?seed=${encodeURIComponent(seed)}&n=${n}`)
   if (!res.ok) throw new Error('Erreur seeded quiz')

@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
-import { getRandomQuiz, getFighterQuiz, getRandomPunish, getRandomDamage, getRandomOnBlock, getRandomOnHit, getRandomRecovery, submitGlobalScore } from '@/lib/api'
+import { getRandomQuiz, getFighterQuiz, getRandomPunish, getRandomDamage, getRandomOnBlock, getRandomOnHit, getRandomRecovery, submitGlobalScore, submitSurvivalScore, getSurvivalLeaderboard, invalidateLeaderboardCache, type SurvivalLeaderboardEntry } from '@/lib/api'
 import { playCorrect, playWrong, getSoundEnabled, toggleSound } from '@/lib/sounds'
 import { checkAndUnlock, updateLifetime, RARITY_COLOR, type Achievement, type LifetimeDelta } from '@/lib/achievements'
 import type { QuizQuestion } from '@/types'
@@ -51,6 +51,8 @@ function QuizPlay() {
   const [bestRecord, setBestRecord]       = useState<{ bestScore: number; bestAccuracy: number } | null>(null)
   const historyRef                        = useRef<HistoryEntry[]>([])
   const [showReview, setShowReview]       = useState(false)
+  const [survivalLb,    setSurvivalLb]   = useState<SurvivalLeaderboardEntry[]>([])
+  const [survivalPseudo,setSurvivalPseudo]= useState('')
 
   const isHardcore  = mode === 'hardcore'
   const isInput     = mode === 'input'
@@ -253,6 +255,16 @@ function QuizPlay() {
     if (total > 0) {
       const pseudo = localStorage.getItem('fda_pseudo')?.trim()
       if (pseudo) submitGlobalScore(pseudo, score, total).catch(() => {})
+    }
+    // Survival leaderboard
+    if (isSurvival) {
+      const pseudo = localStorage.getItem('fda_pseudo')?.trim() || ''
+      setSurvivalPseudo(pseudo)
+      if (pseudo) {
+        invalidateLeaderboardCache('survival_lb')
+        submitSurvivalScore(pseudo, score).catch(() => {})
+      }
+      getSurvivalLeaderboard().then(setSurvivalLb).catch(() => {})
     }
     // Save session to history (last 30)
     if (total > 0) {
@@ -669,6 +681,39 @@ function QuizPlay() {
               </div>
 
               {newAchievements.length > 0 && <AchievementToast achievements={newAchievements} label={t('play.achievement_unlocked')} />}
+
+              {/* Survival leaderboard */}
+              {survivalLb.length > 0 && (
+                <div style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(74,222,128,0.15)' }}>
+                  <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(74,222,128,0.1)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '4px', color: modeColor }}>SURVIVAL LEADERBOARD</span>
+                    {!survivalPseudo && (
+                      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.4rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.2)' }}>— set a name on the Stats page to appear here</span>
+                    )}
+                  </div>
+                  {survivalLb.map((entry) => {
+                    const isMe = survivalPseudo && entry.player_name.toLowerCase() === survivalPseudo.toLowerCase()
+                    return (
+                      <div key={entry.rank} style={{
+                        display: 'flex', alignItems: 'center', gap: '12px',
+                        padding: '8px 16px',
+                        background: isMe ? `${modeColor}12` : 'transparent',
+                        borderBottom: '1px solid rgba(255,255,255,0.03)',
+                      }}>
+                        <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '2px', color: entry.rank <= 3 ? modeColor : 'rgba(255,255,255,0.2)', minWidth: '20px' }}>
+                          {entry.rank <= 3 ? ['🥇','🥈','🥉'][entry.rank - 1] : `#${entry.rank}`}
+                        </span>
+                        <span style={{ flex: 1, fontFamily: "'Rajdhani', sans-serif", fontSize: '0.85rem', fontWeight: isMe ? 700 : 500, color: isMe ? '#fff' : 'rgba(255,255,255,0.5)', textAlign: 'left' }}>
+                          {entry.player_name}
+                        </span>
+                        <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '2px', color: isMe ? modeColor : 'rgba(255,255,255,0.35)' }}>
+                          {entry.best_score}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
 
               <ReviewSection history={historyRef.current} show={showReview} onToggle={() => setShowReview(v => !v)} modeColor={modeColor} mode={mode} t={t as (k: string, v?: Record<string, string | number>) => string} />
 
