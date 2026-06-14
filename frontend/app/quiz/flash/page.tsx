@@ -6,7 +6,8 @@ import { getRandomQuiz, submitFlashScore, getFlashLeaderboard, invalidateLeaderb
 import { playCorrect, playWrong } from '@/lib/sounds'
 import { GifSection, makeChoiceStyle } from '@/components/QuestionCard'
 import { useLanguage } from '@/lib/i18n'
-import { checkAndUnlock, updateLifetime } from '@/lib/achievements'
+import { checkAndUnlock, updateLifetime, type Achievement } from '@/lib/achievements'
+import AchievementToast from '@/components/AchievementToast'
 import type { QuizQuestion } from '@/types'
 
 const COLOR     = '#e879f9'
@@ -51,6 +52,8 @@ export default function FlashPage() {
   const [newRecord, setNewRecord]     = useState(false)
   const [flashLb, setFlashLb]         = useState<FlashLeaderboardEntry[]>([])
   const [flashPseudo, setFlashPseudo] = useState('')
+  const [newAchievements, setNewAchievements] = useState<Achievement[]>([])
+  function dismissAchievement(id: string) { setNewAchievements(prev => prev.filter(a => a.id !== id)) }
 
   // Mutable refs so async/timer callbacks always see fresh values
   const livesRef     = useRef(LIVES)
@@ -118,7 +121,8 @@ export default function FlashPage() {
     } catch { /* ignore */ }
     try {
       updateLifetime({ questions: totalRef.current, totalCorrect: finalScore })
-      checkAndUnlock({ mode: 'flash', flashScore: finalScore })
+      const newly = checkAndUnlock({ mode: 'flash', flashScore: finalScore })
+      if (newly.length > 0) setNewAchievements(newly)
     } catch { /* ignore */ }
     setPhase('finished')
   }
@@ -302,6 +306,7 @@ export default function FlashPage() {
     return (
       <>
         <Navbar />
+        <AchievementToast achievements={newAchievements} onDismiss={dismissAchievement} />
         <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', minHeight: 'calc(100vh - 60px)' }}>
           <div className="animate-fadeInUp" style={{ width: '100%', maxWidth: isDesktop ? '620px' : '420px', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center', textAlign: 'center' }}>
 

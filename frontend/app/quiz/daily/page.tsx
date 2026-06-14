@@ -9,7 +9,8 @@ import { track } from '@vercel/analytics'
 import { useLanguage } from '@/lib/i18n'
 import QuestionCard, { makeChoiceStyle } from '@/components/QuestionCard'
 import { playCorrect, playWrong } from '@/lib/sounds'
-import { checkAndUnlock, updateLifetime, RARITY_COLOR, type Achievement } from '@/lib/achievements'
+import { checkAndUnlock, updateLifetime, type Achievement } from '@/lib/achievements'
+import AchievementToast from '@/components/AchievementToast'
 
 const COLOR     = '#00ff88'
 const COLOR_ALT = '#00b894'
@@ -109,6 +110,7 @@ function DailyPage() {
   const [lbSubmitted, setLbSubmitted]     = useState(false)
   const [lbSubmitting, setLbSubmitting]   = useState(false)
   const [newAchievements, setNewAchievements] = useState<Achievement[]>([])
+  function dismissAchievement(id: string) { setNewAchievements(prev => prev.filter(a => a.id !== id)) }
   const answersRef   = useRef<boolean[]>([])
   const startTimeRef = useRef<number>(0)
   const elapsedRef   = useRef<number | null>(null)
@@ -373,26 +375,7 @@ function DailyPage() {
             {copied ? t('daily.copied') : t('daily.copy_result')}
           </button>
 
-          {newAchievements.length > 0 && (
-            <div style={{ width: '100%', padding: '14px 16px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '4px', color: '#f59e0b' }}>
-                {t('play.achievement_unlocked')}
-              </div>
-              {newAchievements.map(a => (
-                <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ fontSize: '1.3rem', lineHeight: 1 }}>{a.icon}</div>
-                  <div>
-                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '2px', color: RARITY_COLOR[a.rarity] }}>
-                      {a.name}
-                    </div>
-                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.35)', marginTop: '2px' }}>
-                      {a.desc}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <AchievementToast achievements={newAchievements} onDismiss={dismissAchievement} />
 
           {/* Leaderboard */}
           <div style={{ width: '100%', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
