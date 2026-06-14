@@ -134,9 +134,8 @@ function QuizPlay() {
       const q = await fetchUnique()
       if (prefetchTokenRef.current === myToken) {
         nextQuestionRef.current = q
-        const gifSrc = q.gif_path
-          ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/${q.gif_path}`
-          : q.gif_url
+        const gifSrc = q.gif_url
+          || (q.gif_path ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/${q.gif_path}` : undefined)
         if (gifSrc) {
           const img = new Image()
           img.src = gifSrc

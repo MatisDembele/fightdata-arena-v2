@@ -86,9 +86,8 @@ function WeeklyPage() {
 
   useEffect(() => {
     const next = questions[idx + 1]
-    const gifSrc = next?.gif_path
-      ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/${next.gif_path}`
-      : next?.gif_url
+    const gifSrc = next?.gif_url
+      || (next?.gif_path ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/${next.gif_path}` : undefined)
     if (gifSrc) {
       const img = new Image()
       img.src = gifSrc

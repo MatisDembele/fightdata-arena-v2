@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { useLanguage } from '@/lib/i18n'
+import Footer from '@/components/Footer'
 
 export default function Home() {
   const [active, setActive] = useState(0)
@@ -49,6 +50,7 @@ export default function Home() {
   const current = MODES[active]
 
   return (
+    <>
     <div style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
 
       {/* Lang toggle */}
@@ -267,5 +269,7 @@ export default function Home() {
 
       </div>
     </div>
+    <Footer />
+    </>
   )
 }

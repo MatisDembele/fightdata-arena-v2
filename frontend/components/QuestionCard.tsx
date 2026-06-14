@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { ReactNode, CSSProperties } from 'react'
 
 export function makeChoiceStyle(
@@ -35,10 +35,19 @@ interface GifSectionProps {
 }
 
 export function GifSection({ gifUrl, gifPath, moveName, color, fallback = 'HITBOX PREVIEW' }: GifSectionProps) {
-  const src = gifPath ? `${API_URL}/${gifPath}` : gifUrl
+  // gif_url (CDN/prod URL) takes priority; gif_path is the local API fallback
+  const src = gifUrl || (gifPath ? `${API_URL}/${gifPath}` : undefined)
+  const imgRef = useRef<HTMLImageElement>(null)
   const [loaded, setLoaded] = useState(false)
 
-  useEffect(() => { setLoaded(false) }, [src])
+  useEffect(() => {
+    // Skip skeleton if image is already in browser cache
+    if (imgRef.current?.complete && imgRef.current.naturalWidth > 0) {
+      setLoaded(true)
+    } else {
+      setLoaded(false)
+    }
+  }, [src])
 
   const corners: CSSProperties[] = [
     { top: '7px', left: '7px', borderTop: `1px solid ${color}`, borderLeft: `1px solid ${color}` },
@@ -59,6 +68,7 @@ export function GifSection({ gifUrl, gifPath, moveName, color, fallback = 'HITBO
             }} />
           )}
           <img
+            ref={imgRef}
             src={src}
             alt={moveName}
             fetchPriority="high"

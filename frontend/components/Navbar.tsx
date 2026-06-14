@@ -17,12 +17,12 @@ export default function Navbar() {
     }
   }, [])
 
-  const links: { href: string; label: string; external?: boolean }[] = [
-    { href: '/',            label: t('nav.home') },
-    { href: '/quiz',        label: 'QUIZ' },
-    { href: '/challenges',  label: 'CHALLENGES' },
-    { href: '/multi',       label: 'MULTI' },
-    { href: '/profile',     label: t('nav.profile') },
+  const links: { href: string; label: string; color: string; external?: boolean }[] = [
+    { href: '/',            label: t('nav.home'),   color: 'var(--yellow)' },
+    { href: '/quiz',        label: 'QUIZ',          color: '#ff2d78' },
+    { href: '/challenges',  label: 'CHALLENGES',    color: '#00ff88' },
+    { href: '/multi',       label: 'MULTI',         color: '#ffe000' },
+    { href: '/profile',     label: t('nav.profile'), color: '#c084fc' },
   ]
 
   return (
@@ -83,30 +83,30 @@ export default function Navbar() {
           const extraProps = link.external
             ? { href: link.href, target: '_blank', rel: 'noopener noreferrer' }
             : { href: link.href }
+          const c = link.color
           return (
             <Tag
               key={link.href}
               {...extraProps}
               className={`nav-item${isActive ? ' active' : ''}`}
             >
-              {/* Active background */}
               {isActive && (
                 <div style={{
                   position: 'absolute', inset: 0,
-                  background: 'linear-gradient(180deg, rgba(255,224,0,0.1) 0%, rgba(255,224,0,0.03) 100%)',
+                  background: `linear-gradient(180deg, ${c}18 0%, ${c}06 100%)`,
                 }} />
               )}
-              {/* Active bottom bar */}
               {isActive && (
                 <div style={{
                   position: 'absolute', bottom: 0, left: 0, right: 0, height: '2px',
-                  background: 'var(--yellow)',
-                  boxShadow: '0 0 10px var(--yellow), 0 0 20px rgba(255,224,0,0.4)',
+                  background: c,
+                  boxShadow: `0 0 10px ${c}, 0 0 20px ${c}66`,
                 }} />
               )}
               <span style={{
                 position: 'relative', zIndex: 1,
-                textShadow: isActive ? '0 0 12px rgba(255,224,0,0.6)' : 'none',
+                color: isActive ? c : undefined,
+                textShadow: isActive ? `0 0 12px ${c}99` : 'none',
               }}>{link.label}</span>
             </Tag>
           )

@@ -1,9 +1,9 @@
 import asyncio
 import time
 from pathlib import Path
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from app.database import Base, engine, SessionLocal
 from app.routers import fighters, quiz, multi, daily, weekly, global_lb, flash, survival
@@ -42,8 +42,20 @@ app.add_middleware(
 )
 
 _GIF_DIR = Path(__file__).parent.parent.parent / "data" / "gifs"
-if _GIF_DIR.exists():
-    app.mount("/gifs", StaticFiles(directory=str(_GIF_DIR)), name="gifs")
+
+
+@app.get("/gifs/{path:path}")
+async def serve_gif(path: str):
+    file_path = (_GIF_DIR / path).resolve()
+    if not str(file_path).startswith(str(_GIF_DIR.resolve())):
+        raise HTTPException(status_code=403)
+    if not file_path.exists() or not file_path.is_file():
+        raise HTTPException(status_code=404)
+    return FileResponse(
+        str(file_path),
+        media_type="image/gif",
+        headers={"Cache-Control": "public, max-age=31536000, immutable"},
+    )
 
 app.include_router(fighters.router, prefix="/api")
 app.include_router(quiz.router, prefix="/api")

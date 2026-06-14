@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import Script from 'next/script'
 import { Analytics } from '@vercel/analytics/react'
 import Providers from '@/components/Providers'
-import Footer from '@/components/Footer'
 import FrameGuide from '@/components/FrameGuide'
 import './globals.css'
 
@@ -42,11 +41,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="sf6-bg" />
         <div className="sf6-grid" />
         <Providers>
-          <div style={{ position: 'relative', zIndex: 10, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ flex: 1 }}>
-              {children}
-            </div>
-            <Footer />
+          <div style={{ position: 'relative', zIndex: 10, minHeight: '100vh' }}>
+            {children}
           </div>
           <FrameGuide />
         </Providers>
