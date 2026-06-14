@@ -629,7 +629,7 @@ function QuizPlay() {
           fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '3px',
           cursor: 'pointer', transition: 'all 0.3s',
         }}>{copied ? t('play.copied') : t('play.share')}</button>
-        <Link href="/stats" style={{
+        <Link href="/profile" style={{
           width: '100%', padding: '10px 12px',
           background: 'none', border: '1px solid rgba(255,255,255,0.07)',
           color: 'rgba(255,255,255,0.25)',

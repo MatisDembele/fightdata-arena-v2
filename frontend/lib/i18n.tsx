@@ -19,6 +19,8 @@ const en = {
   'home.daily_desc':       'Every day, 10 identical questions for everyone. Share your score with the community.',
   'home.challenges_sub':   'Daily & weekly challenges',
   'home.challenges_desc':  'Complete daily (10Q) and weekly (20Q) challenges shared by all players. Compete on leaderboards.',
+  'home.profile_sub':      'Your stats & progress',
+  'home.profile_desc':     'Lifetime accuracy, mode records, fighter heatmap, achievements and global rankings — all in one place.',
   'home.stat_chars': 'CHARS',
   'home.stat_moves': 'MOVES',
   'home.stat_modes': 'MODES',
@@ -305,7 +307,7 @@ const en = {
   'profile.no_history':   'No sessions yet — start playing!',
   'profile.by_mode':      'BY MODE',
   'profile.error_bank':   'ERROR BANK',
-  'profile.no_pseudo':    'Set your player name on the Stats page to appear on leaderboards.',
+  'profile.no_pseudo':    'Set your player name to appear on leaderboards.',
   'profile.mistakes_play': 'TRAIN MISTAKES →',
 } as const
 
@@ -328,6 +330,8 @@ const fr: Record<DictKey, string> = {
   'home.daily_desc':       'Chaque jour, 10 questions identiques pour tous. Partage ton score avec la communauté.',
   'home.challenges_sub':   'Défis quotidiens & hebdomadaires',
   'home.challenges_desc':  'Complète les défis daily (10Q) et weekly (20Q) partagés par tous les joueurs. Vise les leaderboards.',
+  'home.profile_sub':      'Tes stats & progression',
+  'home.profile_desc':     'Précision à vie, records par mode, heatmap fighters, succès et classement mondial — tout en un.',
   'home.stat_chars': 'PERSOS',
   'home.stat_moves': 'MOVES',
   'home.stat_modes': 'MODES',
@@ -614,7 +618,7 @@ const fr: Record<DictKey, string> = {
   'profile.no_history':   'Aucune session — commence à jouer !',
   'profile.by_mode':      'PAR MODE',
   'profile.error_bank':   'BANQUE D\'ERREURS',
-  'profile.no_pseudo':    'Définis ton pseudo sur la page Stats pour apparaître dans les classements.',
+  'profile.no_pseudo':    'Définis ton pseudo pour apparaître dans les classements.',
   'profile.mistakes_play': 'ENTRAÎNER LES ERREURS →',
 }
 

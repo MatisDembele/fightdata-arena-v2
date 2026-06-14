@@ -32,6 +32,12 @@ export default function Home() {
       color: '#00ff88', colorAlt: '#00b894',
       desc: t('home.challenges_desc'),
     },
+    {
+      id: 'profile', label: 'PROFILE', sub: t('home.profile_sub'),
+      href: '/profile', external: false,
+      color: '#ffd700', colorAlt: '#ff6a00',
+      desc: t('home.profile_desc'),
+    },
   ]
 
   const STATS = [
