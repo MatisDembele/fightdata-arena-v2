@@ -868,9 +868,11 @@ function QuizPlay() {
           </div>
         ) : question && (
           <div style={{
-            width: '100%', maxWidth: isDesktop ? '760px' : '500px',
+            width: '100%', maxWidth: isDesktop ? '900px' : '500px',
             background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(16px)',
             border: '1px solid rgba(255,255,255,0.08)',
+            display: isDesktop ? 'grid' : undefined,
+            gridTemplateColumns: isDesktop ? '45% 55%' : undefined,
           }}>
 
             {/* Header */}
@@ -879,6 +881,7 @@ function QuizPlay() {
               background: `${modeColor}12`,
               borderBottom: `1px solid ${modeColor}28`,
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              gridColumn: isDesktop ? '1 / -1' : undefined,
             }}>
               <span style={{
                 fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '4px',
@@ -902,7 +905,7 @@ function QuizPlay() {
 
             {/* Timer bar hardcore */}
             {isHardcore && state === 'idle' && (
-              <div style={{ height: '2px', background: 'rgba(255,255,255,0.08)' }}>
+              <div style={{ height: '2px', background: 'rgba(255,255,255,0.08)', gridColumn: isDesktop ? '1 / -1' : undefined }}>
                 <div style={{
                   height: '100%', width: `${(timeLeft / 5) * 100}%`,
                   background: timeLeft <= 2 ? '#ff2d78' : '#ffe000',
@@ -914,6 +917,9 @@ function QuizPlay() {
 
             {/* GIF */}
             <GifSection gifUrl={question.gif_url} gifPath={question.gif_path} moveName={question.move_name} color={modeColor} fallback={t('play.hitbox_preview')} />
+
+            {/* Right column on desktop: question + choices + feedback */}
+            <div style={isDesktop ? { display: 'flex', flexDirection: 'column', borderLeft: '1px solid rgba(255,255,255,0.06)' } : undefined}>
 
             {/* Question */}
             <div style={{ padding: '16px 18px 12px' }}>
@@ -1129,6 +1135,8 @@ function QuizPlay() {
                   : t('play.next_question')}
               </button>
             </div>
+
+            </div>{/* end right column */}
 
           </div>
         )}

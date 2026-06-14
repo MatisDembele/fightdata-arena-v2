@@ -419,7 +419,7 @@ export default function FlashPage() {
         </div>
 
         {/* Timer bar */}
-        <div style={{ width: '100%', maxWidth: isDesktop ? '760px' : '500px', height: '4px', background: 'rgba(255,255,255,0.08)', marginBottom: '14px' }}>
+        <div style={{ width: '100%', maxWidth: isDesktop ? '900px' : '500px', height: '4px', background: 'rgba(255,255,255,0.08)', marginBottom: '14px' }}>
           <div style={{
             height: '100%',
             width: `${timeLeft * 100}%`,
@@ -430,14 +430,17 @@ export default function FlashPage() {
         </div>
 
         {/* Question card */}
-        <div style={{ width: '100%', maxWidth: isDesktop ? '760px' : '500px', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(16px)', border: `1px solid ${answerState === 'correct' ? '#4ade8044' : answerState === 'wrong' ? '#ff2d7844' : 'rgba(255,255,255,0.08)'}`, transition: 'border-color 0.2s' }}>
+        <div style={{ width: '100%', maxWidth: isDesktop ? '900px' : '500px', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(16px)', border: `1px solid ${answerState === 'correct' ? '#4ade8044' : answerState === 'wrong' ? '#ff2d7844' : 'rgba(255,255,255,0.08)'}`, transition: 'border-color 0.2s', display: isDesktop ? 'grid' : undefined, gridTemplateColumns: isDesktop ? '45% 55%' : undefined }}>
 
-          <div style={{ padding: '11px 18px', background: `${COLOR}12`, borderBottom: `1px solid ${COLOR}28`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ padding: '11px 18px', background: `${COLOR}12`, borderBottom: `1px solid ${COLOR}28`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gridColumn: isDesktop ? '1 / -1' : undefined }}>
             <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '4px', background: `linear-gradient(90deg, ${COLOR}, ${COLOR_ALT})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>FLASH</span>
             <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '2px', color: COLOR, textTransform: 'uppercase' }}>{question.fighter_slug}</span>
           </div>
 
           <GifSection gifUrl={question.gif_url} gifPath={question.gif_path} moveName={question.move_name} color={COLOR} />
+
+          {/* Right column on desktop */}
+          <div style={isDesktop ? { display: 'flex', flexDirection: 'column', borderLeft: '1px solid rgba(255,255,255,0.06)' } : undefined}>
 
           <div style={{ padding: '16px 18px 12px' }}>
             <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1rem', fontWeight: 600, lineHeight: 1.4, color: 'rgba(255,255,255,0.9)', margin: 0 }}>
@@ -466,6 +469,8 @@ export default function FlashPage() {
               </div>
             </div>
           )}
+
+          </div>{/* end right column */}
         </div>
 
         <Link href="/quiz" style={{ marginTop: '16px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
