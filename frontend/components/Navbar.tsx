@@ -24,6 +24,14 @@ export default function Navbar() {
     { href: '/profile',    label: t('nav.profile'), color: '#c084fc', colorAlt: '#7c3aed' },
   ]
 
+  const activeLink = links.find(link =>
+    !link.external && (
+      path === link.href ||
+      (link.href !== '/' && path.startsWith(link.href))
+    )
+  ) ?? links[0]
+  const { color: logoColor, colorAlt: logoColorAlt } = activeLink
+
   return (
     <nav className="navbar" style={{
       display: 'flex', alignItems: 'stretch',
@@ -54,15 +62,18 @@ export default function Navbar() {
       }}>
         <div style={{
           width: '3px', height: '28px', flexShrink: 0,
-          background: 'linear-gradient(180deg, var(--pink), var(--purple))',
-          boxShadow: '0 0 10px var(--pink)',
+          background: `linear-gradient(180deg, ${logoColor}, ${logoColorAlt})`,
+          boxShadow: `0 0 10px ${logoColor}`,
+          transition: 'all 0.5s',
         }} />
         <span style={{
           fontFamily: "'Bebas Neue', sans-serif",
           fontSize: 'clamp(0.9rem, 2.5vw, 1.15rem)',
           letterSpacing: 'clamp(2px, 0.8vw, 4px)',
           color: '#fff',
-          textShadow: '0 0 6px rgba(255,255,255,0.15)',
+          textShadow: `0 0 10px ${logoColor}, 0 0 24px ${logoColor}88, 0 0 40px ${logoColorAlt}44`,
+          WebkitTextStroke: `1px ${logoColor}33`,
+          transition: 'text-shadow 0.5s',
         }}>FIGHT DATA ARENA</span>
       </Link>
 
