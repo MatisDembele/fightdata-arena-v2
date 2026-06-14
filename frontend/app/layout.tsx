@@ -14,6 +14,16 @@ export const metadata: Metadata = {
   description: 'Street Fighter 6 frame data quiz. Guess startup, damage, and on-block values for every character.',
   keywords: 'Street Fighter 6, frame data, quiz, startup, SF6, fighting game',
   manifest: '/manifest.json',
+  icons: {
+    icon: [
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon.ico', sizes: '48x48' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
   openGraph: {
     title: 'Fight Data Arena — SF6 Frame Data Quiz',
     description: 'Street Fighter 6 frame data quiz. Guess startup, damage, and on-block values.',
