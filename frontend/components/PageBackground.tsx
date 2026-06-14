@@ -21,18 +21,34 @@ export default function PageBackground() {
   const { color, colorAlt } = entry
 
   return (
-    <div
-      key={color}
-      style={{
+    <>
+      {/* Gradient horizontal coloré — même style que la bande centrale de l'accueil */}
+      <div
+        key={color}
+        style={{
+          position: 'fixed', inset: 0, zIndex: 0,
+          background: `linear-gradient(90deg, ${colorAlt}30, ${color}20, ${colorAlt}30)`,
+          animation: 'fadeIn 0.35s ease',
+        }}
+      />
+      {/* Diagonales */}
+      <div style={{
         position: 'fixed', inset: 0, zIndex: 0,
-        background: `
-          radial-gradient(ellipse 100% 80% at 50% 100%, ${color}20 0%, transparent 60%),
-          radial-gradient(ellipse 80% 60% at 15% 50%, ${colorAlt}30 0%, transparent 55%),
-          radial-gradient(ellipse 70% 70% at 85% 30%, ${color}20 0%, transparent 55%),
-          linear-gradient(160deg, #0d0010 0%, #1a0030 50%, #0d0015 100%)
-        `,
-        animation: 'fadeIn 0.35s ease',
-      }}
-    />
+        background: 'repeating-linear-gradient(-55deg, transparent, transparent 20px, rgba(255,255,255,0.015) 20px, rgba(255,255,255,0.015) 21px)',
+        pointerEvents: 'none',
+      }} />
+      {/* Ligne lumineuse haute */}
+      <div style={{
+        position: 'fixed', top: 0, left: 0, right: 0, height: '2px', zIndex: 2,
+        background: `linear-gradient(90deg, transparent, ${color}, ${colorAlt}, transparent)`,
+        boxShadow: `0 0 16px ${color}`,
+      }} />
+      {/* Ligne lumineuse basse */}
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0, height: '2px', zIndex: 2,
+        background: `linear-gradient(90deg, transparent, ${colorAlt}, ${color}, transparent)`,
+        boxShadow: `0 0 16px ${colorAlt}`,
+      }} />
+    </>
   )
 }
