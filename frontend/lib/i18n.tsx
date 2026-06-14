@@ -309,6 +309,24 @@ const en = {
   'profile.error_bank':   'ERROR BANK',
   'profile.no_pseudo':    'Set your player name to appear on leaderboards.',
   'profile.mistakes_play': 'TRAIN MISTAKES →',
+  // frame guide
+  'guide.title':         'FRAME DATA GUIDE',
+  'guide.subtitle':      'How to read frame data',
+  'guide.example':       'EX. — MEDIUM KICK, ON BLOCK',
+  'guide.startup_desc':  'Frames before the move can hit. Opponent can interrupt if their move is faster.',
+  'guide.active_desc':   'Frames where the move is active and can hit or be blocked.',
+  'guide.recovery_desc': 'Frames after the move ends. You cannot act — you are vulnerable.',
+  'guide.punishable':    '−6 ON BLOCK → PUNISHABLE',
+  'guide.on_block':      'ON BLOCK',
+  'guide.on_block_desc': 'Frame advantage when blocked. Negative = opponent recovers first = you can be punished.',
+  'guide.on_hit':        'ON HIT',
+  'guide.on_hit_desc':   'Frame advantage when the move connects. Positive = you recover first = combo opportunity.',
+  'guide.punish':        'PUNISH',
+  'guide.punish_desc':   'Attacking an opponent during their recovery frames. Only possible if you are +X or they are −X.',
+  'guide.plus':          'PLUS (+)',
+  'guide.plus_desc':     'You recover before your opponent — you get to move, attack, or pressure first.',
+  'guide.minus':         'MINUS (−)',
+  'guide.minus_desc':    'You recover after your opponent — they can act first. Large negatives are punishable.',
 } as const
 
 type DictKey = keyof typeof en
@@ -620,6 +638,24 @@ const fr: Record<DictKey, string> = {
   'profile.error_bank':   'BANQUE D\'ERREURS',
   'profile.no_pseudo':    'Définis ton pseudo pour apparaître dans les classements.',
   'profile.mistakes_play': 'ENTRAÎNER LES ERREURS →',
+  // frame guide
+  'guide.title':         'GUIDE FRAME DATA',
+  'guide.subtitle':      'Comment lire le frame data',
+  'guide.example':       'EX. — COUP MOYEN, AU BLOCAGE',
+  'guide.startup_desc':  "Frames avant que le coup soit actif. L'adversaire peut interrompre si son coup est plus rapide.",
+  'guide.active_desc':   'Frames pendant lesquelles le coup peut toucher ou être bloqué.',
+  'guide.recovery_desc': 'Frames après le coup. Tu ne peux pas agir — tu es vulnérable.',
+  'guide.punishable':    '−6 AU BLOCAGE → PUNISSABLE',
+  'guide.on_block':      'AU BLOCAGE',
+  'guide.on_block_desc': "Avantage en frames si le coup est bloqué. Négatif = l'adversaire récupère en premier = tu peux être puni.",
+  'guide.on_hit':        'AU TOUCHER',
+  'guide.on_hit_desc':   "Avantage en frames si le coup touche. Positif = tu récupères en premier = opportunité de combo.",
+  'guide.punish':        'PUNIR',
+  'guide.punish_desc':   "Attaquer pendant les frames de recovery adverse. Possible seulement si tu es +X ou lui est −X.",
+  'guide.plus':          'PLUS (+)',
+  'guide.plus_desc':     "Tu récupères avant l'adversaire — tu agis, attaques ou presses en premier.",
+  'guide.minus':         'MINUS (−)',
+  'guide.minus_desc':    "Tu récupères après l'adversaire — il peut agir en premier. Les grands négatifs sont punissables.",
 }
 
 const dict: Record<string, Record<DictKey, string>> = { en, fr }

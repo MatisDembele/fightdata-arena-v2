@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Analytics } from '@vercel/analytics/react'
 import Providers from '@/components/Providers'
 import Footer from '@/components/Footer'
+import FrameGuide from '@/components/FrameGuide'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
             <Footer />
           </div>
+          <FrameGuide />
         </Providers>
         <Analytics />
       </body>
