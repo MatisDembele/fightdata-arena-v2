@@ -30,6 +30,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://ultimateframedata.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://ultimateframedata.com" />
+      </head>
       <body>
         <div className="sf6-bg" />
         <div className="sf6-grid" />

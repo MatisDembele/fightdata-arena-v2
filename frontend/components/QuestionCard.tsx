@@ -1,4 +1,5 @@
 'use client'
+import { useState, useEffect } from 'react'
 import type { ReactNode, CSSProperties } from 'react'
 
 export function makeChoiceStyle(
@@ -31,6 +32,10 @@ interface GifSectionProps {
 }
 
 export function GifSection({ gifUrl, moveName, color, fallback = 'HITBOX PREVIEW' }: GifSectionProps) {
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => { setLoaded(false) }, [gifUrl])
+
   const corners: CSSProperties[] = [
     { top: '7px', left: '7px', borderTop: `1px solid ${color}`, borderLeft: `1px solid ${color}` },
     { top: '7px', right: '7px', borderTop: `1px solid ${color}`, borderRight: `1px solid ${color}` },
@@ -39,10 +44,31 @@ export function GifSection({ gifUrl, moveName, color, fallback = 'HITBOX PREVIEW
   ]
   return (
     <div style={{ height: '180px', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
-      {gifUrl
-        ? <img src={gifUrl} alt={moveName} style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
-        : <span style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.15)', fontSize: '0.6rem', letterSpacing: '3px' }}>{fallback}</span>
-      }
+      {gifUrl ? (
+        <>
+          {!loaded && (
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.03) 75%)',
+              backgroundSize: '200% 100%',
+              animation: 'shimmer 1.4s infinite',
+            }} />
+          )}
+          <img
+            src={gifUrl}
+            alt={moveName}
+            fetchPriority="high"
+            onLoad={() => setLoaded(true)}
+            style={{
+              maxHeight: '100%', maxWidth: '100%', objectFit: 'contain',
+              opacity: loaded ? 1 : 0,
+              transition: 'opacity 0.25s ease',
+            }}
+          />
+        </>
+      ) : (
+        <span style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.15)', fontSize: '0.6rem', letterSpacing: '3px' }}>{fallback}</span>
+      )}
       {corners.map((s, i) => (
         <div key={i} style={{ position: 'absolute', width: '10px', height: '10px', ...s }} />
       ))}
