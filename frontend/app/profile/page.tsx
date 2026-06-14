@@ -32,8 +32,8 @@ const QUIZ_MODES = [
   'damage','onblock','onhit','recovery','custom','mistakes','flash',
 ]
 const MODE_LABEL: Record<string, string> = {
-  random:'RANDOM', fighter:'FIGHTER', input:'INPUT', punish:'PUNISH', hardcore:'HARDCORE',
-  survival:'SURVIVAL', damage:'DAMAGE', onblock:'ON BLOCK', onhit:'ON HIT',
+  random:'STARTUP', allrandom:'RANDOM', fighter:'FIGHTER', input:'INPUT', punish:'PUNISH',
+  hardcore:'HARDCORE', survival:'SURVIVAL', damage:'DAMAGE', onblock:'ON BLOCK', onhit:'ON HIT',
   recovery:'RECOVERY', custom:'CUSTOM', mistakes:'ERROR BANK', flash:'FLASH',
 }
 const HIGHSCORE_MODES = new Set(['survival', 'flash'])

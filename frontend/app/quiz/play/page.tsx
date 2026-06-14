@@ -73,16 +73,17 @@ function QuizPlay() {
   const [survivalLb,    setSurvivalLb]   = useState<SurvivalLeaderboardEntry[]>([])
   const [survivalPseudo,setSurvivalPseudo]= useState('')
 
-  const isHardcore  = mode === 'hardcore'
-  const isInput     = mode === 'input'
-  const isPunish    = mode === 'punish'
-  const isSurvival  = mode === 'survival'
-  const isDamage    = mode === 'damage'
-  const isOnBlock   = mode === 'onblock'
-  const isOnHit     = mode === 'onhit'
-  const isRecovery  = mode === 'recovery'
-  const isCustom    = mode === 'custom'
-  const isMistakes  = mode === 'mistakes'
+  const isHardcore   = mode === 'hardcore'
+  const isInput      = mode === 'input'
+  const isPunish     = mode === 'punish'
+  const isSurvival   = mode === 'survival'
+  const isDamage     = mode === 'damage'
+  const isOnBlock    = mode === 'onblock'
+  const isOnHit      = mode === 'onhit'
+  const isRecovery   = mode === 'recovery'
+  const isCustom     = mode === 'custom'
+  const isMistakes   = mode === 'mistakes'
+  const isAllRandom  = mode === 'allrandom'
 
   const [soundEnabled, setSoundEnabled] = useState(true)
   useEffect(() => { setSoundEnabled(getSoundEnabled()) }, [])
@@ -100,11 +101,15 @@ function QuizPlay() {
       if (entries.length === 0) throw new Error('no_mistakes')
       return entries[Math.floor(Math.random() * entries.length)].question
     }
+    if (isAllRandom) {
+      const fetchers = [getRandomQuiz, getRandomOnBlock, getRandomOnHit, getRandomRecovery, getRandomDamage]
+      return fetchers[Math.floor(Math.random() * fetchers.length)]()
+    }
     if (isOnBlock)  return getRandomOnBlock()
     if (isOnHit)    return getRandomOnHit()
     if (isRecovery) return getRandomRecovery()
-    if (isPunish) return getRandomPunish()
-    if (isDamage) return getRandomDamage()
+    if (isPunish)   return getRandomPunish()
+    if (isDamage)   return getRandomDamage()
     if (isCustom) {
       const customFighters = params.get('fighters')?.split(',').filter(Boolean) ?? []
       if (customFighters.length === 0) return getRandomQuiz()
@@ -113,7 +118,7 @@ function QuizPlay() {
     }
     if (mode === 'fighter' && slug) return getFighterQuiz(slug)
     return getRandomQuiz()
-  }, [mode, slug, isPunish, isDamage, isOnBlock, isOnHit, isRecovery, isCustom, isMistakes, params])
+  }, [mode, slug, isPunish, isDamage, isOnBlock, isOnHit, isRecovery, isCustom, isMistakes, isAllRandom, params])
 
   const fetchUnique = useCallback(async (): Promise<QuizQuestion> => {
     for (let i = 0; i < 4; i++) {
@@ -448,18 +453,19 @@ function QuizPlay() {
   }
 
   const modeLabel = {
-    random:   'RANDOM MODE',
-    fighter:  `FIGHTER // ${slug.toUpperCase()}`,
-    input:    'INPUT MODE',
-    punish:   'PUNISH FINDER',
-    hardcore: 'HARDCORE',
-    survival: t('play.mode_survival_label'),
-    damage:   'DAMAGE MODE',
-    onblock:  t('play.mode_onblock_label'),
-    onhit:    t('play.mode_onhit_label'),
-    recovery: t('play.mode_recovery_label'),
-    custom:   'CUSTOM MODE',
-    mistakes: t('play.mode_mistakes_label'),
+    random:    'STARTUP MODE',
+    allrandom: 'RANDOM MODE',
+    fighter:   `FIGHTER // ${slug.toUpperCase()}`,
+    input:     'INPUT MODE',
+    punish:    'PUNISH FINDER',
+    hardcore:  'HARDCORE',
+    survival:  t('play.mode_survival_label'),
+    damage:    'DAMAGE MODE',
+    onblock:   t('play.mode_onblock_label'),
+    onhit:     t('play.mode_onhit_label'),
+    recovery:  t('play.mode_recovery_label'),
+    custom:    'CUSTOM MODE',
+    mistakes:  t('play.mode_mistakes_label'),
   }[mode] ?? 'QUIZ'
 
   useEffect(() => {
@@ -504,17 +510,18 @@ function QuizPlay() {
     const LENGTHS = [10, 20, 30, 40, 50, Infinity] as number[]
     const TIME_EST: Record<number, string> = { 10: '~3 min', 20: '~6 min', 30: '~9 min', 40: '~12 min', 50: '~15 min' }
     const modeSub = ({
-      random:   t('quiz.mode_random_sub'),
-      fighter:  t('quiz.mode_fighter_sub'),
-      input:    t('quiz.mode_input_sub'),
-      punish:   t('quiz.mode_punish_sub'),
-      hardcore: t('quiz.mode_hardcore_sub'),
-      damage:   t('quiz.mode_damage_sub'),
-      onblock:  t('quiz.mode_onblock_sub'),
-      onhit:    t('quiz.mode_onhit_sub'),
-      recovery: t('quiz.mode_recovery_sub'),
-      custom:   t('quiz.mode_custom_sub'),
-      mistakes: isMistakes ? t('play.mistakes_bank', { n: mistakesCount }) : '',
+      random:    t('quiz.mode_random_sub'),
+      allrandom: t('quiz.mode_allrandom_sub'),
+      fighter:   t('quiz.mode_fighter_sub'),
+      input:     t('quiz.mode_input_sub'),
+      punish:    t('quiz.mode_punish_sub'),
+      hardcore:  t('quiz.mode_hardcore_sub'),
+      damage:    t('quiz.mode_damage_sub'),
+      onblock:   t('quiz.mode_onblock_sub'),
+      onhit:     t('quiz.mode_onhit_sub'),
+      recovery:  t('quiz.mode_recovery_sub'),
+      custom:    t('quiz.mode_custom_sub'),
+      mistakes:  isMistakes ? t('play.mistakes_bank', { n: mistakesCount }) : '',
     } as Record<string, string>)[mode] ?? ''
 
     return (
