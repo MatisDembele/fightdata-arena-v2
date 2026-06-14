@@ -35,7 +35,7 @@ export default function Home() {
     {
       id: 'profile', label: 'PROFILE', sub: t('home.profile_sub'),
       href: '/profile', external: false,
-      color: '#ffd700', colorAlt: '#ff6a00',
+      color: '#c084fc', colorAlt: '#7c3aed',
       desc: t('home.profile_desc'),
     },
   ]
