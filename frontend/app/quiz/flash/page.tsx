@@ -22,8 +22,20 @@ function calcMaxTime(qCount: number): number {
 
 type Phase = 'intro' | 'playing' | 'finished'
 
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(false)
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 1024)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isDesktop
+}
+
 export default function FlashPage() {
   const { t } = useLanguage()
+  const isDesktop = useIsDesktop()
 
   const [phase, setPhase]             = useState<Phase>('intro')
   const [question, setQuestion]       = useState<QuizQuestion | null>(null)
@@ -240,7 +252,7 @@ export default function FlashPage() {
       <>
         <Navbar />
         <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', minHeight: 'calc(100vh - 60px)' }}>
-          <div style={{ width: '100%', maxWidth: '420px', display: 'flex', flexDirection: 'column', gap: '28px' }}>
+          <div style={{ width: '100%', maxWidth: isDesktop ? '620px' : '420px', display: 'flex', flexDirection: 'column', gap: '28px' }}>
 
             <div>
               <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2.5rem, 8vw, 4rem)', letterSpacing: '10px', lineHeight: 1, background: `linear-gradient(135deg, ${COLOR}, ${COLOR_ALT})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: `drop-shadow(0 0 18px ${COLOR}55)` }}>
@@ -291,7 +303,7 @@ export default function FlashPage() {
       <>
         <Navbar />
         <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', minHeight: 'calc(100vh - 60px)' }}>
-          <div className="animate-fadeInUp" style={{ width: '100%', maxWidth: '420px', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center', textAlign: 'center' }}>
+          <div className="animate-fadeInUp" style={{ width: '100%', maxWidth: isDesktop ? '620px' : '420px', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center', textAlign: 'center' }}>
 
             <div>
               <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.52rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.3)', marginBottom: '8px' }}>GAME OVER</div>
@@ -385,7 +397,7 @@ export default function FlashPage() {
       <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 20px 32px', minHeight: 'calc(100vh - 60px)' }}>
 
         {/* HUD */}
-        <div style={{ width: '100%', maxWidth: '500px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+        <div style={{ width: '100%', maxWidth: isDesktop ? '760px' : '500px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
           <div style={{ display: 'flex', gap: '6px' }}>
             {Array.from({ length: LIVES }).map((_, i) => (
               <span key={i} style={{ fontSize: '1.3rem', opacity: i < lives ? 1 : 0.15, transition: 'opacity 0.2s' }}>❤️</span>
@@ -402,7 +414,7 @@ export default function FlashPage() {
         </div>
 
         {/* Timer bar */}
-        <div style={{ width: '100%', maxWidth: '500px', height: '4px', background: 'rgba(255,255,255,0.08)', marginBottom: '14px' }}>
+        <div style={{ width: '100%', maxWidth: isDesktop ? '760px' : '500px', height: '4px', background: 'rgba(255,255,255,0.08)', marginBottom: '14px' }}>
           <div style={{
             height: '100%',
             width: `${timeLeft * 100}%`,
@@ -413,7 +425,7 @@ export default function FlashPage() {
         </div>
 
         {/* Question card */}
-        <div style={{ width: '100%', maxWidth: '500px', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(16px)', border: `1px solid ${answerState === 'correct' ? '#4ade8044' : answerState === 'wrong' ? '#ff2d7844' : 'rgba(255,255,255,0.08)'}`, transition: 'border-color 0.2s' }}>
+        <div style={{ width: '100%', maxWidth: isDesktop ? '760px' : '500px', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(16px)', border: `1px solid ${answerState === 'correct' ? '#4ade8044' : answerState === 'wrong' ? '#ff2d7844' : 'rgba(255,255,255,0.08)'}`, transition: 'border-color 0.2s' }}>
 
           <div style={{ padding: '11px 18px', background: `${COLOR}12`, borderBottom: `1px solid ${COLOR}28`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '4px', background: `linear-gradient(90deg, ${COLOR}, ${COLOR_ALT})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>FLASH</span>

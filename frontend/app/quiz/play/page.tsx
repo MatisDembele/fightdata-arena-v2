@@ -20,11 +20,23 @@ interface HistoryEntry {
   correct: boolean
 }
 
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(false)
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 1024)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isDesktop
+}
+
 function QuizPlay() {
   const params = useSearchParams()
   const mode   = params.get('mode') || 'random'
   const slug   = params.get('slug') || ''
   const { t } = useLanguage()
+  const isDesktop = useIsDesktop()
 
   const [question, setQuestion] = useState<QuizQuestion | null>(null)
   const [selected, setSelected] = useState<string | null>(null)
@@ -500,7 +512,7 @@ function QuizPlay() {
       <>
         <Navbar />
         <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', minHeight: 'calc(100vh - 60px)' }}>
-          <div style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '28px' }}>
+          <div style={{ width: '100%', maxWidth: isDesktop ? '680px' : '480px', display: 'flex', flexDirection: 'column', gap: '28px' }}>
 
             {/* Mode header */}
             <div>
@@ -652,7 +664,7 @@ function QuizPlay() {
         <>
           <Navbar />
           <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', minHeight: 'calc(100vh - 60px)' }}>
-            <div className="animate-fadeInUp" style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center', textAlign: 'center' }}>
+            <div className="animate-fadeInUp" style={{ width: '100%', maxWidth: isDesktop ? '720px' : '480px', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center', textAlign: 'center' }}>
 
               <div>
                 <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(3rem, 12vw, 5rem)', letterSpacing: '6px', lineHeight: 1, color: '#ff2d78', textShadow: '0 0 24px #ff2d7888' }}>
@@ -734,7 +746,7 @@ function QuizPlay() {
       <>
         <Navbar />
         <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', minHeight: 'calc(100vh - 60px)' }}>
-          <div className="animate-fadeInUp" style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center', textAlign: 'center' }}>
+          <div className="animate-fadeInUp" style={{ width: '100%', maxWidth: isDesktop ? '720px' : '480px', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center', textAlign: 'center' }}>
 
             <div>
               <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.3)', marginBottom: '14px' }}>
@@ -854,7 +866,7 @@ function QuizPlay() {
           </div>
         ) : question && (
           <div style={{
-            width: '100%', maxWidth: '500px',
+            width: '100%', maxWidth: isDesktop ? '760px' : '500px',
             background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(16px)',
             border: '1px solid rgba(255,255,255,0.08)',
           }}>

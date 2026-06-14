@@ -56,7 +56,7 @@ export function GifSection({ gifUrl, gifPath, moveName, color, fallback = 'HITBO
     { bottom: '7px', right: '7px', borderBottom: `1px solid ${color}`, borderRight: `1px solid ${color}` },
   ]
   return (
-    <div style={{ height: '180px', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
+    <div style={{ minHeight: '180px', height: '100%', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
       {src ? (
         <>
           {!loaded && (

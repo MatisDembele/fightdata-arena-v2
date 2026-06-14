@@ -49,6 +49,17 @@ function playerColor(name: string): string {
   return SLOT_COLORS[hash % SLOT_COLORS.length]
 }
 
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(false)
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 1024)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isDesktop
+}
+
 export default function MultiRoom({ params }: { params: Promise<{ room: string }> }) {
   const { room }     = use(params)
   const searchParams = useSearchParams()
@@ -56,6 +67,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
   const playerName   = searchParams.get('name') || 'Joueur'
   const playerAvatar = searchParams.get('avatar') || 'ryu'
   const { t } = useLanguage()
+  const isDesktop = useIsDesktop()
 
   const wsRef            = useRef<WebSocket | null>(null)
   const leaderboardTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -167,8 +179,6 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         setWinner(msg.winner)
         setCorrectCounts(msg.correct_counts ?? {})
         if (msg.avatars) setAvatars(msg.avatars)
-        setRematchVotes(0)
-        setRematchNeeded(Object.keys(msg.scores).length)
         setPhase('gameover')
       }
 
@@ -210,7 +220,6 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         if (msg.avatars) setAvatars(msg.avatars)
         if (msg.host) setHost(msg.host)
         if (msg.ready_players) setReadyPlayers(msg.ready_players)
-        // Show temporary notification instead of crashing to error screen
         const note = t('multi.player_left_msg', { name: (msg.player ?? '').toUpperCase().slice(0, 10) })
         setLeftNote(note)
         setTimeout(() => setLeftNote(''), 3500)
@@ -281,8 +290,8 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
     const isCorrect = correctAnswer === value
     const isWrong   = selected === value && correctAnswer !== null && correctAnswer !== value
     return {
-      flex: 1, padding: '20px 12px', cursor: selected ? 'default' : 'pointer',
-      fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.3rem', letterSpacing: '4px',
+      flex: 1, padding: isDesktop ? '24px 16px' : '20px 12px', cursor: selected ? 'default' : 'pointer',
+      fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1.5rem' : '1.3rem', letterSpacing: '4px',
       border: `1px solid ${isWrong ? '#ff2d78' : isCorrect ? c : `${c}44`}`,
       background: isCorrect ? `${c}18` : isWrong ? 'rgba(255,45,120,0.1)' : `${c}08`,
       color: isCorrect ? c : isWrong ? '#ff2d78' : `${c}99`,
@@ -320,7 +329,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         return isCorrect
           ? t('room.feedback_correct_recovery', { move, answer })
           : t('room.feedback_wrong_recovery',   { move, answer })
-      default: // startup
+      default:
         return isCorrect
           ? t('room.feedback_correct_startup',  { answer })
           : t('room.feedback_wrong_startup',    { answer })
@@ -329,8 +338,8 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
 
   const backBtnStyle: React.CSSProperties = {
     background: 'none', border: `1px solid ${COLOR}`, color: COLOR,
-    fontFamily: "'Bebas Neue', sans-serif", fontSize: '1rem', letterSpacing: '4px',
-    padding: '10px 28px', cursor: 'pointer', textShadow: `0 0 8px ${COLOR}55`,
+    fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1.1rem' : '1rem', letterSpacing: '4px',
+    padding: isDesktop ? '12px 36px' : '10px 28px', cursor: 'pointer', textShadow: `0 0 8px ${COLOR}55`,
   }
 
   const renderContent = () => {
@@ -353,164 +362,177 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
       const canStart = players.length >= 2
       const allReady = readyPlayers.length === players.length && players.length >= 2
 
+      const avatarSize = isDesktop ? '64px' : '48px'
+
+      const playerGrid = (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: isDesktop ? '10px' : '8px' }}>
+          {Array.from({ length: 6 }).map((_, i) => {
+            const name      = players[i]
+            const slug      = name ? (avatars[name] || 'ryu') : null
+            const portrait  = slug ? getFighterPortrait(slug) : null
+            const isMe      = name === playerName
+            const isReady   = name ? readyPlayers.includes(name) : false
+            const isHostP   = name === host
+            const c         = SLOT_COLORS[i]
+            return (
+              <div key={i} style={{
+                padding: isDesktop ? '14px 10px 12px' : '10px 8px 8px',
+                border: `1px solid ${name ? c + '40' : 'rgba(255,255,255,0.05)'}`,
+                background: name ? `${c}06` : 'rgba(255,255,255,0.015)',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isDesktop ? '8px' : '6px',
+                position: 'relative', minHeight: isDesktop ? '148px' : '110px', justifyContent: 'center',
+              }}>
+                {name && isReady && (
+                  <div style={{ position: 'absolute', top: '6px', right: '6px', width: '7px', height: '7px', borderRadius: '50%', background: COLOR_WIN, boxShadow: `0 0 6px ${COLOR_WIN}` }} />
+                )}
+                {isHostP && (
+                  <div style={{ position: 'absolute', top: '4px', left: '5px', fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.4rem' : '0.32rem', letterSpacing: '1px', color: COLOR, background: `${COLOR}18`, padding: '1px 4px' }}>
+                    {t('multi.host_badge')}
+                  </div>
+                )}
+                <div style={{ width: avatarSize, height: avatarSize, overflow: 'hidden', border: `2px solid ${name ? c : 'rgba(255,255,255,0.06)'}`, background: 'rgba(0,0,0,0.4)', flexShrink: 0 }}>
+                  {portrait
+                    ? <img src={portrait} alt={slug!} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.4rem', color: 'rgba(255,255,255,0.08)' }}>?</div>
+                  }
+                </div>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.52rem' : '0.42rem', letterSpacing: '1px', color: name ? (isMe ? c : 'rgba(255,255,255,0.5)') : 'rgba(255,255,255,0.1)', textAlign: 'center', maxWidth: '90%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {name ? (isMe ? t('room.you') : name.toUpperCase().slice(0, 8)) : t('multi.slot_empty')}
+                </div>
+                {name && (
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.42rem' : '0.35rem', letterSpacing: '1px', color: isReady ? COLOR_WIN : 'rgba(255,255,255,0.18)' }}>
+                    {isReady ? t('multi.ready') : t('multi.not_ready')}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )
+
+      const settingsPanel = isHost ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: isDesktop ? '14px' : '10px', padding: isDesktop ? '20px 20px' : '14px 16px', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.58rem' : '0.48rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)' }}>
+            {t('multi.game_mode')}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+            {MULTI_MODES.map(m => (
+              <button key={m.id} onClick={() => sendSetMode(m.id)} style={{
+                padding: isDesktop ? '10px 4px' : '7px 4px', fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '0.88rem' : '0.8rem', letterSpacing: '2px',
+                border: `1px solid ${gameMode === m.id ? m.color : 'rgba(255,255,255,0.1)'}`,
+                background: gameMode === m.id ? `${m.color}15` : 'transparent',
+                color: gameMode === m.id ? m.color : 'rgba(255,255,255,0.3)',
+                cursor: 'pointer', transition: 'all 0.2s',
+                textShadow: gameMode === m.id ? `0 0 8px ${m.color}55` : 'none',
+              }}>
+                {m.label}
+              </button>
+            ))}
+          </div>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.58rem' : '0.48rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', marginTop: '4px' }}>
+            {t('multi.num_questions')}
+          </div>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            {[5, 10, 15, 20].map(n => (
+              <button key={n} onClick={() => sendSetQuestions(n)} style={{
+                flex: 1, padding: isDesktop ? '10px' : '8px', fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1rem' : '0.9rem', letterSpacing: '2px',
+                border: `1px solid ${totalQuestions === n ? '#00f0ff' : 'rgba(255,255,255,0.1)'}`,
+                background: totalQuestions === n ? 'rgba(0,240,255,0.1)' : 'transparent',
+                color: totalQuestions === n ? '#00f0ff' : 'rgba(255,255,255,0.3)',
+                cursor: 'pointer', transition: 'all 0.2s',
+              }}>
+                {n}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', gap: '10px', justifyContent: isDesktop ? 'flex-start' : 'center' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.62rem' : '0.52rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', padding: isDesktop ? '8px 14px' : '4px 10px', border: '1px solid rgba(255,255,255,0.07)' }}>
+            {totalQuestions} Q
+          </div>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.62rem' : '0.52rem', letterSpacing: '3px', color: modeConfig.color, padding: isDesktop ? '8px 14px' : '4px 10px', border: `1px solid ${modeConfig.color}33` }}>
+            {modeConfig.label}
+          </div>
+        </div>
+      )
+
+      const actionRow = (
+        <div style={{ display: 'flex', gap: '10px' }}>
+          {!isHost ? (
+            <button onClick={sendToggleReady} style={{
+              flex: 1, padding: isDesktop ? '15px' : '13px', fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1.05rem' : '0.95rem', letterSpacing: '4px',
+              border: `1px solid ${amReady ? COLOR_WIN : 'rgba(255,255,255,0.18)'}`,
+              background: amReady ? `${COLOR_WIN}12` : 'rgba(255,255,255,0.03)',
+              color: amReady ? COLOR_WIN : 'rgba(255,255,255,0.4)',
+              cursor: 'pointer', transition: 'all 0.2s',
+              textShadow: amReady ? `0 0 8px ${COLOR_WIN}66` : 'none',
+            }}>
+              {amReady ? `✓ ${t('multi.ready')}` : t('multi.not_ready')}
+            </button>
+          ) : (
+            <button onClick={sendStartGame} disabled={!canStart} style={{
+              flex: 1, padding: isDesktop ? '15px' : '13px', fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1.05rem' : '0.95rem', letterSpacing: '4px',
+              border: `1px solid ${canStart ? (allReady ? COLOR_WIN : COLOR) : 'rgba(255,255,255,0.07)'}`,
+              background: canStart ? (allReady ? `${COLOR_WIN}12` : `${COLOR}12`) : 'transparent',
+              color: canStart ? (allReady ? COLOR_WIN : COLOR) : 'rgba(255,255,255,0.15)',
+              cursor: canStart ? 'pointer' : 'default',
+              transition: 'all 0.3s',
+              textShadow: canStart ? `0 0 10px ${allReady ? COLOR_WIN : COLOR}66` : 'none',
+              boxShadow: canStart && allReady ? `0 0 20px ${COLOR_WIN}33` : 'none',
+            }}>
+              {t('multi.launch')}
+            </button>
+          )}
+          <button onClick={copyLink} style={{
+            padding: isDesktop ? '15px 18px' : '13px 14px', background: 'none',
+            border: `1px solid ${linkCopied ? COLOR_WIN : 'rgba(255,255,255,0.1)'}`,
+            color: linkCopied ? COLOR_WIN : 'rgba(255,255,255,0.3)',
+            fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.56rem' : '0.48rem', letterSpacing: '2px',
+            cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap',
+          }}>
+            {linkCopied ? t('room.link_copied') : t('room.copy_link')}
+          </button>
+        </div>
+      )
+
+      const readyCount = players.length >= 2 ? (
+        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.52rem' : '0.44rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.18)', textAlign: 'center' }}>
+          {t('multi.ready_count', { n: readyPlayers.length, total: players.length })}
+          {!isHost && !amReady && ' — ' + t('multi.waiting_host')}
+        </div>
+      ) : null
+
       return (
-        <div style={{ width: '100%', maxWidth: '560px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ width: '100%', maxWidth: isDesktop ? '960px' : '560px', display: 'flex', flexDirection: 'column', gap: isDesktop ? '24px' : '20px' }}>
 
           {/* Header */}
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.8rem', letterSpacing: '6px', color: '#fff' }}>
+            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '2.4rem' : '1.8rem', letterSpacing: '6px', color: '#fff' }}>
               ROOM — <span style={{ color: COLOR, textShadow: `0 0 12px ${COLOR}` }}>{room}</span>
             </div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', marginTop: '4px' }}>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.6rem' : '0.48rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', marginTop: '4px' }}>
               {t('room.give_code')}
             </div>
           </div>
 
-          {/* 6 player slots — 3 columns × 2 rows */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-            {Array.from({ length: 6 }).map((_, i) => {
-              const name      = players[i]
-              const slug      = name ? (avatars[name] || 'ryu') : null
-              const portrait  = slug ? getFighterPortrait(slug) : null
-              const isMe      = name === playerName
-              const isReady   = name ? readyPlayers.includes(name) : false
-              const isHostP   = name === host
-              const c         = SLOT_COLORS[i]
-              return (
-                <div key={i} style={{
-                  padding: '10px 8px 8px',
-                  border: `1px solid ${name ? c + '40' : 'rgba(255,255,255,0.05)'}`,
-                  background: name ? `${c}06` : 'rgba(255,255,255,0.015)',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
-                  position: 'relative', minHeight: '110px', justifyContent: 'center',
-                }}>
-                  {/* Ready dot */}
-                  {name && isReady && (
-                    <div style={{ position: 'absolute', top: '6px', right: '6px', width: '7px', height: '7px', borderRadius: '50%', background: COLOR_WIN, boxShadow: `0 0 6px ${COLOR_WIN}` }} />
-                  )}
-                  {/* Host badge */}
-                  {isHostP && (
-                    <div style={{ position: 'absolute', top: '4px', left: '5px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.32rem', letterSpacing: '1px', color: COLOR, background: `${COLOR}18`, padding: '1px 4px' }}>
-                      {t('multi.host_badge')}
-                    </div>
-                  )}
-                  {/* Avatar */}
-                  <div style={{ width: '48px', height: '48px', overflow: 'hidden', border: `2px solid ${name ? c : 'rgba(255,255,255,0.06)'}`, background: 'rgba(0,0,0,0.4)', flexShrink: 0 }}>
-                    {portrait
-                      ? <img src={portrait} alt={slug!} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.4rem', color: 'rgba(255,255,255,0.08)' }}>?</div>
-                    }
-                  </div>
-                  {/* Name */}
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '1px', color: name ? (isMe ? c : 'rgba(255,255,255,0.5)') : 'rgba(255,255,255,0.1)', textAlign: 'center', maxWidth: '90%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {name ? (isMe ? t('room.you') : name.toUpperCase().slice(0, 8)) : t('multi.slot_empty')}
-                  </div>
-                  {/* Ready label */}
-                  {name && (
-                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.35rem', letterSpacing: '1px', color: isReady ? COLOR_WIN : 'rgba(255,255,255,0.18)' }}>
-                      {isReady ? t('multi.ready') : t('multi.not_ready')}
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-
-          {/* Host settings panel */}
-          {isHost && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '14px 16px', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)' }}>
-                {t('multi.game_mode')}
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
-                {MULTI_MODES.map(m => (
-                  <button key={m.id} onClick={() => sendSetMode(m.id)} style={{
-                    padding: '7px 4px', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', letterSpacing: '2px',
-                    border: `1px solid ${gameMode === m.id ? m.color : 'rgba(255,255,255,0.1)'}`,
-                    background: gameMode === m.id ? `${m.color}15` : 'transparent',
-                    color: gameMode === m.id ? m.color : 'rgba(255,255,255,0.3)',
-                    cursor: 'pointer', transition: 'all 0.2s',
-                    textShadow: gameMode === m.id ? `0 0 8px ${m.color}55` : 'none',
-                  }}>
-                    {m.label}
-                  </button>
-                ))}
-              </div>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', marginTop: '4px' }}>
-                {t('multi.num_questions')}
-              </div>
-              <div style={{ display: 'flex', gap: '6px' }}>
-                {[5, 10, 15, 20].map(n => (
-                  <button key={n} onClick={() => sendSetQuestions(n)} style={{
-                    flex: 1, padding: '8px', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '2px',
-                    border: `1px solid ${totalQuestions === n ? '#00f0ff' : 'rgba(255,255,255,0.1)'}`,
-                    background: totalQuestions === n ? 'rgba(0,240,255,0.1)' : 'transparent',
-                    color: totalQuestions === n ? '#00f0ff' : 'rgba(255,255,255,0.3)',
-                    cursor: 'pointer', transition: 'all 0.2s',
-                  }}>
-                    {n}
-                  </button>
-                ))}
+          {/* Desktop: 2-column — player grid left, settings right */}
+          {isDesktop ? (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '24px', alignItems: 'start' }}>
+              {playerGrid}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {settingsPanel}
+                {actionRow}
+                {readyCount}
               </div>
             </div>
-          )}
-
-          {/* Non-host sees current settings */}
-          {!isHost && (
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.52rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', padding: '4px 10px', border: '1px solid rgba(255,255,255,0.07)' }}>
-                {totalQuestions} Q
-              </div>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.52rem', letterSpacing: '3px', color: modeConfig.color, padding: '4px 10px', border: `1px solid ${modeConfig.color}33` }}>
-                {modeConfig.label}
-              </div>
-            </div>
-          )}
-
-          {/* Action row */}
-          <div style={{ display: 'flex', gap: '10px' }}>
-            {!isHost ? (
-              <button onClick={sendToggleReady} style={{
-                flex: 1, padding: '13px', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '4px',
-                border: `1px solid ${amReady ? COLOR_WIN : 'rgba(255,255,255,0.18)'}`,
-                background: amReady ? `${COLOR_WIN}12` : 'rgba(255,255,255,0.03)',
-                color: amReady ? COLOR_WIN : 'rgba(255,255,255,0.4)',
-                cursor: 'pointer', transition: 'all 0.2s',
-                textShadow: amReady ? `0 0 8px ${COLOR_WIN}66` : 'none',
-              }}>
-                {amReady ? `✓ ${t('multi.ready')}` : t('multi.not_ready')}
-              </button>
-            ) : (
-              <button onClick={sendStartGame} disabled={!canStart} style={{
-                flex: 1, padding: '13px', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '4px',
-                border: `1px solid ${canStart ? (allReady ? COLOR_WIN : COLOR) : 'rgba(255,255,255,0.07)'}`,
-                background: canStart ? (allReady ? `${COLOR_WIN}12` : `${COLOR}12`) : 'transparent',
-                color: canStart ? (allReady ? COLOR_WIN : COLOR) : 'rgba(255,255,255,0.15)',
-                cursor: canStart ? 'pointer' : 'default',
-                transition: 'all 0.3s',
-                textShadow: canStart ? `0 0 10px ${allReady ? COLOR_WIN : COLOR}66` : 'none',
-                boxShadow: canStart && allReady ? `0 0 20px ${COLOR_WIN}33` : 'none',
-              }}>
-                {t('multi.launch')}
-              </button>
-            )}
-            <button onClick={copyLink} style={{
-              padding: '13px 14px', background: 'none',
-              border: `1px solid ${linkCopied ? COLOR_WIN : 'rgba(255,255,255,0.1)'}`,
-              color: linkCopied ? COLOR_WIN : 'rgba(255,255,255,0.3)',
-              fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '2px',
-              cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap',
-            }}>
-              {linkCopied ? t('room.link_copied') : t('room.copy_link')}
-            </button>
-          </div>
-
-          {/* Ready count info */}
-          {players.length >= 2 && (
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.44rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.18)', textAlign: 'center' }}>
-              {t('multi.ready_count', { n: readyPlayers.length, total: players.length })}
-              {!isHost && !amReady && ' — ' + t('multi.waiting_host')}
-            </div>
+          ) : (
+            <>
+              {playerGrid}
+              {settingsPanel}
+              {actionRow}
+              {readyCount}
+            </>
           )}
         </div>
       )
@@ -530,15 +552,15 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
             VS
           </div>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center', maxWidth: '520px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'center', maxWidth: '720px', position: 'relative', zIndex: 1 }}>
             {vsPlayers.map((name) => {
               const slug    = avatars[name] || 'ryu'
               const portrait = getFighterPortrait(slug)
               const isMe    = name === playerName
               const c       = playerColor(name)
               return (
-                <div key={name} style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: 'clamp(64px, 12vw, 96px)', height: 'clamp(64px, 12vw, 96px)', overflow: 'hidden', border: `3px solid ${c}`, boxShadow: `0 0 24px ${c}55`, background: 'rgba(0,0,0,0.5)' }}>
+                <div key={name} style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ width: 'clamp(64px, 12vw, 104px)', height: 'clamp(64px, 12vw, 104px)', overflow: 'hidden', border: `3px solid ${c}`, boxShadow: `0 0 24px ${c}55`, background: 'rgba(0,0,0,0.5)' }}>
                     {portrait ? <img src={portrait} alt={slug} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
                   </div>
                   <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '3px', color: isMe ? c : '#fff', textShadow: isMe ? `0 0 10px ${c}` : 'none' }}>
@@ -566,90 +588,120 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
           ? t('multi.answered_count', { n: answeredCount, total: totalCount })
           : t('multi.answered_count', { n: 0, total: totalCount || players.length })
 
-      return (
-        <div style={{ width: '100%', maxWidth: '500px', minWidth: 0 }}>
+      const questionText = (
+        <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: isDesktop ? '1.1rem' : '1rem', fontWeight: 600, color: 'rgba(255,255,255,0.9)', margin: 0 }}>
+          {isPunish
+            ? <><strong style={{ color: '#fff' }}>{question.move_name}</strong> {t('room.q_is_it')} <span style={{ color: COLOR_LOS }}>{t('room.q_punishable_on_block')}</span></>
+            : <>{t('room.q_what_is')} <span style={{ color: modeConfig.color }}>{modeConfig.label.toLowerCase()}</span> {t('room.q_of')} <strong style={{ color: '#fff' }}>{question.move_name}</strong> ?</>
+          }
+        </p>
+      )
 
-          <div style={{ padding: '10px 18px', background: 'rgba(255,224,0,0.06)', borderBottom: `1px solid ${COLOR}28`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      const choicesEl = (
+        <>
+          {!isPunish && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {question.choices.map((choice, i) => (
+                <button key={choice} onClick={() => sendAnswer(choice)} style={{ ...makeChoiceStyle(choice, correctAnswer, selected, !correctAnswer), cursor: selected || correctAnswer ? 'default' : 'pointer' }}>
+                  <span style={{ width: '20px', height: '20px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.18)', fontSize: '0.62rem' }}>{String.fromCharCode(65 + i)}</span>
+                  {choice}{modeConfig.suffix}
+                </button>
+              ))}
+            </div>
+          )}
+          {isPunish && (
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={() => sendAnswer('punissable')} disabled={!!selected} style={punishBtnStyle('punissable')}>
+                💀 {t('room.punishable_label')}
+                <div style={{ fontSize: '0.55rem', letterSpacing: '2px', marginTop: '4px', opacity: 0.6 }}>{'≤ -4 ON BLOCK'}</div>
+              </button>
+              <button onClick={() => sendAnswer('safe')} disabled={!!selected} style={punishBtnStyle('safe')}>
+                ✓ {t('room.safe_label')}
+                <div style={{ fontSize: '0.55rem', letterSpacing: '2px', marginTop: '4px', opacity: 0.6 }}>{'-3 À +∞ ON BLOCK'}</div>
+              </button>
+            </div>
+          )}
+        </>
+      )
+
+      const feedbackEl = (
+        <>
+          {phase === 'playing' && (
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '2px', color: answeredCount > 0 ? COLOR : 'rgba(255,255,255,0.2)', textAlign: 'center', transition: 'color 0.3s' }}>
+              {statusText}
+            </div>
+          )}
+          {phase === 'result' && correctAnswer && (() => {
+            const myPts     = pointsEarned[playerName] ?? 0
+            const isCorrect = selected === correctAnswer
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
+                  <span style={{
+                    fontFamily: "'Bebas Neue', sans-serif",
+                    fontSize: isDesktop ? '1.8rem' : '1.6rem', letterSpacing: '3px',
+                    color: isCorrect ? COLOR : 'rgba(255,255,255,0.2)',
+                    textShadow: isCorrect ? `0 0 16px ${COLOR}` : 'none',
+                  }}>
+                    {isCorrect ? `+${myPts}` : '0'} PTS
+                  </span>
+                  {isCorrect && (
+                    <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '2px', color: 'rgba(255,224,0,0.5)' }}>
+                      {myPts === 1000 ? 'PERFECT' : myPts >= 800 ? 'FAST!' : myPts >= 500 ? 'GOOD' : 'SLOW'}
+                    </span>
+                  )}
+                </div>
+                <div style={{ padding: '10px 14px', background: isCorrect ? 'rgba(74,222,128,0.1)' : 'rgba(255,45,120,0.1)', border: `1px solid ${isCorrect ? '#4ade80' : '#ff2d78'}`, fontFamily: "'Rajdhani', sans-serif", fontSize: isDesktop ? '1rem' : '0.9rem', fontWeight: 700, color: isCorrect ? '#4ade80' : '#ff2d78' }}>
+                  {feedbackText()}
+                </div>
+              </div>
+            )
+          })()}
+        </>
+      )
+
+      return (
+        <div style={{ width: '100%', maxWidth: isDesktop ? '900px' : '500px', minWidth: 0, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+
+          {/* Header bar — full width */}
+          <div style={{ padding: isDesktop ? '12px 22px' : '10px 18px', background: 'rgba(255,224,0,0.06)', borderBottom: `1px solid ${COLOR}28`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '4px', color: COLOR, textShadow: `0 0 8px ${COLOR}55` }}>
+              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1rem' : '0.9rem', letterSpacing: '4px', color: COLOR, textShadow: `0 0 8px ${COLOR}55` }}>
                 Q{questionNumber}/{totalQuestions}
               </span>
-              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: modeConfig.color, marginLeft: '12px', opacity: 0.6 }}>
+              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.62rem' : '0.55rem', letterSpacing: '3px', color: modeConfig.color, marginLeft: '14px', opacity: 0.7 }}>
                 {modeConfig.label}
               </span>
             </div>
             <Scoreboard scores={scores} playerName={playerName} avatars={avatars} color={COLOR} youLabel={t('room.you')} />
           </div>
 
-          <GifSection gifUrl={question.gif_url} gifPath={question.gif_path} moveName={question.move_name} color={COLOR} />
-
-          <div style={{ padding: '14px 18px 10px' }}>
-            <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1rem', fontWeight: 600, color: 'rgba(255,255,255,0.9)', margin: 0 }}>
-              {isPunish
-                ? <><strong style={{ color: '#fff' }}>{question.move_name}</strong> {t('room.q_is_it')} <span style={{ color: COLOR_LOS }}>{t('room.q_punishable_on_block')}</span></>
-                : <>{t('room.q_what_is')} <span style={{ color: modeConfig.color }}>{modeConfig.label.toLowerCase()}</span> {t('room.q_of')} <strong style={{ color: '#fff' }}>{question.move_name}</strong> ?</>
-              }
-            </p>
-          </div>
-
-          <div style={{ padding: '0 18px' }}>
-            {!isPunish && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {question.choices.map((choice, i) => (
-                  <button key={choice} onClick={() => sendAnswer(choice)} style={{ ...makeChoiceStyle(choice, correctAnswer, selected, !correctAnswer), cursor: selected || correctAnswer ? 'default' : 'pointer' }}>
-                    <span style={{ width: '20px', height: '20px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.18)', fontSize: '0.62rem' }}>{String.fromCharCode(65 + i)}</span>
-                    {choice}{modeConfig.suffix}
-                  </button>
-                ))}
+          {/* Content: 2-col on desktop, stacked on mobile */}
+          {isDesktop ? (
+            <div style={{ display: 'grid', gridTemplateColumns: '45% 55%', alignItems: 'stretch' }}>
+              <div style={{ borderRight: '1px solid rgba(255,255,255,0.05)' }}>
+                <GifSection gifUrl={question.gif_url} gifPath={question.gif_path} moveName={question.move_name} color={COLOR} />
               </div>
-            )}
-            {isPunish && (
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button onClick={() => sendAnswer('punissable')} disabled={!!selected} style={punishBtnStyle('punissable')}>
-                  💀 {t('room.punishable_label')}
-                  <div style={{ fontSize: '0.55rem', letterSpacing: '2px', marginTop: '4px', opacity: 0.6 }}>{'≤ -4 ON BLOCK'}</div>
-                </button>
-                <button onClick={() => sendAnswer('safe')} disabled={!!selected} style={punishBtnStyle('safe')}>
-                  ✓ {t('room.safe_label')}
-                  <div style={{ fontSize: '0.55rem', letterSpacing: '2px', marginTop: '4px', opacity: 0.6 }}>{'-3 À +∞ ON BLOCK'}</div>
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div style={{ padding: '12px 18px 18px' }}>
-            {phase === 'playing' && (
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '2px', color: answeredCount > 0 ? COLOR : 'rgba(255,255,255,0.2)', textAlign: 'center', transition: 'color 0.3s' }}>
-                {statusText}
-              </div>
-            )}
-            {phase === 'result' && correctAnswer && (() => {
-              const myPts    = pointsEarned[playerName] ?? 0
-              const isCorrect = selected === correctAnswer
-              return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', padding: '6px 14px 0' }}>
-                    <span style={{
-                      fontFamily: "'Bebas Neue', sans-serif",
-                      fontSize: '1.6rem', letterSpacing: '3px',
-                      color: isCorrect ? COLOR : 'rgba(255,255,255,0.2)',
-                      textShadow: isCorrect ? `0 0 16px ${COLOR}` : 'none',
-                    }}>
-                      {isCorrect ? `+${myPts}` : '0'} PTS
-                    </span>
-                    {isCorrect && (
-                      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '2px', color: 'rgba(255,224,0,0.5)' }}>
-                        {myPts === 1000 ? 'PERFECT' : myPts >= 800 ? 'FAST!' : myPts >= 500 ? 'GOOD' : 'SLOW'}
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ padding: '9px 14px', background: isCorrect ? 'rgba(74,222,128,0.1)' : 'rgba(255,45,120,0.1)', border: `1px solid ${isCorrect ? '#4ade80' : '#ff2d78'}`, fontFamily: "'Rajdhani', sans-serif", fontSize: '0.9rem', fontWeight: 700, color: isCorrect ? '#4ade80' : '#ff2d78' }}>
-                    {feedbackText()}
-                  </div>
+              <div style={{ display: 'flex', flexDirection: 'column', padding: '0' }}>
+                <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                  {questionText}
                 </div>
-              )
-            })()}
-          </div>
+                <div style={{ padding: '16px 24px', flex: 1 }}>
+                  {choicesEl}
+                </div>
+                <div style={{ padding: '14px 24px 20px', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+                  {feedbackEl}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <GifSection gifUrl={question.gif_url} gifPath={question.gif_path} moveName={question.move_name} color={COLOR} />
+              <div style={{ padding: '14px 18px 10px' }}>{questionText}</div>
+              <div style={{ padding: '0 18px' }}>{choicesEl}</div>
+              <div style={{ padding: '12px 18px 18px' }}>{feedbackEl}</div>
+            </>
+          )}
         </div>
       )
     }
@@ -657,12 +709,13 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
     if (phase === 'leaderboard') {
       const sorted = Object.entries(scores).sort(([,a],[,b]) => b - a)
       const leader = sorted[0]?.[0]
+      const avatarSize = isDesktop ? '44px' : '36px'
       return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', width: '100%', maxWidth: '380px' }}>
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '5px', color: 'rgba(255,255,255,0.3)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isDesktop ? '24px' : '20px', width: '100%', maxWidth: isDesktop ? '620px' : '380px' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.65rem' : '0.55rem', letterSpacing: '5px', color: 'rgba(255,255,255,0.3)' }}>
             Q{questionNumber}/{totalQuestions} — {t('room.leaderboard')}
           </div>
-          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {sorted.map(([name, score], rank) => {
               const isLeader = name === leader
               const isMe     = name === playerName
@@ -671,24 +724,24 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
               const pts      = pointsEarned[name] ?? 0
               return (
                 <div key={name} style={{
-                  display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px',
+                  display: 'flex', alignItems: 'center', gap: isDesktop ? '16px' : '12px', padding: isDesktop ? '14px 20px' : '10px 16px',
                   background: isLeader ? 'rgba(255,224,0,0.1)' : 'rgba(255,255,255,0.03)',
                   border: `1px solid ${isLeader ? 'rgba(255,224,0,0.4)' : 'rgba(255,255,255,0.07)'}`,
                   transition: 'all 0.3s',
                 }}>
-                  <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.1rem', color: isLeader ? COLOR : 'rgba(255,255,255,0.25)', width: '20px', textAlign: 'center' }}>
+                  <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1.3rem' : '1.1rem', color: isLeader ? COLOR : 'rgba(255,255,255,0.25)', width: '24px', textAlign: 'center' }}>
                     {rank + 1}
                   </div>
-                  <div style={{ width: '36px', height: '36px', overflow: 'hidden', border: `2px solid ${isLeader ? COLOR : 'rgba(255,255,255,0.15)'}`, flexShrink: 0 }}>
+                  <div style={{ width: avatarSize, height: avatarSize, overflow: 'hidden', border: `2px solid ${isLeader ? COLOR : 'rgba(255,255,255,0.15)'}`, flexShrink: 0 }}>
                     {portrait ? <img src={portrait} alt={slug} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '2px', color: isLeader ? COLOR : isMe ? '#fff' : 'rgba(255,255,255,0.6)', textShadow: isLeader ? `0 0 10px ${COLOR}` : 'none' }}>
+                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1rem' : '0.9rem', letterSpacing: '2px', color: isLeader ? COLOR : isMe ? '#fff' : 'rgba(255,255,255,0.6)', textShadow: isLeader ? `0 0 10px ${COLOR}` : 'none' }}>
                       {isMe ? t('room.you') : name.toUpperCase().slice(0, 12)}
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.4rem', letterSpacing: '2px', color: isLeader ? COLOR : 'rgba(255,255,255,0.5)', textShadow: isLeader ? `0 0 12px ${COLOR}` : 'none' }}>{score}</div>
+                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1.7rem' : '1.4rem', letterSpacing: '2px', color: isLeader ? COLOR : 'rgba(255,255,255,0.5)', textShadow: isLeader ? `0 0 12px ${COLOR}` : 'none' }}>{score}</div>
                     {pts > 0 && <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: 'rgba(255,224,0,0.5)' }}>+{pts}</div>}
                   </div>
                 </div>
@@ -705,10 +758,99 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
       const isWin     = winner === playerName
       const isDraw    = winner === 'draw'
       const MEDALS    = ['🥇', '🥈', '🥉']
+      const avatarSize = isDesktop ? '42px' : '34px'
+
+      const rankingList = (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {sorted.map(([name, score], rank) => {
+            const isMe      = name === playerName
+            const isFirst   = rank === 0
+            const slug      = avatars[name] || 'ryu'
+            const portrait  = getFighterPortrait(slug)
+            const correct   = correctCounts[name] ?? 0
+            const acc       = Math.round((correct / totalQuestions) * 100)
+            const medal     = MEDALS[rank] ?? `#${rank + 1}`
+            return (
+              <div key={name} style={{
+                display: 'flex', alignItems: 'center', gap: isDesktop ? '14px' : '10px', padding: isDesktop ? '12px 18px' : '10px 14px',
+                background: isMe ? `${COLOR}0a` : isFirst ? `${COLOR_WIN}06` : 'rgba(255,255,255,0.02)',
+                border: `1px solid ${isMe ? `${COLOR}30` : isFirst ? `${COLOR_WIN}20` : 'rgba(255,255,255,0.06)'}`,
+              }}>
+                <span style={{ fontSize: isDesktop ? '1.1rem' : '1rem', width: '28px', textAlign: 'center', flexShrink: 0 }}>{medal}</span>
+                <div style={{ width: avatarSize, height: avatarSize, overflow: 'hidden', border: `2px solid ${isMe ? COLOR : 'rgba(255,255,255,0.12)'}`, flexShrink: 0 }}>
+                  {portrait ? <img src={portrait} alt={slug} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
+                </div>
+                <div style={{ flex: 1, textAlign: 'left' }}>
+                  <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '0.95rem' : '0.85rem', letterSpacing: '2px', color: isMe ? COLOR : 'rgba(255,255,255,0.65)', textShadow: isMe ? `0 0 8px ${COLOR}` : 'none' }}>
+                    {isMe ? t('room.you') : name.toUpperCase().slice(0, 12)}
+                  </div>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.2)', marginTop: '2px' }}>
+                    {acc}% {t('room.precision')}
+                  </div>
+                </div>
+                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1.5rem' : '1.3rem', letterSpacing: '2px', color: isFirst ? COLOR_WIN : isMe ? COLOR : 'rgba(255,255,255,0.4)', textShadow: isFirst ? `0 0 10px ${COLOR_WIN}` : 'none' }}>
+                  {score}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )
+
+      const voteGrid = (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.54rem' : '0.46rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.22)', textAlign: isDesktop ? 'left' : 'center' }}>
+            {myVote
+              ? t('multi.vote_count', { n: Object.keys(playerVotes).length, total: players.length })
+              : t('multi.vote_mode')}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+            {MULTI_MODES.map(m => {
+              const count    = modeVotes[m.id] ?? 0
+              const isMyVote = myVote === m.id
+              const hasVotes = count > 0
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => sendVoteMode(m.id)}
+                  disabled={!!myVote}
+                  style={{
+                    position: 'relative', padding: isDesktop ? '14px 6px' : '11px 6px',
+                    border: `1px solid ${isMyVote ? m.color : hasVotes ? `${m.color}44` : 'rgba(255,255,255,0.09)'}`,
+                    background: isMyVote ? `${m.color}18` : hasVotes ? `${m.color}08` : 'transparent',
+                    color: isMyVote ? m.color : hasVotes ? `${m.color}cc` : 'rgba(255,255,255,0.22)',
+                    fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '0.92rem' : '0.85rem', letterSpacing: '2px',
+                    cursor: myVote ? 'default' : 'pointer', transition: 'all 0.2s',
+                    textShadow: isMyVote ? `0 0 10px ${m.color}66` : 'none',
+                    boxShadow: isMyVote ? `0 0 12px ${m.color}22` : 'none',
+                  }}
+                >
+                  {m.label}
+                  {hasVotes && (
+                    <span style={{
+                      position: 'absolute', top: '3px', right: '5px',
+                      fontFamily: "'Share Tech Mono', monospace", fontSize: '0.44rem',
+                      color: isMyVote ? m.color : `${m.color}99`,
+                    }}>
+                      {count}
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+          {myVote && (
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.46rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.18)', textAlign: 'center' }}>
+              {t('multi.vote_waiting')}
+            </div>
+          )}
+        </div>
+      )
 
       return (
-        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center' }}>
+        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: isDesktop ? '28px' : '24px', alignItems: 'center', width: '100%', maxWidth: isDesktop ? '820px' : '400px' }}>
 
+          {/* Title */}
           <div>
             <div style={{
               fontFamily: "'Bebas Neue', sans-serif",
@@ -719,61 +861,40 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
             }}>
               {isDraw ? t('room.draw') : isWin ? t('room.victory') : t('room.defeat')}
             </div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.25)', marginTop: '8px' }}>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.62rem' : '0.55rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.25)', marginTop: '8px' }}>
               {isDraw ? t('room.draw_msg') : isWin ? t('room.well_played') : t('room.better_luck')}
             </div>
           </div>
 
-          {/* Full ranking */}
-          <div style={{ width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-            {sorted.map(([name, score], rank) => {
-              const isMe      = name === playerName
-              const isFirst   = rank === 0
-              const slug      = avatars[name] || 'ryu'
-              const portrait  = getFighterPortrait(slug)
-              const correct   = correctCounts[name] ?? 0
-              const acc       = Math.round((correct / totalQuestions) * 100)
-              const medal     = MEDALS[rank] ?? `#${rank + 1}`
-              return (
-                <div key={name} style={{
-                  display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px',
-                  background: isMe ? `${COLOR}0a` : isFirst ? `${COLOR_WIN}06` : 'rgba(255,255,255,0.02)',
-                  border: `1px solid ${isMe ? `${COLOR}30` : isFirst ? `${COLOR_WIN}20` : 'rgba(255,255,255,0.06)'}`,
-                }}>
-                  <span style={{ fontSize: '1rem', width: '24px', textAlign: 'center', flexShrink: 0 }}>{medal}</span>
-                  <div style={{ width: '34px', height: '34px', overflow: 'hidden', border: `2px solid ${isMe ? COLOR : 'rgba(255,255,255,0.12)'}`, flexShrink: 0 }}>
-                    {portrait ? <img src={portrait} alt={slug} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
-                  </div>
-                  <div style={{ flex: 1, textAlign: 'left' }}>
-                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '2px', color: isMe ? COLOR : 'rgba(255,255,255,0.65)', textShadow: isMe ? `0 0 8px ${COLOR}` : 'none' }}>
-                      {isMe ? t('room.you') : name.toUpperCase().slice(0, 12)}
-                    </div>
-                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.38rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.2)', marginTop: '2px' }}>
-                      {acc}% {t('room.precision')}
-                    </div>
-                  </div>
-                  <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.3rem', letterSpacing: '2px', color: isFirst ? COLOR_WIN : isMe ? COLOR : 'rgba(255,255,255,0.4)', textShadow: isFirst ? `0 0 10px ${COLOR_WIN}` : 'none' }}>
-                    {score}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+          {/* Desktop: ranking left, vote right; Mobile: stacked */}
+          {isDesktop ? (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '28px', width: '100%', textAlign: 'left' }}>
+              {rankingList}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {voteGrid}
+              </div>
+            </div>
+          ) : (
+            <>
+              <div style={{ width: '100%' }}>{rankingList}</div>
+              <div style={{ width: '100%' }}>{voteGrid}</div>
+            </>
+          )}
 
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.52rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.18)' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.58rem' : '0.52rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.18)' }}>
             {t('room.questions_mode', { n: totalQuestions, mode: gameMode.toUpperCase() })}
           </div>
 
           {newAchievements.length > 0 && myRank === 0 && (
-            <div style={{ width: '100%', maxWidth: '400px', padding: '14px 16px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '4px', color: '#f59e0b' }}>
+            <div style={{ width: '100%', maxWidth: isDesktop ? '440px' : '400px', padding: isDesktop ? '18px 20px' : '14px 16px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.55rem' : '0.48rem', letterSpacing: '4px', color: '#f59e0b' }}>
                 {t('play.achievement_unlocked')}
               </div>
               {newAchievements.map(a => (
-                <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ fontSize: '1.3rem', lineHeight: 1 }}>{a.icon}</div>
+                <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div style={{ fontSize: '1.4rem', lineHeight: 1 }}>{a.icon}</div>
                   <div>
-                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '2px', color: RARITY_COLOR[a.rarity] }}>
+                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '2px', color: RARITY_COLOR[a.rarity] }}>
                       {a.name}
                     </div>
                     <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.35)', marginTop: '2px' }}>
@@ -785,56 +906,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
             </div>
           )}
 
-          {/* Mode vote for next game */}
-          <div style={{ width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.46rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.22)', textAlign: 'center' }}>
-              {myVote
-                ? t('multi.vote_count', { n: Object.keys(playerVotes).length, total: players.length })
-                : t('multi.vote_mode')}
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '7px' }}>
-              {MULTI_MODES.map(m => {
-                const count    = modeVotes[m.id] ?? 0
-                const isMyVote = myVote === m.id
-                const hasVotes = count > 0
-                return (
-                  <button
-                    key={m.id}
-                    onClick={() => sendVoteMode(m.id)}
-                    disabled={!!myVote}
-                    style={{
-                      position: 'relative', padding: '11px 6px',
-                      border: `1px solid ${isMyVote ? m.color : hasVotes ? `${m.color}44` : 'rgba(255,255,255,0.09)'}`,
-                      background: isMyVote ? `${m.color}18` : hasVotes ? `${m.color}08` : 'transparent',
-                      color: isMyVote ? m.color : hasVotes ? `${m.color}cc` : 'rgba(255,255,255,0.22)',
-                      fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '2px',
-                      cursor: myVote ? 'default' : 'pointer', transition: 'all 0.2s',
-                      textShadow: isMyVote ? `0 0 10px ${m.color}66` : 'none',
-                      boxShadow: isMyVote ? `0 0 12px ${m.color}22` : 'none',
-                    }}
-                  >
-                    {m.label}
-                    {hasVotes && (
-                      <span style={{
-                        position: 'absolute', top: '3px', right: '5px',
-                        fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem',
-                        color: isMyVote ? m.color : `${m.color}99`,
-                      }}>
-                        {count}
-                      </span>
-                    )}
-                  </button>
-                )
-              })}
-            </div>
-            {myVote && (
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.44rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.18)', textAlign: 'center' }}>
-                {t('multi.vote_waiting')}
-              </div>
-            )}
-          </div>
-
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div style={{ display: 'flex', gap: '14px' }}>
             <button onClick={() => router.push('/multi')} style={backBtnStyle}>{t('room.lobby')}</button>
             <button onClick={() => router.push('/')} style={{ ...backBtnStyle, border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.4)', textShadow: 'none' }}>{t('room.home')}</button>
           </div>
@@ -849,11 +921,10 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
   return (
     <>
       <Navbar />
-      <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 60px)', padding: '24px 20px' }}>
+      <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 60px)', padding: isDesktop ? '32px 48px' : '24px 20px' }}>
         {renderContent()}
       </main>
 
-      {/* Player left notification */}
       {leftNote && (
         <div style={{
           position: 'fixed', top: '72px', left: '50%', transform: 'translateX(-50%)',
@@ -866,7 +937,6 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         </div>
       )}
 
-      {/* Countdown overlay */}
       {countdown > 0 && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 100,
