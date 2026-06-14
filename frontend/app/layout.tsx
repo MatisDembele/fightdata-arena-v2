@@ -11,7 +11,7 @@ const GA_ID = process.env.NEXT_PUBLIC_GA_ID
 export const metadata: Metadata = {
   metadataBase: new URL('https://fightdata.app'),
   title: 'Fight Data Arena — SF6 Frame Data',
-  description: 'Street Fighter 6 frame data quiz. Guess startup, damage, and on-block values for every character.',
+  description: 'The Street Fighter 6 frame data quiz. 30 characters, 1562 moves, 14 modes — Daily, Weekly, Survival, Multiplayer and more. How well do you know your frame data?',
   keywords: 'Street Fighter 6, frame data, quiz, startup, SF6, fighting game',
   manifest: '/manifest.json',
   icons: {
@@ -26,14 +26,14 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Fight Data Arena — SF6 Frame Data Quiz',
-    description: 'Street Fighter 6 frame data quiz. Guess startup, damage, and on-block values.',
+    description: '30 characters · 1562 moves · 14 modes. Test your SF6 frame data knowledge with Daily, Weekly, Survival, Multiplayer challenges and more.',
     type: 'website',
     siteName: 'Fight Data Arena',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Fight Data Arena — SF6 Frame Data Quiz',
-    description: 'Street Fighter 6 frame data quiz. Guess startup, damage, and on-block values.',
+    description: '30 characters · 1562 moves · 14 modes. Test your SF6 frame data knowledge with Daily, Weekly, Survival, Multiplayer challenges and more.',
   },
 }
 
