@@ -128,7 +128,7 @@ const en = {
 
   // multiplayer lobby
   'multi.title':              'MULTIPLAYER',
-  'multi.subtitle':           'REAL-TIME QUIZ — 5 QUESTIONS',
+  'multi.subtitle':           'UP TO 6 PLAYERS — CHOOSE YOUR MODE IN THE ROOM',
   'multi.your_name':          'YOUR USERNAME',
   'multi.room_code':          'ROOM CODE',
   'multi.game_mode':          'GAME MODE',
@@ -147,10 +147,20 @@ const en = {
   'multi.mode_startup_desc':  'Guess the startup of each move in 4 choices.',
   'multi.mode_punish_sub':    'Punishable or safe?',
   'multi.mode_punish_desc':   'Is the move punishable on block?',
+  'multi.ready':              'READY',
+  'multi.not_ready':          'NOT READY',
+  'multi.launch':             'LAUNCH →',
+  'multi.waiting_host':       'Waiting for host to start...',
+  'multi.host_badge':         'HOST',
+  'multi.player_left_msg':    '{name} LEFT THE GAME',
+  'multi.answered_count':     '{n}/{total} ANSWERED',
+  'multi.rematch_votes':      '{n}/{total} WANT A REMATCH',
+  'multi.slot_empty':         'OPEN',
+  'multi.ready_count':        '{n}/{total} READY',
 
   // multiplayer room
   'room.connecting':              'CONNECTING...',
-  'room.give_code':               'SHARE THIS CODE WITH YOUR OPPONENT',
+  'room.give_code':               'SHARE THIS CODE WITH YOUR FRIENDS',
   'room.waiting':                 'WAITING FOR AN OPPONENT...',
   'room.both_answered':           'BOTH ANSWERED — RESULT...',
   'room.waiting_for':             'WAITING FOR {name}...',
@@ -481,7 +491,7 @@ const fr: Record<DictKey, string> = {
 
   // multiplayer lobby
   'multi.title':             'MULTIJOUEUR',
-  'multi.subtitle':          'QUIZ EN TEMPS RÉEL — 5 QUESTIONS',
+  'multi.subtitle':          "JUSQU'À 6 JOUEURS — CONFIGUREZ VOTRE ROOM",
   'multi.your_name':         'TON PSEUDO',
   'multi.room_code':         'CODE DE ROOM',
   'multi.game_mode':         'MODE DE JEU',
@@ -500,10 +510,20 @@ const fr: Record<DictKey, string> = {
   'multi.mode_startup_desc': 'Devine le startup de chaque move en 4 choix.',
   'multi.mode_punish_sub':   'Punissable ou safe ?',
   'multi.mode_punish_desc':  'Le move est-il punissable on block ?',
+  'multi.ready':             'PRÊT',
+  'multi.not_ready':         'PAS PRÊT',
+  'multi.launch':            'LANCER →',
+  'multi.waiting_host':      "En attente du lancement par l'hôte...",
+  'multi.host_badge':        'HÔTE',
+  'multi.player_left_msg':   '{name} A QUITTÉ LA PARTIE',
+  'multi.answered_count':    '{n}/{total} ONT RÉPONDU',
+  'multi.rematch_votes':     '{n}/{total} VEULENT UNE REVANCHE',
+  'multi.slot_empty':        'LIBRE',
+  'multi.ready_count':       '{n}/{total} PRÊTS',
 
   // multiplayer room
   'room.connecting':              'CONNEXION...',
-  'room.give_code':               'DONNE CE CODE À TON ADVERSAIRE',
+  'room.give_code':               'PARTAGE CE CODE AVEC TES AMIS',
   'room.waiting':                 "EN ATTENTE D'UN ADVERSAIRE...",
   'room.both_answered':           'LES DEUX ONT RÉPONDU — RÉSULTAT...',
   'room.waiting_for':             'EN ATTENTE DE {name}...',

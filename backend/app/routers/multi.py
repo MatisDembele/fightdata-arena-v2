@@ -13,8 +13,8 @@ from app.services.quiz_service import generate_random_question, generate_random_
 
 router = APIRouter()
 
-MAX_QUESTIONS = 5
-VALID_QUESTIONS = (5, 10, 15)
+MAX_PLAYERS = 6
+VALID_QUESTIONS = (5, 10, 15, 20)
 GAME_MODES = ("startup", "punish")
 
 
@@ -23,9 +23,10 @@ def _make_code() -> str:
 
 
 class Room:
-    def __init__(self, code: str, game_mode: str = "startup", max_questions: int = MAX_QUESTIONS):
+    def __init__(self, code: str):
         self.code = code
-        self.game_mode = game_mode if game_mode in GAME_MODES else "startup"
+        self.game_mode: str = "startup"
+        self.max_questions: int = 10
         self.players: dict[str, WebSocket] = {}
         self.scores: dict[str, int] = {}
         self.current_question: Optional[dict] = None
@@ -35,19 +36,29 @@ class Room:
         self.points_this_round: dict[str, int] = {}
         self.correct_counts: dict[str, int] = {}
         self.player_avatars: dict[str, str] = {}
-        self.max_questions: int = max_questions if max_questions in VALID_QUESTIONS else MAX_QUESTIONS
+        self.ready_players: set[str] = set()
+        self.host: str = ""
+        self.game_started: bool = False
         self.rematch_votes: set[str] = set()
         self.timeout_task: Optional[asyncio.Task] = None
         self.lock = asyncio.Lock()
 
     def is_full(self) -> bool:
-        return len(self.players) >= 2
+        return len(self.players) >= MAX_PLAYERS
 
     def is_ready(self) -> bool:
-        return len(self.players) == 2
+        return self.game_started
 
     def all_answered(self) -> bool:
-        return len(self.answers) == len(self.players)
+        if not self.players:
+            return True
+        return all(p in self.answers for p in self.players)
+
+    def can_start(self) -> bool:
+        return len(self.players) >= 2
+
+    def all_ready(self) -> bool:
+        return len(self.players) >= 2 and self.ready_players.issuperset(set(self.players.keys()))
 
 
 rooms: dict[str, Room] = {}
@@ -55,7 +66,7 @@ rooms: dict[str, Room] = {}
 
 async def _broadcast(room: Room, message: dict):
     disconnected = []
-    for name, ws in room.players.items():
+    for name, ws in list(room.players.items()):
         try:
             await ws.send_json(message)
         except Exception:
@@ -84,6 +95,8 @@ def _reset_room(room: Room):
     room.current_question = None
     room.question_sent_at = 0.0
     room.rematch_votes = set()
+    room.ready_players = set()
+    room.game_started = False
 
 
 async def _timeout_question(room: Room, question_number: int):
@@ -127,6 +140,9 @@ async def _next_question(room: Room, db: Session):
     if room.timeout_task and not room.timeout_task.done():
         room.timeout_task.cancel()
     room.timeout_task = None
+
+    if not room.players:
+        return
 
     if room.question_number > room.max_questions:
         scores = room.scores
@@ -174,12 +190,10 @@ async def _next_question(room: Room, db: Session):
 
 
 @router.post("/rooms")
-def create_room(game_mode: str = "startup", questions: int = MAX_QUESTIONS):
-    mode = game_mode if game_mode in GAME_MODES else "startup"
-    nq   = questions if questions in VALID_QUESTIONS else MAX_QUESTIONS
+def create_room():
     for _ in range(10):
         code = _make_code()
         if code not in rooms:
-            rooms[code] = Room(code, mode, nq)
-            return {"room_code": code, "game_mode": mode, "max_questions": nq}
+            rooms[code] = Room(code)
+            return {"room_code": code}
     return {"error": "Impossible de créer une room"}, 500

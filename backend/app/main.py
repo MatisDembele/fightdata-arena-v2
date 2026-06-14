@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse
 from sqlalchemy import inspect as _sa_inspect, text as _sa_text
 from app.database import Base, engine, SessionLocal
 from app.routers import fighters, quiz, multi, daily, weekly, global_lb, flash, survival
-from app.routers.multi import rooms, _broadcast, _send, _next_question, _reset_room
+from app.routers.multi import rooms, _broadcast, _send, _next_question, _reset_room, GAME_MODES, VALID_QUESTIONS
 
 
 async def _heartbeat(websocket: WebSocket):
@@ -105,10 +105,19 @@ async def websocket_endpoint(
         db.close()
         return
 
+    if room.game_started and player_name not in room.players:
+        await _send(websocket, {"type": "error", "message": "Partie déjà en cours."})
+        await websocket.close()
+        db.close()
+        return
+
     async with room.lock:
+        is_first = len(room.players) == 0
         room.players[player_name] = websocket
         room.scores.setdefault(player_name, 0)
         room.player_avatars[player_name] = avatar
+        if is_first:
+            room.host = player_name
 
     player_list = list(room.players.keys())
     avatars = dict(room.player_avatars)
@@ -120,29 +129,17 @@ async def websocket_endpoint(
         "avatars": avatars,
         "game_mode": room.game_mode,
         "max_questions": room.max_questions,
+        "host": room.host,
+        "ready_players": list(room.ready_players),
     })
 
     await _broadcast(room, {
         "type": "player_joined",
         "players": player_list,
         "avatars": avatars,
+        "host": room.host,
+        "ready_players": list(room.ready_players),
     })
-
-    if not room.is_ready():
-        await _send(websocket, {"type": "waiting", "message": "En attente d'un adversaire..."})
-    else:
-        await asyncio.sleep(0.3)
-        await _broadcast(room, {
-            "type": "vs",
-            "players": list(room.players.keys()),
-            "avatars": dict(room.player_avatars),
-            "game_mode": room.game_mode,
-        })
-        await asyncio.sleep(2.5)
-        for n in [3, 2, 1]:
-            await _broadcast(room, {"type": "countdown", "value": n})
-            await asyncio.sleep(1.0)
-        await _next_question(room, db)
 
     try:
         while True:
@@ -151,7 +148,61 @@ async def websocket_endpoint(
             if data.get("type") in ("pong", "ping"):
                 continue
 
-            if data.get("type") == "answer":
+            if data.get("type") == "set_ready":
+                async with room.lock:
+                    if player_name in room.ready_players:
+                        room.ready_players.discard(player_name)
+                    else:
+                        room.ready_players.add(player_name)
+                await _broadcast(room, {
+                    "type": "ready_update",
+                    "ready_players": list(room.ready_players),
+                    "can_start": room.can_start(),
+                    "all_ready": room.all_ready(),
+                })
+
+            elif data.get("type") == "set_game_mode":
+                if player_name != room.host:
+                    continue
+                mode = data.get("mode", "startup")
+                if mode in GAME_MODES:
+                    room.game_mode = mode
+                await _broadcast(room, {
+                    "type": "settings_update",
+                    "game_mode": room.game_mode,
+                    "max_questions": room.max_questions,
+                })
+
+            elif data.get("type") == "set_questions":
+                if player_name != room.host:
+                    continue
+                n = int(data.get("n", 10))
+                if n in VALID_QUESTIONS:
+                    room.max_questions = n
+                await _broadcast(room, {
+                    "type": "settings_update",
+                    "game_mode": room.game_mode,
+                    "max_questions": room.max_questions,
+                })
+
+            elif data.get("type") == "start_game":
+                if player_name != room.host or not room.can_start() or room.game_started:
+                    continue
+                room.game_started = True
+                room.scores = {p: 0 for p in room.players}
+                await _broadcast(room, {
+                    "type": "vs",
+                    "players": list(room.players.keys()),
+                    "avatars": dict(room.player_avatars),
+                    "game_mode": room.game_mode,
+                })
+                await asyncio.sleep(2.5)
+                for n in [3, 2, 1]:
+                    await _broadcast(room, {"type": "countdown", "value": n})
+                    await asyncio.sleep(1.0)
+                await _next_question(room, db)
+
+            elif data.get("type") == "answer":
                 answer = str(data.get("value", "")).strip()
 
                 all_done = False
@@ -168,9 +219,12 @@ async def websocket_endpoint(
                         room.correct_counts[player_name] = room.correct_counts.get(player_name, 0) + 1
                     all_done = room.all_answered()
 
-                opponent = next((n for n in room.players if n != player_name), None)
-                if opponent and opponent in room.players:
-                    await _send(room.players[opponent], {"type": "opponent_answered"})
+                await _broadcast(room, {
+                    "type": "player_answered",
+                    "answered_count": len(room.answers),
+                    "total_count": len(room.players),
+                    "player": player_name,
+                })
 
                 if all_done:
                     if room.timeout_task and not room.timeout_task.done():
@@ -178,8 +232,8 @@ async def websocket_endpoint(
                     await _broadcast(room, {
                         "type": "answer_result",
                         "correct_answer": room.current_question["answer"] if room.current_question else "",
-                        "player_answers": room.answers,
-                        "scores": room.scores,
+                        "player_answers": dict(room.answers),
+                        "scores": dict(room.scores),
                         "points_earned": dict(room.points_this_round),
                         "on_block_value": room.current_question.get("on_block_value") if room.current_question else None,
                         "game_mode": room.game_mode,
@@ -194,40 +248,56 @@ async def websocket_endpoint(
                     all_voted = len(room.rematch_votes) == len(room.players)
 
                 if not all_voted:
-                    opponent = next((n for n in room.players if n != player_name), None)
-                    if opponent and opponent in room.players:
-                        await _send(room.players[opponent], {"type": "rematch_requested", "player": player_name})
+                    await _broadcast(room, {
+                        "type": "rematch_requested",
+                        "player": player_name,
+                        "votes": len(room.rematch_votes),
+                        "needed": len(room.players),
+                    })
                 else:
                     _reset_room(room)
                     await _broadcast(room, {
                         "type": "rematch_start",
                         "players": list(room.players.keys()),
                         "avatars": dict(room.player_avatars),
-                    })
-                    await asyncio.sleep(0.3)
-                    await _broadcast(room, {
-                        "type": "vs",
-                        "players": list(room.players.keys()),
-                        "avatars": dict(room.player_avatars),
+                        "host": room.host,
                         "game_mode": room.game_mode,
+                        "max_questions": room.max_questions,
                     })
-                    await asyncio.sleep(2.5)
-                    for n in [3, 2, 1]:
-                        await _broadcast(room, {"type": "countdown", "value": n})
-                        await asyncio.sleep(1.0)
-                    await _next_question(room, db)
 
     except WebSocketDisconnect:
         async with room.lock:
             room.players.pop(player_name, None)
+            room.ready_players.discard(player_name)
 
         if room.players:
+            if player_name == room.host:
+                room.host = next(iter(room.players))
+
             await _broadcast(room, {
                 "type": "player_left",
                 "player": player_name,
                 "players": list(room.players.keys()),
                 "avatars": dict(room.player_avatars),
+                "host": room.host,
+                "ready_players": list(room.ready_players),
             })
+
+            # If game is active and the leaving player was the last one needed
+            if room.game_started and room.current_question and room.answers and room.all_answered():
+                if room.timeout_task and not room.timeout_task.done():
+                    room.timeout_task.cancel()
+                await _broadcast(room, {
+                    "type": "answer_result",
+                    "correct_answer": room.current_question["answer"],
+                    "player_answers": dict(room.answers),
+                    "scores": dict(room.scores),
+                    "points_earned": dict(room.points_this_round),
+                    "on_block_value": room.current_question.get("on_block_value"),
+                    "game_mode": room.game_mode,
+                })
+                await asyncio.sleep(3.5)
+                await _next_question(room, db)
         else:
             rooms.pop(room_code, None)
     finally:
