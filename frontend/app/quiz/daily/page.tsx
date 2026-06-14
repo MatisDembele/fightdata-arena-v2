@@ -558,12 +558,13 @@ function DailyPage() {
                       : t('daily.feedback_wrong', { n: question.answer })}
                   </div>
                 )}
-                <button
-                  onClick={state !== 'idle' ? handleNext : undefined}
-                  disabled={state === 'idle'}
-                  style={{ width: '100%', padding: '13px', background: state !== 'idle' ? `linear-gradient(90deg, ${COLOR_ALT}, ${COLOR})` : 'rgba(255,255,255,0.05)', border: state === 'idle' ? '1px solid rgba(255,255,255,0.08)' : 'none', cursor: state !== 'idle' ? 'pointer' : 'default', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '4px', color: state !== 'idle' ? '#000' : 'rgba(255,255,255,0.2)', transition: 'all 0.2s' }}>
-                  {idx + 1 >= questions.length && state !== 'idle' ? t('daily.see_results') : t('daily.next_question')}
-                </button>
+                {state !== 'idle' && (
+                  <button
+                    onClick={handleNext}
+                    style={{ width: '100%', padding: '13px', background: `linear-gradient(90deg, ${COLOR_ALT}, ${COLOR})`, border: 'none', cursor: 'pointer', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '4px', color: '#000', transition: 'all 0.2s' }}>
+                    {idx + 1 >= questions.length ? t('daily.see_results') : t('daily.next_question')}
+                  </button>
+                )}
               </>
             }
           />
