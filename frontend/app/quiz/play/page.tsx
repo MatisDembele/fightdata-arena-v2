@@ -12,6 +12,7 @@ import { track } from '@vercel/analytics'
 import { useLanguage, type DictKey } from '@/lib/i18n'
 import { GifSection, makeChoiceStyle } from '@/components/QuestionCard'
 import { MODE_COLORS, MODE_COLORS_ALT, getRank, type Rank } from '@/lib/constants'
+import { useAuth } from '@/components/AuthProvider'
 
 type AnswerState = 'idle' | 'correct' | 'wrong'
 
@@ -62,6 +63,9 @@ function QuizPlay() {
   const [isNewRecord, setIsNewRecord]     = useState(false)
   const [newAchievements, setNewAchievements] = useState<Achievement[]>([])
   function dismissAchievement(id: string) { setNewAchievements(prev => prev.filter(a => a.id !== id)) }
+  const { user } = useAuth()
+  const userRef = useRef(user)
+  useEffect(() => { userRef.current = user }, [user])
   const [bestRecord, setBestRecord]       = useState<{ bestScore: number; bestAccuracy: number } | null>(null)
   const historyRef                        = useRef<HistoryEntry[]>([])
   const [showReview, setShowReview]       = useState(false)
@@ -271,12 +275,12 @@ function QuizPlay() {
 
     // Auto-submit to global leaderboard if pseudo set
     if (total > 0) {
-      const pseudo = localStorage.getItem('fda_pseudo')?.trim()
+      const pseudo = userRef.current?.username || localStorage.getItem('fda_pseudo')?.trim()
       if (pseudo) submitGlobalScore(pseudo, score, total).catch(() => {})
     }
     // Survival leaderboard
     if (isSurvival) {
-      const pseudo = localStorage.getItem('fda_pseudo')?.trim() || ''
+      const pseudo = userRef.current?.username || localStorage.getItem('fda_pseudo')?.trim() || ''
       setSurvivalPseudo(pseudo)
       if (pseudo) {
         invalidateLeaderboardCache('survival_lb')

@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import { track } from '@vercel/analytics'
 import { useLanguage } from '@/lib/i18n'
 import { getFighterPortrait } from '@/lib/portraits'
+import { useAuth } from '@/components/AuthProvider'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -27,15 +28,17 @@ function MultiLobbyContent() {
   const [slowLoad, setSlowLoad] = useState(false)
   const [error, setError]       = useState('')
   const { t } = useLanguage()
+  const { user } = useAuth()
 
   useEffect(() => {
     const storedName   = localStorage.getItem('fda_pseudo') || ''
     const storedAvatar = localStorage.getItem('fda_avatar') || 'ryu'
-    if (storedName)   setName(storedName)
+    const prefillName  = user?.username?.slice(0, 12) || storedName
+    if (prefillName)  setName(prefillName)
     if (storedAvatar) setAvatar(storedAvatar)
     const roomParam = searchParams.get('room')
     if (roomParam) { setCode(roomParam.toUpperCase()); setJoining(true) }
-  }, [searchParams])
+  }, [searchParams, user])
 
   function persistPlayer(n: string, av: string) {
     localStorage.setItem('fda_pseudo', n)

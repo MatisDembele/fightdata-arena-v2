@@ -9,6 +9,7 @@ import { useLanguage } from '@/lib/i18n'
 import { checkAndUnlock, updateLifetime, type Achievement } from '@/lib/achievements'
 import AchievementToast from '@/components/AchievementToast'
 import type { QuizQuestion } from '@/types'
+import { useAuth } from '@/components/AuthProvider'
 
 const COLOR     = '#e879f9'
 const COLOR_ALT = '#a855f7'
@@ -37,6 +38,9 @@ function useIsDesktop() {
 export default function FlashPage() {
   const { t } = useLanguage()
   const isDesktop = useIsDesktop()
+  const { user } = useAuth()
+  const userRef = useRef<typeof user>(null)
+  useEffect(() => { userRef.current = user }, [user])
 
   const [phase, setPhase]             = useState<Phase>('intro')
   const [question, setQuestion]       = useState<QuizQuestion | null>(null)
@@ -76,7 +80,7 @@ export default function FlashPage() {
   // On game end: submit best score + fetch leaderboard
   useEffect(() => {
     if (phase !== 'finished') return
-    const p = localStorage.getItem('fda_pseudo') || ''
+    const p = userRef.current?.username || localStorage.getItem('fda_pseudo') || ''
     setFlashPseudo(p)
     if (p) {
       try {

@@ -1,11 +1,16 @@
 'use client'
-import { useState, useEffect, type ReactNode } from 'react'
+import { useState, useEffect, useCallback, type ReactNode } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import { getGlobalLeaderboard, type GlobalLeaderboardEntry } from '@/lib/api'
 import { ACHIEVEMENTS, RARITY_COLOR, RARITY_LABEL, RARITIES, type Rarity } from '@/lib/achievements'
 import { useLanguage, type DictKey } from '@/lib/i18n'
 import { MODE_COLORS } from '@/lib/constants'
+import { useAuth } from '@/components/AuthProvider'
+import DiscordIcon from '@/components/DiscordIcon'
+import { getDiscordOAuthUrl } from '@/lib/auth'
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 interface SessionRecord {
   date: string; mode: string; score: number; total: number
@@ -64,6 +69,7 @@ function useIsDesktop() {
 export default function ProfilePage() {
   const { t } = useLanguage()
   const isDesktop = useIsDesktop()
+  const { user, token } = useAuth()
 
   const [pseudo,        setPseudo]       = useState('')
   const [editPseudo,    setEditPseudo]   = useState('')
@@ -127,6 +133,19 @@ export default function ProfilePage() {
     localStorage.setItem('fda_pseudo', v); setPseudo(v); setEditing(false)
   }
 
+  const syncNow = useCallback(async () => {
+    if (!token) return
+    await fetch(`${API_URL}/api/auth/sync`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        achievements: JSON.parse(localStorage.getItem('fda_achievements') || '{}'),
+        lifetime:     JSON.parse(localStorage.getItem('fda_lifetime')     || '{}'),
+        history:      JSON.parse(localStorage.getItem('fda_history')      || '[]'),
+      }),
+    })
+  }, [token])
+
   const lifetimeAcc    = lifetime.questions > 0 ? Math.round((lifetime.totalCorrect / lifetime.questions) * 100) : 0
   const unlockedCount  = Object.keys(achievements).length
   const color          = pseudo ? avatarColor(pseudo) : '#888'
@@ -182,6 +201,32 @@ export default function ProfilePage() {
               )}
             </div>
           </div>
+
+          {/* ── DISCORD BANNER ── */}
+          {user ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: 'rgba(88,101,242,0.08)', border: '1px solid rgba(88,101,242,0.18)', borderLeft: '3px solid #5865F2' }}>
+              <DiscordIcon size={14} />
+              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.52rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.7)', flex: 1 }}>
+                {user.username}
+              </span>
+              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '3px', color: 'rgba(88,101,242,0.7)' }}>
+                CLOUD BACKUP ACTIVE
+              </span>
+              <button onClick={syncNow} style={{ background: 'rgba(88,101,242,0.15)', border: '1px solid rgba(88,101,242,0.5)', color: '#5865F2', cursor: 'pointer', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '2px', padding: '4px 10px', transition: 'all 0.15s' }}>
+                SYNC
+              </button>
+            </div>
+          ) : (
+            <a href={getDiscordOAuthUrl()} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: 'rgba(88,101,242,0.04)', border: '1px dashed rgba(88,101,242,0.2)', textDecoration: 'none', transition: 'border-color 0.2s' }}>
+              <DiscordIcon size={14} />
+              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.3)', flex: 1 }}>
+                CONNECT DISCORD — BACKUP YOUR PROGRESS TO THE CLOUD
+              </span>
+              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '2px', color: '#5865F2' }}>
+                CONNECT →
+              </span>
+            </a>
+          )}
 
           {/* ── LIFETIME ── */}
           <Section title={t('profile.lifetime')} color={color} isDesktop={isDesktop}>
