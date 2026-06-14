@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, type ReactNode } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
-import { getGlobalLeaderboard, type GlobalLeaderboardEntry } from '@/lib/api'
+import { getGlobalLeaderboard, syncProfile, type GlobalLeaderboardEntry } from '@/lib/api'
 import { ACHIEVEMENTS, RARITY_COLOR, RARITY_LABEL, RARITIES, type Rarity } from '@/lib/achievements'
 import { useLanguage, type DictKey } from '@/lib/i18n'
 import { MODE_COLORS } from '@/lib/constants'
@@ -135,15 +135,7 @@ export default function ProfilePage() {
 
   const syncNow = useCallback(async () => {
     if (!token) return
-    await fetch(`${API_URL}/api/auth/sync`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        achievements: JSON.parse(localStorage.getItem('fda_achievements') || '{}'),
-        lifetime:     JSON.parse(localStorage.getItem('fda_lifetime')     || '{}'),
-        history:      JSON.parse(localStorage.getItem('fda_history')      || '[]'),
-      }),
-    })
+    await syncProfile(token)
   }, [token])
 
   const lifetimeAcc    = lifetime.questions > 0 ? Math.round((lifetime.totalCorrect / lifetime.questions) * 100) : 0

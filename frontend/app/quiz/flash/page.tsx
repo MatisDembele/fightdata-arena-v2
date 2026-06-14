@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
-import { getRandomQuiz, submitFlashScore, getFlashLeaderboard, invalidateLeaderboardCache, type FlashLeaderboardEntry } from '@/lib/api'
+import { getRandomQuiz, submitFlashScore, getFlashLeaderboard, invalidateLeaderboardCache, syncProfile, type FlashLeaderboardEntry } from '@/lib/api'
 import { playCorrect, playWrong } from '@/lib/sounds'
 import { GifSection, makeChoiceStyle } from '@/components/QuestionCard'
 import { useLanguage } from '@/lib/i18n'
@@ -38,9 +38,10 @@ function useIsDesktop() {
 export default function FlashPage() {
   const { t } = useLanguage()
   const isDesktop = useIsDesktop()
-  const { user } = useAuth()
+  const { user, token } = useAuth()
   const userRef = useRef<typeof user>(null)
-  useEffect(() => { userRef.current = user }, [user])
+  const tokenRef = useRef<string | null>(null)
+  useEffect(() => { userRef.current = user; tokenRef.current = token }, [user, token])
 
   const [phase, setPhase]             = useState<Phase>('intro')
   const [question, setQuestion]       = useState<QuizQuestion | null>(null)
@@ -93,6 +94,8 @@ export default function FlashPage() {
       } catch { /* ignore */ }
     }
     getFlashLeaderboard().then(setFlashLb).catch(() => {})
+    // Auto-sync au cloud si connecté
+    if (tokenRef.current) syncProfile(tokenRef.current).catch(() => {})
   }, [phase])
 
   function stopTimer() {

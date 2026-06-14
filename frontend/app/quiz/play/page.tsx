@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
-import { getRandomQuiz, getFighterQuiz, getRandomPunish, getRandomDamage, getRandomOnBlock, getRandomOnHit, getRandomRecovery, submitGlobalScore, submitSurvivalScore, getSurvivalLeaderboard, invalidateLeaderboardCache, type SurvivalLeaderboardEntry } from '@/lib/api'
+import { getRandomQuiz, getFighterQuiz, getRandomPunish, getRandomDamage, getRandomOnBlock, getRandomOnHit, getRandomRecovery, submitGlobalScore, submitSurvivalScore, getSurvivalLeaderboard, invalidateLeaderboardCache, syncProfile, type SurvivalLeaderboardEntry } from '@/lib/api'
 import { playCorrect, playWrong, getSoundEnabled, toggleSound } from '@/lib/sounds'
 import { checkAndUnlock, updateLifetime, type Achievement, type LifetimeDelta } from '@/lib/achievements'
 import AchievementToast from '@/components/AchievementToast'
@@ -63,9 +63,10 @@ function QuizPlay() {
   const [isNewRecord, setIsNewRecord]     = useState(false)
   const [newAchievements, setNewAchievements] = useState<Achievement[]>([])
   function dismissAchievement(id: string) { setNewAchievements(prev => prev.filter(a => a.id !== id)) }
-  const { user } = useAuth()
+  const { user, token } = useAuth()
   const userRef = useRef(user)
-  useEffect(() => { userRef.current = user }, [user])
+  const tokenRef = useRef(token)
+  useEffect(() => { userRef.current = user; tokenRef.current = token }, [user, token])
   const [bestRecord, setBestRecord]       = useState<{ bestScore: number; bestAccuracy: number } | null>(null)
   const historyRef                        = useRef<HistoryEntry[]>([])
   const [showReview, setShowReview]       = useState(false)
@@ -304,6 +305,8 @@ function QuizPlay() {
       hist.unshift(record)
       localStorage.setItem('fda_history', JSON.stringify(hist.slice(0, 30)))
     }
+    // Auto-sync au cloud si connecté
+    if (tokenRef.current) syncProfile(tokenRef.current).catch(() => {})
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionPhase])
 

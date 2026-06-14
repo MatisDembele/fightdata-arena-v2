@@ -21,6 +21,19 @@ export function invalidateLeaderboardCache(key: string): void {
   delete _lbCache[key]
 }
 
+export async function syncProfile(token: string): Promise<void> {
+  if (typeof window === 'undefined') return
+  await fetch(`${API_URL}/api/auth/sync`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      achievements: JSON.parse(localStorage.getItem('fda_achievements') || '{}'),
+      lifetime:     JSON.parse(localStorage.getItem('fda_lifetime')     || '{}'),
+      history:      JSON.parse(localStorage.getItem('fda_history')      || '[]'),
+    }),
+  })
+}
+
 export async function getFighters() {
   const res = await fetch(`${API_URL}/api/fighters/`)
   if (!res.ok) throw new Error('Erreur chargement fighters')
