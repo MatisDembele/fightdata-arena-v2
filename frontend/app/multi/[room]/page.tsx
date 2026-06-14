@@ -15,6 +15,7 @@ interface Question {
   move_name: string
   section: string
   gif_url?: string
+  gif_path?: string
   question: string
   choices: string[]
   fighter_slug: string
