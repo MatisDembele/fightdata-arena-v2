@@ -5,10 +5,10 @@ import type { ReactNode } from 'react'
 
 export default function Providers({ children }: { children: ReactNode }) {
   return (
-    <LanguageProvider>
-      <AuthProvider>
+    <AuthProvider>
+      <LanguageProvider>
         {children}
-      </AuthProvider>
-    </LanguageProvider>
+      </LanguageProvider>
+    </AuthProvider>
   )
 }

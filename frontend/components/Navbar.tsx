@@ -26,26 +26,11 @@ function HamburgerIcon({ open }: { open: boolean }) {
   )
 }
 
-export default function Navbar() {
-  const path = usePathname()
-  const { lang, setLang, t } = useLanguage()
+function AuthSection({ inDrawer = false, onClose }: { inDrawer?: boolean; onClose: () => void }) {
   const { user, logout, isLoading } = useAuth()
   const [showConsent, setShowConsent] = useState(false)
-  const [menuOpen,    setMenuOpen]    = useState(false)
-  const [isMobile,    setIsMobile]    = useState(false)
   const consentRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
-
-  // Close menu on route change
-  useEffect(() => { setMenuOpen(false) }, [path])
-
-  // Close consent popup on outside click
   useEffect(() => {
     if (!showConsent) return
     function handleClick(e: MouseEvent) {
@@ -57,148 +42,120 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [showConsent])
 
-  // Prevent body scroll when mobile menu is open
-  useEffect(() => {
-    if (!isMobile) return
-    document.body.style.overflow = menuOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
-  }, [menuOpen, isMobile])
+  if (isLoading) return null
 
-  useEffect(() => {
-    const CURRENT_V = 1
-    const stored = parseInt(localStorage.getItem('_fda_v') || '0', 10)
-    if (stored < CURRENT_V) localStorage.setItem('_fda_v', String(CURRENT_V))
-  }, [])
-
-  const links: { href: string; label: string; color: string; colorAlt: string }[] = [
-    { href: '/',           label: t('nav.home'),    color: '#ffe000', colorAlt: '#ff6a00' },
-    { href: '/quiz',       label: 'QUIZ',           color: '#ff2d78', colorAlt: '#9b1fff' },
-    { href: '/challenges', label: 'CHALLENGE',      color: '#00ff88', colorAlt: '#00b894' },
-    { href: '/multi',      label: 'MULTI',          color: '#ffe000', colorAlt: '#ff6a00' },
-    { href: '/profile',    label: t('nav.profile'), color: '#c084fc', colorAlt: '#7c3aed' },
-  ]
-
-  const activeLink = links.find(link =>
-    path === link.href || (link.href !== '/' && path.startsWith(link.href))
-  ) ?? links[0]
-  const { color: logoColor, colorAlt: logoColorAlt } = activeLink
-
-  const isActive = useCallback((href: string) =>
-    path === href || (href !== '/' && path.startsWith(href) &&
-      !links.some(o => o.href !== href && path.startsWith(o.href) && o.href.length > href.length))
-  , [path, links])
-
-  // ── Auth section (shared between desktop + mobile drawer) ──────────────────
-  const AuthSection = ({ inDrawer = false }: { inDrawer?: boolean }) => (
-    !isLoading ? (
-      user ? (
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: '8px',
-          ...(inDrawer ? { padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.07)' } : {
-            padding: '0 12px',
-            borderRight: '1px solid rgba(255,255,255,0.07)',
-          }),
-        }}>
-          <DiscordIcon size={13} />
-          <span style={{
+  if (user) {
+    return (
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: '8px',
+        ...(inDrawer ? { padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.07)' } : {
+          padding: '0 12px',
+          borderRight: '1px solid rgba(255,255,255,0.07)',
+        }),
+      }}>
+        <DiscordIcon size={13} />
+        <span style={{
+          fontFamily: "'Share Tech Mono', monospace",
+          fontSize: inDrawer ? '0.65rem' : '0.6rem', letterSpacing: '2px',
+          color: 'rgba(255,255,255,0.7)',
+          flex: inDrawer ? 1 : undefined,
+          maxWidth: inDrawer ? undefined : '120px',
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        }}>{user.username}</span>
+        <button
+          onClick={() => { logout(); onClose() }}
+          style={{
+            background: 'none', border: '1px solid rgba(255,255,255,0.15)',
+            color: 'rgba(255,255,255,0.4)', cursor: 'pointer',
             fontFamily: "'Share Tech Mono', monospace",
-            fontSize: inDrawer ? '0.65rem' : '0.6rem', letterSpacing: '2px',
-            color: 'rgba(255,255,255,0.7)',
-            flex: inDrawer ? 1 : undefined,
-            maxWidth: inDrawer ? undefined : '120px',
-            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          }}>{user.username}</span>
+            fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
+            padding: inDrawer ? '4px 10px' : '3px 7px',
+            transition: 'all 0.15s',
+          }}
+        >✕</button>
+      </div>
+    )
+  }
+
+  return (
+    <div ref={inDrawer ? undefined : consentRef}
+      style={{
+        position: 'relative',
+        ...(inDrawer ? { padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.07)' } : {
+          padding: '0 12px',
+          borderRight: '1px solid rgba(255,255,255,0.07)',
+          display: 'flex', alignItems: 'center',
+        }),
+      }}
+    >
+      {inDrawer ? (
+        <a
+          href={getDiscordOAuthUrl()}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+            background: '#5865F2', color: '#fff', padding: '10px',
+            fontFamily: "'Share Tech Mono', monospace",
+            fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
+            textDecoration: 'none', width: '100%',
+          }}
+          onClick={onClose}
+        >
+          <DiscordIcon size={13} />
+          CONNECT DISCORD
+        </a>
+      ) : (
+        <>
           <button
-            onClick={() => { logout(); setMenuOpen(false) }}
+            onClick={() => setShowConsent(v => !v)}
             style={{
-              background: 'none', border: '1px solid rgba(255,255,255,0.15)',
-              color: 'rgba(255,255,255,0.4)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: '7px',
+              background: '#5865F2', color: '#fff',
+              padding: '5px 11px', border: 'none', cursor: 'pointer',
               fontFamily: "'Share Tech Mono', monospace",
               fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
-              padding: inDrawer ? '4px 10px' : '3px 7px',
-              transition: 'all 0.15s',
+              transition: 'opacity 0.15s', opacity: showConsent ? '0.85' : '1',
             }}
-          >✕</button>
-        </div>
-      ) : (
-        <div ref={inDrawer ? undefined : consentRef}
-          style={{
-            position: 'relative',
-            ...(inDrawer ? { padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.07)' } : {
-              padding: '0 12px',
-              borderRight: '1px solid rgba(255,255,255,0.07)',
-              display: 'flex', alignItems: 'center',
-            }),
-          }}
-        >
-          {inDrawer ? (
-            <a
-              href={getDiscordOAuthUrl()}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                background: '#5865F2', color: '#fff', padding: '10px',
-                fontFamily: "'Share Tech Mono', monospace",
-                fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
-                textDecoration: 'none', width: '100%',
-              }}
-              onClick={() => setMenuOpen(false)}
-            >
-              <DiscordIcon size={13} />
-              CONNECT DISCORD
-            </a>
-          ) : (
-            <>
-              <button
-                onClick={() => setShowConsent(v => !v)}
+          >
+            <DiscordIcon size={13} />
+            CONNECT
+          </button>
+          {showConsent && (
+            <div style={{
+              position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+              width: '260px', background: 'rgba(10,0,20,0.97)',
+              border: '1px solid rgba(88,101,242,0.4)',
+              padding: '14px', zIndex: 999,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+            }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-3)', color: '#5865F2', marginBottom: '8px' }}>DONNÉES COLLECTÉES</div>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, marginBottom: '12px' }}>
+                Votre identifiant Discord et pseudo sont sauvegardés pour conserver votre progression. Aucune donnée sensible n'est collectée.{' '}
+                <Link href="/privacy" style={{ color: '#5865F2' }} onClick={() => setShowConsent(false)}>Politique de confidentialité</Link>
+              </div>
+              <a
+                href={getDiscordOAuthUrl()}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: '7px',
-                  background: '#5865F2', color: '#fff',
-                  padding: '5px 11px', border: 'none', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
+                  background: '#5865F2', color: '#fff', padding: '8px',
                   fontFamily: "'Share Tech Mono', monospace",
                   fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
-                  transition: 'opacity 0.15s', opacity: showConsent ? '0.85' : '1',
+                  textDecoration: 'none',
                 }}
               >
-                <DiscordIcon size={13} />
-                CONNECT
-              </button>
-              {showConsent && (
-                <div style={{
-                  position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-                  width: '260px', background: 'rgba(10,0,20,0.97)',
-                  border: '1px solid rgba(88,101,242,0.4)',
-                  padding: '14px', zIndex: 999,
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
-                }}>
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-3)', color: '#5865F2', marginBottom: '8px' }}>DONNÉES COLLECTÉES</div>
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, marginBottom: '12px' }}>
-                    Votre identifiant Discord et pseudo sont sauvegardés pour conserver votre progression. Aucune donnée sensible n'est collectée.{' '}
-                    <Link href="/privacy" style={{ color: '#5865F2' }} onClick={() => setShowConsent(false)}>Politique de confidentialité</Link>
-                  </div>
-                  <a
-                    href={getDiscordOAuthUrl()}
-                    style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
-                      background: '#5865F2', color: '#fff', padding: '8px',
-                      fontFamily: "'Share Tech Mono', monospace",
-                      fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
-                      textDecoration: 'none',
-                    }}
-                  >
-                    <DiscordIcon size={12} />
-                    CONTINUER AVEC DISCORD
-                  </a>
-                </div>
-              )}
-            </>
+                <DiscordIcon size={12} />
+                CONTINUER AVEC DISCORD
+              </a>
+            </div>
           )}
-        </div>
-      )
-    ) : null
+        </>
+      )}
+    </div>
   )
+}
 
-  // ── Lang toggle (shared) ────────────────────────────────────────────────────
-  const LangToggle = ({ inDrawer = false }: { inDrawer?: boolean }) => (
+function LangToggle({ inDrawer = false }: { inDrawer?: boolean }) {
+  const { lang, setLang } = useLanguage()
+  return (
     <div style={{
       display: 'flex',
       ...(inDrawer
@@ -233,6 +190,56 @@ export default function Navbar() {
       ))}
     </div>
   )
+}
+
+export default function Navbar() {
+  const path = usePathname()
+  const { t } = useLanguage()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  // Close menu on route change
+  useEffect(() => { setMenuOpen(false) }, [path])
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (!isMobile) return
+    document.body.style.overflow = menuOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [menuOpen, isMobile])
+
+  useEffect(() => {
+    const CURRENT_V = 1
+    const stored = parseInt(localStorage.getItem('_fda_v') || '0', 10)
+    if (stored < CURRENT_V) localStorage.setItem('_fda_v', String(CURRENT_V))
+  }, [])
+
+  const links: { href: string; label: string; color: string; colorAlt: string }[] = [
+    { href: '/',           label: t('nav.home'),    color: '#ffe000', colorAlt: '#ff6a00' },
+    { href: '/quiz',       label: 'QUIZ',           color: '#ff2d78', colorAlt: '#9b1fff' },
+    { href: '/challenges', label: 'CHALLENGE',      color: '#00ff88', colorAlt: '#00b894' },
+    { href: '/multi',      label: 'MULTI',          color: '#ffe000', colorAlt: '#ff6a00' },
+    { href: '/profile',    label: t('nav.profile'), color: '#c084fc', colorAlt: '#7c3aed' },
+  ]
+
+  const activeLink = links.find(link =>
+    path === link.href || (link.href !== '/' && path.startsWith(link.href))
+  ) ?? links[0]
+  const { color: logoColor, colorAlt: logoColorAlt } = activeLink
+
+  const isActive = useCallback((href: string) =>
+    path === href || (href !== '/' && path.startsWith(href) &&
+      !links.some(o => o.href !== href && path.startsWith(o.href) && o.href.length > href.length))
+  , [path, links])
+
+  const closeMenu = useCallback(() => setMenuOpen(false), [])
 
   return (
     <>
@@ -310,7 +317,7 @@ export default function Navbar() {
         {/* Desktop: auth + lang */}
         {!isMobile && (
           <>
-            <AuthSection />
+            <AuthSection onClose={closeMenu} />
             <LangToggle />
           </>
         )}
@@ -335,7 +342,7 @@ export default function Navbar() {
       {/* Mobile drawer backdrop */}
       {isMobile && (
         <div
-          onClick={() => setMenuOpen(false)}
+          onClick={closeMenu}
           style={{
             position: 'fixed', inset: 0, zIndex: 200,
             background: 'rgba(0,0,0,0.7)',
@@ -370,7 +377,7 @@ export default function Navbar() {
               fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-4)', color: 'rgba(255,255,255,0.3)',
             }}>NAVIGATION</span>
             <button
-              onClick={() => setMenuOpen(false)}
+              onClick={closeMenu}
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
                 color: 'rgba(255,255,255,0.5)', fontSize: '1.1rem', lineHeight: 1,
@@ -387,7 +394,7 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  onClick={() => setMenuOpen(false)}
+                  onClick={closeMenu}
                   style={{
                     display: 'flex', alignItems: 'center', gap: '14px',
                     padding: '18px 20px',
@@ -418,7 +425,7 @@ export default function Navbar() {
           </div>
 
           {/* Auth + Lang at the bottom */}
-          <AuthSection inDrawer />
+          <AuthSection inDrawer onClose={closeMenu} />
           <LangToggle inDrawer />
         </div>
       )}
