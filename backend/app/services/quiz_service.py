@@ -434,6 +434,49 @@ def generate_random_recovery_question(db: Session) -> QuizQuestion | None:
     return None
 
 
+def generate_active_question(db: Session, slug: str) -> QuizQuestion | None:
+    fighter = db.query(Fighter).filter(Fighter.slug == slug).first()
+    if not fighter:
+        return None
+    candidates = (
+        db.query(Move)
+        .filter(Move.fighter_id == fighter.id, Move.gif_path.isnot(None))
+        .all()
+    )
+    candidates = [m for m in candidates if _is_numeric(m.active)]
+    if len(candidates) < 4:
+        return None
+    rng = random.Random()
+    correct_move = rng.choice(candidates)
+    correct_answer = correct_move.active
+    correct_int = int(correct_answer)
+    pool_ints = {int(m.active) for m in candidates if _is_numeric(m.active) and m.active != correct_answer}
+    distractors = _pick_distractors(correct_int, pool_ints, rng)
+    choices = [str(v) for v in sorted(distractors + [correct_int])]
+    return QuizQuestion(
+        move_name=correct_move.move_name,
+        section=correct_move.section,
+        gif_url=correct_move.gif_url,
+        gif_path=correct_move.gif_path,
+        question=f"Combien de frames active pour {correct_move.move_name} ?",
+        choices=choices,
+        answer=correct_answer,
+        fighter_slug=slug,
+    )
+
+
+def generate_random_active_question(db: Session) -> QuizQuestion | None:
+    fighters = db.query(Fighter).all()
+    if not fighters:
+        return None
+    random.shuffle(fighters)
+    for fighter in fighters:
+        q = generate_active_question(db, fighter.slug)
+        if q:
+            return q
+    return None
+
+
 def generate_seeded_questions(db: Session, seed: str, n: int = 10) -> list[QuizQuestion]:
     rng = random.Random(seed)
     fighters = db.query(Fighter).all()

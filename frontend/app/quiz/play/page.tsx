@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
-import { getRandomQuiz, getFighterQuiz, getRandomPunish, getRandomDamage, getRandomOnBlock, getRandomOnHit, getRandomRecovery, submitGlobalScore, submitSurvivalScore, getSurvivalLeaderboard, invalidateLeaderboardCache, syncProfile, type SurvivalLeaderboardEntry } from '@/lib/api'
+import { getRandomQuiz, getFighterQuiz, getRandomPunish, getRandomDamage, getRandomOnBlock, getRandomOnHit, getRandomRecovery, getRandomActive, getFighterActive, getFighterRecovery, getFighterOnBlock, getFighterOnHit, getFighterDamage, getFighterPunish, submitGlobalScore, submitSurvivalScore, getSurvivalLeaderboard, invalidateLeaderboardCache, syncProfile, type SurvivalLeaderboardEntry } from '@/lib/api'
 import { playCorrect, playWrong, getSoundEnabled, toggleSound } from '@/lib/sounds'
 import { checkAndUnlock, updateLifetime, type Achievement, type LifetimeDelta } from '@/lib/achievements'
 import AchievementToast from '@/components/AchievementToast'
@@ -85,6 +85,19 @@ function QuizPlay() {
   const isMistakes   = mode === 'mistakes'
   const isAllRandom  = mode === 'allrandom'
 
+  // Modes that expose the data-type picker
+  const hasDataTypePicker = mode === 'fighter' || isCustom || isHardcore || isSurvival
+
+  const [dataType, setDataType] = useState<'startup'|'active'|'recovery'|'onblock'|'onhit'|'damage'|'punish'>('startup')
+
+  // Effective question type (data-type modes override via dataType state)
+  const effectivePunish   = isPunish   || (hasDataTypePicker && dataType === 'punish')
+  const effectiveOnBlock  = isOnBlock  || (hasDataTypePicker && dataType === 'onblock')
+  const effectiveOnHit    = isOnHit    || (hasDataTypePicker && dataType === 'onhit')
+  const effectiveDamage   = isDamage   || (hasDataTypePicker && dataType === 'damage')
+  const effectiveActive   = hasDataTypePicker && dataType === 'active'
+  const effectiveRecovery = isRecovery || (hasDataTypePicker && dataType === 'recovery')
+
   const [soundEnabled, setSoundEnabled] = useState(true)
   useEffect(() => { setSoundEnabled(getSoundEnabled()) }, [])
 
@@ -105,20 +118,50 @@ function QuizPlay() {
       const fetchers = [getRandomQuiz, getRandomOnBlock, getRandomOnHit, getRandomRecovery, getRandomDamage]
       return fetchers[Math.floor(Math.random() * fetchers.length)]()
     }
+    // Modes with data-type picker: route to the right endpoint per dataType
+    if (mode === 'fighter' && slug) {
+      switch (dataType) {
+        case 'active':   return getFighterActive(slug)
+        case 'recovery': return getFighterRecovery(slug)
+        case 'onblock':  return getFighterOnBlock(slug)
+        case 'onhit':    return getFighterOnHit(slug)
+        case 'damage':   return getFighterDamage(slug)
+        case 'punish':   return getFighterPunish(slug)
+        default:         return getFighterQuiz(slug)
+      }
+    }
+    if (isCustom) {
+      const customFighters = params.get('fighters')?.split(',').filter(Boolean) ?? []
+      const f = customFighters.length > 0 ? customFighters[Math.floor(Math.random() * customFighters.length)] : null
+      switch (dataType) {
+        case 'active':   return f ? getFighterActive(f)   : getRandomActive()
+        case 'recovery': return f ? getFighterRecovery(f) : getRandomRecovery()
+        case 'onblock':  return f ? getFighterOnBlock(f)  : getRandomOnBlock()
+        case 'onhit':    return f ? getFighterOnHit(f)    : getRandomOnHit()
+        case 'damage':   return f ? getFighterDamage(f)   : getRandomDamage()
+        case 'punish':   return f ? getFighterPunish(f)   : getRandomPunish()
+        default:         return f ? getFighterQuiz(f)     : getRandomQuiz()
+      }
+    }
+    if (isHardcore || isSurvival) {
+      switch (dataType) {
+        case 'active':   return getRandomActive()
+        case 'recovery': return getRandomRecovery()
+        case 'onblock':  return getRandomOnBlock()
+        case 'onhit':    return getRandomOnHit()
+        case 'damage':   return getRandomDamage()
+        case 'punish':   return getRandomPunish()
+        default:         return getRandomQuiz()
+      }
+    }
+    // Single-type modes
     if (isOnBlock)  return getRandomOnBlock()
     if (isOnHit)    return getRandomOnHit()
     if (isRecovery) return getRandomRecovery()
     if (isPunish)   return getRandomPunish()
     if (isDamage)   return getRandomDamage()
-    if (isCustom) {
-      const customFighters = params.get('fighters')?.split(',').filter(Boolean) ?? []
-      if (customFighters.length === 0) return getRandomQuiz()
-      const randomFighter = customFighters[Math.floor(Math.random() * customFighters.length)]
-      return getFighterQuiz(randomFighter)
-    }
-    if (mode === 'fighter' && slug) return getFighterQuiz(slug)
     return getRandomQuiz()
-  }, [mode, slug, isPunish, isDamage, isOnBlock, isOnHit, isRecovery, isCustom, isMistakes, isAllRandom, params])
+  }, [mode, slug, dataType, isPunish, isDamage, isOnBlock, isOnHit, isRecovery, isCustom, isMistakes, isAllRandom, isHardcore, isSurvival, params])
 
   const fetchUnique = useCallback(async (): Promise<QuizQuestion> => {
     for (let i = 0; i < 4; i++) {
@@ -222,7 +265,7 @@ function QuizPlay() {
     if (sessionPhase !== 'playing' || loading || isInput) return
     const handler = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return
-      if (!isPunish && question?.choices) {
+      if (!effectivePunish && question?.choices) {
         const num = parseInt(e.key)
         if (num >= 1 && num <= question.choices.length && state === 'idle') {
           handleChoice(question.choices[num - 1]); return
@@ -267,7 +310,7 @@ function QuizPlay() {
     }
     // Lifetime + achievements (run after best-score save so checkAndUnlock can read updated keys)
     const delta: LifetimeDelta = { questions: total, totalCorrect: score }
-    if (isPunish) delta.punishCorrect = score
+    if (effectivePunish) delta.punishCorrect = score
     if (mode === 'fighter' && slug) {
       delta.addFighter = slug
       delta.addFighterCorrect = { slug, correct: score }
@@ -554,6 +597,56 @@ function QuizPlay() {
                 </div>
               )}
             </div>
+
+            {/* Data type picker — FIGHTER / CUSTOM / HARDCORE / SURVIVAL */}
+            {hasDataTypePicker && (
+              <div>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.18)', marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '10px' }}>
+                  {t('play.datatype_picker')}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {([
+                    { group: t('play.datatype_frames'),      types: [
+                      { id: 'startup',  label: 'STARTUP' },
+                      { id: 'active',   label: 'ACTIVE' },
+                      { id: 'recovery', label: 'RECOVERY' },
+                    ]},
+                    { group: t('play.datatype_advantage'),   types: [
+                      { id: 'onblock',  label: 'ON BLOCK' },
+                      { id: 'onhit',    label: 'ON HIT' },
+                    ]},
+                    { group: t('play.datatype_application'), types: [
+                      { id: 'punish',   label: 'PUNISSABLE/SAFE' },
+                      { id: 'damage',   label: 'DAMAGE' },
+                    ]},
+                  ] as { group: string; types: { id: typeof dataType; label: string }[] }[]).map(({ group, types }) => (
+                    <div key={group} style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.38rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.22)', minWidth: '80px' }}>
+                        {group}
+                      </span>
+                      {types.map(({ id, label }) => {
+                        const isSel = dataType === id
+                        return (
+                          <button key={id} onClick={() => setDataType(id)} style={{
+                            padding: '5px 12px',
+                            background: isSel ? `${modeColor}20` : 'rgba(255,255,255,0.03)',
+                            border: `1px solid ${isSel ? modeColor : 'rgba(255,255,255,0.08)'}`,
+                            color: isSel ? modeColor : 'rgba(255,255,255,0.35)',
+                            cursor: 'pointer',
+                            fontFamily: "'Share Tech Mono', monospace",
+                            fontSize: '0.44rem', letterSpacing: '2px',
+                            boxShadow: isSel ? `0 0 10px ${modeColor}22` : 'none',
+                            transition: 'all 0.15s',
+                          }}>
+                            {label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Question count picker */}
             <div>
@@ -937,7 +1030,7 @@ function QuizPlay() {
 
             {/* Question */}
             <div style={{ padding: '16px 18px 12px' }}>
-              {isPunish ? (
+              {effectivePunish ? (
                 <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1rem', fontWeight: 600, lineHeight: 1.4, color: 'rgba(255,255,255,0.9)' }}>
                   <strong style={{ color: '#fff' }}>{question.move_name}</strong>{' '}
                   {t('play.q_is_it_punishable')}{' '}
@@ -965,7 +1058,7 @@ function QuizPlay() {
             <div style={{ padding: '0 18px' }}>
 
               {/* MCQ */}
-              {!isInput && !isPunish && (
+              {!isInput && !effectivePunish && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {question.choices.map((choice, i) => (
                     <button key={choice} onClick={() => handleChoice(choice)} style={makeChoiceStyle(choice, question.answer, selected, state === 'idle')}>
@@ -1025,7 +1118,7 @@ function QuizPlay() {
               )}
 
               {/* PUNISH FINDER mode */}
-              {isPunish && (
+              {effectivePunish && (
                 <div>
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <button
@@ -1085,26 +1178,30 @@ function QuizPlay() {
                   fontSize: '0.9rem', fontWeight: 700,
                   color: state === 'correct' ? '#4ade80' : '#ff2d78',
                 }}>
-                  {isOnBlock ? (
+                  {effectiveOnBlock ? (
                     state === 'correct'
                       ? t('play.feedback_correct_onblock', { move: question.move_name, n: question.answer })
                       : t('play.feedback_wrong_onblock', { move: question.move_name, n: question.answer })
-                  ) : isOnHit ? (
+                  ) : effectiveOnHit ? (
                     state === 'correct'
                       ? t('play.feedback_correct_onhit', { move: question.move_name, n: question.answer })
                       : t('play.feedback_wrong_onhit', { move: question.move_name, n: question.answer })
-                  ) : isRecovery ? (
+                  ) : effectiveRecovery ? (
                     state === 'correct'
                       ? t('play.feedback_correct_recovery', { move: question.move_name, n: question.answer })
                       : t('play.feedback_wrong_recovery', { move: question.move_name, n: question.answer })
-                  ) : isPunish ? (
+                  ) : effectivePunish ? (
                     state === 'correct'
                       ? t('play.feedback_correct_punish', { move: question.move_name, label: t(isPunishable ? 'play.punishable_label' : 'play.safe_label'), value: question.on_block_value ?? '' })
                       : t('play.feedback_wrong_punish',   { move: question.move_name, label: t(isPunishable ? 'play.punishable_label' : 'play.safe_label'), value: question.on_block_value ?? '' })
-                  ) : isDamage ? (
+                  ) : effectiveDamage ? (
                     state === 'correct'
                       ? t('play.feedback_correct_damage', { n: question.answer })
                       : t('play.feedback_wrong_damage', { n: question.answer })
+                  ) : effectiveActive ? (
+                    state === 'correct'
+                      ? t('play.feedback_correct_active', { n: question.answer })
+                      : t('play.feedback_wrong_active', { n: question.answer })
                   ) : isInput ? (
                     state === 'correct'
                       ? t('play.feedback_correct_startup', { n: question.answer })
@@ -1116,7 +1213,7 @@ function QuizPlay() {
                       ? t('play.feedback_timeout', { n: question.answer })
                       : t('play.feedback_wrong_startup', { n: question.answer })
                   )}
-                  {!isPunish && !isDamage && !isOnBlock && !isOnHit && !isRecovery && question.on_block_value && (
+                  {!effectivePunish && !effectiveDamage && !effectiveOnBlock && !effectiveOnHit && !effectiveRecovery && !effectiveActive && question.on_block_value && (
                     <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.4)', marginTop: '6px' }}>
                       {question.move_name} — {question.answer}f startup · {question.on_block_value} on block
                     </div>

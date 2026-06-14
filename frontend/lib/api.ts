@@ -85,6 +85,42 @@ export async function getRandomDamage() {
   return res.json()
 }
 
+export async function getRandomActive() {
+  const res = await fetch(`${API_URL}/api/quiz/random/active`)
+  if (!res.ok) throw new Error('Erreur quiz active')
+  return res.json()
+}
+
+export async function getFighterActive(slug: string) {
+  const res = await fetch(`${API_URL}/api/quiz/${slug}/active`)
+  if (!res.ok) throw new Error('Erreur quiz active fighter')
+  return res.json()
+}
+
+export async function getFighterRecovery(slug: string) {
+  const res = await fetch(`${API_URL}/api/quiz/${slug}/recovery`)
+  if (!res.ok) throw new Error('Erreur quiz recovery fighter')
+  return res.json()
+}
+
+export async function getFighterOnBlock(slug: string) {
+  const res = await fetch(`${API_URL}/api/quiz/${slug}/onblock`)
+  if (!res.ok) throw new Error('Erreur quiz onblock fighter')
+  return res.json()
+}
+
+export async function getFighterOnHit(slug: string) {
+  const res = await fetch(`${API_URL}/api/quiz/${slug}/onhit`)
+  if (!res.ok) throw new Error('Erreur quiz onhit fighter')
+  return res.json()
+}
+
+export async function getFighterDamage(slug: string) {
+  const res = await fetch(`${API_URL}/api/quiz/${slug}/damage`)
+  if (!res.ok) throw new Error('Erreur quiz damage fighter')
+  return res.json()
+}
+
 export async function getDailyQuiz(): Promise<QuizQuestion[]> {
   const res = await fetch(`${API_URL}/api/quiz/daily`)
   if (!res.ok) throw new Error('Erreur daily quiz')
