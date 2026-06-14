@@ -55,7 +55,7 @@ export default function Home() {
 
       {/* Lang toggle */}
       <div style={{ position: 'fixed', top: '16px', right: '20px', zIndex: 100, display: 'flex', gap: '0' }}>
-        {(['en', 'fr'] as const).map(l => (
+        {(['en', 'fr', 'es'] as const).map(l => (
           <button
             key={l}
             onClick={() => setLang(l)}

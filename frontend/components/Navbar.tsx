@@ -205,7 +205,7 @@ export default function Navbar() {
         ? { gap: '8px', padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.07)' }
         : { alignItems: 'stretch' }),
     }}>
-      {(['en', 'fr'] as const).map(l => (
+      {(['en', 'fr', 'es'] as const).map(l => (
         <button
           key={l}
           onClick={() => setLang(l)}
