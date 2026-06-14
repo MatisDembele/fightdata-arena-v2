@@ -114,7 +114,7 @@ export default function Navbar() {
               background: 'none', border: '1px solid rgba(255,255,255,0.15)',
               color: 'rgba(255,255,255,0.4)', cursor: 'pointer',
               fontFamily: "'Share Tech Mono', monospace",
-              fontSize: inDrawer ? '0.5rem' : '0.45rem', letterSpacing: '2px',
+              fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
               padding: inDrawer ? '4px 10px' : '3px 7px',
               transition: 'all 0.15s',
             }}
@@ -138,7 +138,7 @@ export default function Navbar() {
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                 background: '#5865F2', color: '#fff', padding: '10px',
                 fontFamily: "'Share Tech Mono', monospace",
-                fontSize: '0.55rem', letterSpacing: '2px',
+                fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
                 textDecoration: 'none', width: '100%',
               }}
               onClick={() => setMenuOpen(false)}
@@ -155,7 +155,7 @@ export default function Navbar() {
                   background: '#5865F2', color: '#fff',
                   padding: '5px 11px', border: 'none', cursor: 'pointer',
                   fontFamily: "'Share Tech Mono', monospace",
-                  fontSize: '0.55rem', letterSpacing: '2px',
+                  fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
                   transition: 'opacity 0.15s', opacity: showConsent ? '0.85' : '1',
                 }}
               >
@@ -170,8 +170,8 @@ export default function Navbar() {
                   padding: '14px', zIndex: 999,
                   boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
                 }}>
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '3px', color: '#5865F2', marginBottom: '8px' }}>DONNÉES COLLECTÉES</div>
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, marginBottom: '12px' }}>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-3)', color: '#5865F2', marginBottom: '8px' }}>DONNÉES COLLECTÉES</div>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, marginBottom: '12px' }}>
                     Votre identifiant Discord et pseudo sont sauvegardés pour conserver votre progression. Aucune donnée sensible n'est collectée.{' '}
                     <Link href="/privacy" style={{ color: '#5865F2' }} onClick={() => setShowConsent(false)}>Politique de confidentialité</Link>
                   </div>
@@ -181,7 +181,7 @@ export default function Navbar() {
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
                       background: '#5865F2', color: '#fff', padding: '8px',
                       fontFamily: "'Share Tech Mono', monospace",
-                      fontSize: '0.52rem', letterSpacing: '2px',
+                      fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
                       textDecoration: 'none',
                     }}
                   >
@@ -215,7 +215,7 @@ export default function Navbar() {
             background: lang === l ? 'rgba(255,224,0,0.1)' : 'transparent',
             color: lang === l ? '#ffe000' : 'rgba(255,255,255,0.4)',
             cursor: 'pointer',
-            fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px',
+            fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)',
           } : undefined}
         >
           {inDrawer ? l.toUpperCase() : (
@@ -367,7 +367,7 @@ export default function Navbar() {
           }}>
             <span style={{
               fontFamily: "'Share Tech Mono', monospace",
-              fontSize: '0.5rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.3)',
+              fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-4)', color: 'rgba(255,255,255,0.3)',
             }}>NAVIGATION</span>
             <button
               onClick={() => setMenuOpen(false)}

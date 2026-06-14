@@ -100,7 +100,7 @@ export default function FightersPage() {
                 <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(1.4rem, 4vw, 2rem)', letterSpacing: '5px', color: '#fff', textShadow: `0 0 14px ${color}55`, lineHeight: 1 }}>
                   {selected.name.toUpperCase()}
                 </div>
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.25)', marginTop: '4px' }}>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.25)', marginTop: '4px' }}>
                   {moves.length} MOVES · STREET FIGHTER 6
                 </div>
               </div>
@@ -119,7 +119,7 @@ export default function FightersPage() {
                 {['ALL', ...sections].map(s => {
                   const active = s === activeSection
                   return (
-                    <button key={s} onClick={() => setActiveSection(s)} style={{ padding: '5px 12px', background: active ? `${color}18` : 'rgba(255,255,255,0.03)', border: `1px solid ${active ? color : 'rgba(255,255,255,0.08)'}`, color: active ? color : 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '1px', transition: 'all 0.15s', textTransform: 'uppercase' }}>
+                    <button key={s} onClick={() => setActiveSection(s)} style={{ padding: '5px 12px', background: active ? `${color}18` : 'rgba(255,255,255,0.03)', border: `1px solid ${active ? color : 'rgba(255,255,255,0.08)'}`, color: active ? color : 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-1)', transition: 'all 0.15s', textTransform: 'uppercase' }}>
                       {s}
                     </button>
                   )
@@ -135,7 +135,7 @@ export default function FightersPage() {
                 {/* Header row */}
                 <div style={{ display: 'grid', gridTemplateColumns: COLS.map(c => c.width).join(' '), gap: '1px', background: 'rgba(255,255,255,0.04)', padding: '8px 12px', marginBottom: '2px', borderBottom: `1px solid ${color}33` }}>
                   {COLS.map(col => (
-                    <div key={col.key} style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '2px', color: color, overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                    <div key={col.key} style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: color, overflow: 'hidden', whiteSpace: 'nowrap' }}>
                       {col.label}
                     </div>
                   ))}
@@ -160,7 +160,7 @@ export default function FightersPage() {
                 </div>
 
                 {filtered.length === 0 && (
-                  <div style={{ padding: '32px', textAlign: 'center', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)' }}>
+                  <div style={{ padding: '32px', textAlign: 'center', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.2)' }}>
                     NO MOVES FOUND
                   </div>
                 )}
@@ -183,7 +183,7 @@ export default function FightersPage() {
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2rem, 5vw, 3rem)', letterSpacing: '8px', color: '#fff', textShadow: `0 0 20px ${COL_COLOR}55`, lineHeight: 1 }}>
               FRAME DATA
             </div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.52rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.2)', marginTop: '6px' }}>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-4)', color: 'rgba(255,255,255,0.2)', marginTop: '6px' }}>
               STREET FIGHTER 6 // SELECT A FIGHTER
             </div>
           </div>

@@ -585,12 +585,12 @@ function QuizPlay() {
               }}>
                 {modeLabel}
               </div>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.52rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.3)', marginTop: '8px' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.3)', marginTop: '8px' }}>
                 {modeSub}
               </div>
               {bestRecord && (
                 <div style={{ marginTop: '14px', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', background: `${modeColor}10`, border: `1px solid ${modeColor}30` }}>
-                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.28)' }}>RECORD</span>
+                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.28)' }}>RECORD</span>
                   <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '2px', color: modeColor }}>{bestRecord.bestScore} CORRECT</span>
                   <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.6rem' }}>·</span>
                   <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '2px', color: modeColor }}>{bestRecord.bestAccuracy}%</span>
@@ -601,7 +601,7 @@ function QuizPlay() {
             {/* Data type picker — FIGHTER / CUSTOM / HARDCORE / SURVIVAL */}
             {hasDataTypePicker && (
               <div>
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.18)', marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '10px' }}>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.18)', marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '10px' }}>
                   {t('play.datatype_picker')}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -621,7 +621,7 @@ function QuizPlay() {
                     ]},
                   ] as { group: string; types: { id: typeof dataType; label: string }[] }[]).map(({ group, types }) => (
                     <div key={group} style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.38rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.22)', minWidth: '80px' }}>
+                      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.22)', minWidth: '80px' }}>
                         {group}
                       </span>
                       {types.map(({ id, label }) => {
@@ -634,7 +634,7 @@ function QuizPlay() {
                             color: isSel ? modeColor : 'rgba(255,255,255,0.35)',
                             cursor: 'pointer',
                             fontFamily: "'Share Tech Mono', monospace",
-                            fontSize: '0.44rem', letterSpacing: '2px',
+                            fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
                             boxShadow: isSel ? `0 0 10px ${modeColor}22` : 'none',
                             transition: 'all 0.15s',
                           }}>
@@ -650,7 +650,7 @@ function QuizPlay() {
 
             {/* Question count picker */}
             <div>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.18)', marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '10px' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.18)', marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '10px' }}>
                 {t('play.session_length')}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
@@ -672,16 +672,16 @@ function QuizPlay() {
                         position: 'relative',
                       }}
                     >
-                      <span style={{ position: 'absolute', top: '6px', right: '8px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.38rem', letterSpacing: '0px', color: isSel ? `${modeColor}77` : 'rgba(255,255,255,0.12)' }}>
+                      <span style={{ position: 'absolute', top: '6px', right: '8px', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0px', color: isSel ? `${modeColor}77` : 'rgba(255,255,255,0.12)' }}>
                         [{i + 1}]
                       </span>
                       <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '2.2rem', letterSpacing: '1px', lineHeight: 1, color: isSel ? modeColor : 'rgba(255,255,255,0.55)', textShadow: isSel ? `0 0 18px ${modeColor}88` : 'none' }}>
                         {isInf ? '∞' : len}
                       </span>
-                      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.4rem', letterSpacing: '2px', color: isSel ? `${modeColor}bb` : 'rgba(255,255,255,0.22)' }}>
+                      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: isSel ? `${modeColor}bb` : 'rgba(255,255,255,0.22)' }}>
                         {isInf ? t('play.infinite_label') : 'Q'}
                       </span>
-                      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.38rem', letterSpacing: '1px', color: isSel ? `${modeColor}66` : 'rgba(255,255,255,0.13)', marginTop: '2px' }}>
+                      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color: isSel ? `${modeColor}66` : 'rgba(255,255,255,0.13)', marginTop: '2px' }}>
                         {isInf ? '∞' : TIME_EST[len]}
                       </span>
                     </button>
@@ -715,7 +715,7 @@ function QuizPlay() {
                       ? `${t('play.start')} ∞`
                       : `${t('play.start')} ${sessionLength}Q`}
                   </button>
-                  <Link href="/quiz" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
+                  <Link href="/quiz" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
                     {t('play.change_mode')}
                   </Link>
                 </>
@@ -758,7 +758,7 @@ function QuizPlay() {
           width: '100%', padding: '10px 12px',
           background: 'none', border: '1px solid rgba(255,255,255,0.07)',
           color: 'rgba(255,255,255,0.25)',
-          fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px',
+          fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)',
           textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>{t('stats.title')} →</Link>
       </div>
@@ -798,7 +798,7 @@ function QuizPlay() {
                     <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2rem, 8vw, 3rem)', letterSpacing: '2px', color: modeColor, textShadow: `0 0 12px ${modeColor}88` }}>
                       {stat.val}
                     </div>
-                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.3)', marginTop: '6px' }}>
+                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.3)', marginTop: '6px' }}>
                       {stat.label}
                     </div>
                   </div>
@@ -813,7 +813,7 @@ function QuizPlay() {
                   <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(74,222,128,0.1)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '4px', color: modeColor }}>SURVIVAL LEADERBOARD</span>
                     {!survivalPseudo && (
-                      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.4rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.2)' }}>— set a name on the Stats page to appear here</span>
+                      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.2)' }}>— set a name on the Stats page to appear here</span>
                     )}
                   </div>
                   {survivalLb.map((entry) => {
@@ -858,7 +858,7 @@ function QuizPlay() {
           <div className="animate-fadeInUp" style={{ width: '100%', maxWidth: isDesktop ? '720px' : '480px', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center', textAlign: 'center' }}>
 
             <div>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.3)', marginBottom: '14px' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.3)', marginBottom: '14px' }}>
                 {t('play.final_rank')}
               </div>
               <div style={{
@@ -888,14 +888,14 @@ function QuizPlay() {
                   <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(1.6rem, 5vw, 2.4rem)', letterSpacing: '2px', color: rank.color, textShadow: `0 0 12px ${rank.color}88` }}>
                     {stat.val}
                   </div>
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.3)', marginTop: '6px' }}>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.3)', marginTop: '6px' }}>
                     {stat.label}
                   </div>
                 </div>
               ))}
             </div>
 
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)' }}>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.2)' }}>
               {modeLabel} — {sessionLength === Infinity ? '∞' : sessionLength} QUESTIONS
             </div>
 
@@ -948,8 +948,8 @@ function QuizPlay() {
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
               }}>{stat.val}</div>
               <div style={{
-                fontFamily: "'Share Tech Mono', monospace", fontSize: '0.52rem',
-                letterSpacing: '3px', color: 'rgba(255,255,255,0.28)',
+                fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)',
+                letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.28)',
               }}>{stat.label}</div>
             </div>
           ))}
@@ -959,8 +959,8 @@ function QuizPlay() {
               position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
               background: 'none', border: '1px solid rgba(255,255,255,0.1)',
               color: soundEnabled ? modeColor : 'rgba(255,255,255,0.2)',
-              fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem',
-              letterSpacing: '2px', padding: '3px 7px', cursor: 'pointer',
+              fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)',
+              letterSpacing: 'var(--ls-2)', padding: '3px 7px', cursor: 'pointer',
               transition: 'all 0.2s',
             }}
             title={soundEnabled ? 'Mute SFX' : 'Enable SFX'}
@@ -1160,7 +1160,7 @@ function QuizPlay() {
                   </div>
                   <p style={{
                     fontFamily: "'Share Tech Mono', monospace",
-                    fontSize: '0.52rem', color: 'rgba(255,255,255,0.18)',
+                    fontSize: 'var(--fs-xs)', color: 'rgba(255,255,255,0.18)',
                     letterSpacing: '1.5px', marginTop: '8px', textAlign: 'center',
                   }}>{t('play.pushback_note')}</p>
                 </div>
@@ -1214,37 +1214,35 @@ function QuizPlay() {
                       : t('play.feedback_wrong_startup', { n: question.answer })
                   )}
                   {!effectivePunish && !effectiveDamage && !effectiveOnBlock && !effectiveOnHit && !effectiveRecovery && !effectiveActive && question.on_block_value && (
-                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.4)', marginTop: '6px' }}>
+                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.4)', marginTop: '6px' }}>
                       {question.move_name} — {question.answer}f startup · {question.on_block_value} on block
                     </div>
                   )}
                   {state === 'wrong' && (() => {
                     const fact = getFunFact(question, mode)
                     return fact ? (
-                      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.44rem', letterSpacing: '1px', color: '#f59e0b', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(245,158,11,0.2)' }}>
+                      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: '#f59e0b', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(245,158,11,0.2)' }}>
                         💡 {fact}
                       </div>
                     ) : null
                   })()}
                 </div>
               )}
-              <button onClick={handleNextQuestion} style={{
-                width: '100%', padding: '13px',
-                background: isSessionOver && state !== 'idle'
-                  ? `linear-gradient(90deg, ${modeColor}, ${modeColorAlt})`
-                  : `linear-gradient(90deg, ${modeColorAlt}, ${modeColor})`,
-                border: 'none', cursor: 'pointer',
-                fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: '0.95rem', letterSpacing: '4px', color: '#fff',
-                boxShadow: `0 0 16px ${modeColor}33`,
-                transition: 'all 0.2s',
-              }}>
-                {isSessionOver && state !== 'idle'
-                  ? t('play.see_results')
-                  : state === 'idle'
-                  ? t('play.skip')
-                  : t('play.next_question')}
-              </button>
+              {state !== 'idle' && (
+                <button onClick={handleNextQuestion} style={{
+                  width: '100%', padding: '13px',
+                  background: isSessionOver
+                    ? `linear-gradient(90deg, ${modeColor}, ${modeColorAlt})`
+                    : `linear-gradient(90deg, ${modeColorAlt}, ${modeColor})`,
+                  border: 'none', cursor: 'pointer',
+                  fontFamily: "'Bebas Neue', sans-serif",
+                  fontSize: '0.95rem', letterSpacing: '4px', color: '#fff',
+                  boxShadow: `0 0 16px ${modeColor}33`,
+                  transition: 'all 0.2s',
+                }}>
+                  {isSessionOver ? t('play.see_results') : t('play.next_question')}
+                </button>
+              )}
             </div>
 
             </div>{/* end right column */}
@@ -1355,7 +1353,7 @@ function ReviewSection({ history, show, onToggle, modeColor, mode, t }: {
                   {entry.question.fighter_slug.toUpperCase()} — {entry.question.move_name}
                 </div>
                 {!entry.correct && entry.userAnswer && (
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.38rem', letterSpacing: '1px', color: '#ff2d78', marginTop: '2px' }}>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: '#ff2d78', marginTop: '2px' }}>
                     {t('play.your_answer')}: {fmt(entry.userAnswer)}
                   </div>
                 )}

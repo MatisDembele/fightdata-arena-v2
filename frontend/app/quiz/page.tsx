@@ -293,7 +293,7 @@ export default function QuizSelectPage() {
 
                 <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '14px 20px', background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(12px)', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
                   {selectedFighters.length < 2 ? (
-                    <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.3)' }}>{t('quiz.custom_min')}</span>
+                    <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.3)' }}>{t('quiz.custom_min')}</span>
                   ) : (
                     <button
                       onClick={() => router.push(`/quiz/play?mode=custom&fighters=${selectedFighters.join(',')}`)}
@@ -317,7 +317,7 @@ export default function QuizSelectPage() {
                 textShadow: `0 0 20px ${current.color}`,
                 transition: 'text-shadow 0.4s',
               }}>{t('quiz.choose_mode')}</h1>
-              <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.25)', marginTop: '6px' }}>
+              <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-sm)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.25)', marginTop: '6px' }}>
                 {t('quiz.subtitle', { n: QUIZ_MODES.length })}
               </p>
             </div>
@@ -340,11 +340,11 @@ export default function QuizSelectPage() {
                   <div key={cat.id}>
                     {/* Category header */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
-                      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.5)' }}>
+                      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.5)' }}>
                         {cat.label}
                       </div>
                       <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.07)' }} />
-                      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.38rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.2)' }}>
+                      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.2)' }}>
                         {cat.hint}
                       </div>
                     </div>
@@ -393,7 +393,7 @@ export default function QuizSelectPage() {
 
                             <div style={{
                               fontFamily: "'Share Tech Mono', monospace",
-                              fontSize: '0.46rem', letterSpacing: '1px',
+                              fontSize: 'var(--fs-xs)', letterSpacing: '1px',
                               color: isActive ? mode.color : 'rgba(255,255,255,0.2)',
                               marginTop: '4px', lineHeight: 1.4,
                               transition: 'all 0.2s',

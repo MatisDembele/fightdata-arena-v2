@@ -117,7 +117,7 @@ export default function ChallengesPage() {
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2rem, 6vw, 3rem)', letterSpacing: '8px', color: '#fff', textShadow: '0 0 20px rgba(255,224,0,0.3)', lineHeight: 1 }}>
               CHALLENGES
             </div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.52rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.2)', marginTop: '8px' }}>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.2)', marginTop: '8px' }}>
               FIGHT DATA ARENA // TIME-BASED CHALLENGES
             </div>
           </div>
@@ -161,7 +161,7 @@ export default function ChallengesPage() {
           </div>
 
           <div style={{ marginTop: '32px', textAlign: 'center' }}>
-            <Link href="/quiz" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
+            <Link href="/quiz" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
               ← {t('quiz.choose_mode')}
             </Link>
           </div>
@@ -216,7 +216,7 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
                 <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.6rem', letterSpacing: '4px', color: played ? color : '#fff', textShadow: played ? `0 0 14px ${color}66` : 'none', lineHeight: 1 }}>
                   {title}
                 </div>
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '3px', color: played ? color + 'aa' : 'rgba(255,255,255,0.25)', marginTop: '2px' }}>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: played ? color + 'aa' : 'rgba(255,255,255,0.25)', marginTop: '2px' }}>
                   {sub}
                 </div>
               </div>
@@ -234,11 +234,11 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
 
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: played ? '4px' : '12px' }}>
               {streakLabel && (
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '2px', color: '#ffe000' }}>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: '#ffe000' }}>
                   {streakLabel}
                 </div>
               )}
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.44rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.2)' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.2)' }}>
                 {resetLabel}
               </div>
             </div>
@@ -253,11 +253,11 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
                     {score}<span style={{ fontSize: '1rem', opacity: 0.5 }}>/{total}</span>
                   </div>
                   {accuracy !== null && (
-                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.3)', marginTop: '2px' }}>
+                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.3)', marginTop: '2px' }}>
                       {accuracy}% {t('stats.accuracy').toLowerCase()}
                     </div>
                   )}
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '2px', color: color + '88', marginTop: '4px' }}>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: color + '88', marginTop: '4px' }}>
                     {t('challenge.done')}
                   </div>
                 </div>
@@ -265,7 +265,7 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
                   padding: '7px 14px',
                   background: 'none', border: `1px solid ${color}44`,
                   color: color + '99', textDecoration: 'none',
-                  fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '2px',
+                  fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
                   whiteSpace: 'nowrap',
                 }}>
                   {t('challenge.view')}
@@ -291,7 +291,7 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
       {/* Leaderboard */}
       {leaderboard.length > 0 && (
         <div style={{ borderTop: `1px solid ${color}18`, padding: '12px 24px 16px' }}>
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '4px', color: color + '88', marginBottom: '8px' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-3)', color: color + '88', marginBottom: '8px' }}>
             {lbTitle}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
@@ -309,13 +309,13 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
                     color: entry.rank === 1 ? '#ffd700' : entry.rank === 2 ? '#c0c0c0' : entry.rank === 3 ? '#cd7f32' : 'rgba(255,255,255,0.25)',
                   }}>#{entry.rank}</span>
                   <span style={{
-                    fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '1px',
+                    fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-1)',
                     color: isMe ? color : 'rgba(255,255,255,0.6)',
                     textShadow: isMe ? `0 0 8px ${color}` : 'none',
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>{entry.player_name}</span>
                   <span style={{
-                    fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '1px',
+                    fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px',
                     color: 'rgba(255,255,255,0.2)', textAlign: 'right',
                   }}>{entry.elapsed_seconds != null ? formatTime(entry.elapsed_seconds) : '—'}</span>
                   <span style={{

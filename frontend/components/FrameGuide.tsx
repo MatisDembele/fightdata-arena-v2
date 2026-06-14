@@ -20,11 +20,11 @@ function Row({ label, frames, color, bg, desc }: { label: string; frames: number
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '3px', color }}>{label}</span>
-        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.25)' }}>· {frames}F</span>
+        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color }}>{label}</span>
+        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.25)' }}>· {frames}F</span>
       </div>
       <Frames count={frames} color={color} bg={bg} />
-      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.4rem', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.3)', lineHeight: 1.4 }}>{desc}</div>
+      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.3)', lineHeight: 1.4 }}>{desc}</div>
     </div>
   )
 }
@@ -96,7 +96,7 @@ export default function FrameGuide() {
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
               <div>
                 <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.4rem', letterSpacing: '5px', color: '#fff', lineHeight: 1 }}>{t('guide.title')}</div>
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.25)', marginTop: '5px' }}>{t('guide.subtitle')}</div>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.25)', marginTop: '5px' }}>{t('guide.subtitle')}</div>
               </div>
               <button
                 onClick={() => setOpen(false)}
@@ -106,7 +106,7 @@ export default function FrameGuide() {
 
             {/* Visual example */}
             <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.35)', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '10px' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.35)', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '10px' }}>
                 {t('guide.example')}
               </div>
 
@@ -132,7 +132,7 @@ export default function FrameGuide() {
                 desc={t('guide.recovery_desc')}
               />
 
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '1px', color: '#f87171', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-1)', color: '#f87171', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px' }}>
                 {t('guide.punishable')}
               </div>
             </div>
@@ -148,7 +148,7 @@ export default function FrameGuide() {
               ].map(({ term, color, label, desc }) => (
                 <div key={term} style={{ display: 'grid', gridTemplateColumns: '90px 1fr', gap: '12px', padding: '9px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', alignItems: 'start' }}>
                   <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', letterSpacing: '1px', color }}>{label}</div>
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.4rem', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.35)', lineHeight: 1.5 }}>{desc}</div>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.35)', lineHeight: 1.5 }}>{desc}</div>
                 </div>
               ))}
             </div>

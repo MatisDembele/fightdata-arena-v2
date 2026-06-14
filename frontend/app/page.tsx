@@ -142,7 +142,7 @@ export default function Home() {
           }}>FIGHT DATA ARENA</h1>
           <div style={{
             fontFamily: "'Share Tech Mono', monospace",
-            fontSize: '0.65rem', letterSpacing: '7px',
+            fontSize: 'var(--fs-sm)', letterSpacing: 'var(--ls-4)',
             color: 'rgba(255,255,255,0.25)', marginTop: '8px',
           }}>{t('home.subtitle')}</div>
         </div>
@@ -207,8 +207,8 @@ export default function Home() {
                     }}>{mode.label}</div>
                     <div style={{
                       fontFamily: "'Share Tech Mono', monospace",
-                      fontSize: isActive ? '0.62rem' : '0.52rem',
-                      letterSpacing: '3px',
+                      fontSize: isActive ? 'var(--fs-sm)' : 'var(--fs-xs)',
+                      letterSpacing: 'var(--ls-3)',
                       color: isActive ? mode.color : 'rgba(255,255,255,0.18)',
                       marginTop: '6px',
                       textShadow: isActive ? `0 0 8px ${mode.color}` : 'none',
@@ -255,14 +255,14 @@ export default function Home() {
               }}>{s.val}</div>
               <div style={{
                 fontFamily: "'Share Tech Mono', monospace",
-                fontSize: '0.55rem', letterSpacing: '3px',
+                fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)',
                 color: 'rgba(255,255,255,0.25)',
               }}>{s.label}</div>
             </div>
           ))}
           <div style={{
             fontFamily: "'Share Tech Mono', monospace",
-            fontSize: '0.55rem', letterSpacing: '3px',
+            fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)',
             color: 'rgba(255,255,255,0.15)',
           }}>{t('home.patch')}</div>
         </div>

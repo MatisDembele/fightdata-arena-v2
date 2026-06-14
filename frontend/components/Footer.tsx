@@ -105,7 +105,7 @@ export default function Footer() {
               <div style={{
                 position: 'absolute', bottom: '8px', right: '10px',
                 fontFamily: "'Share Tech Mono', monospace",
-                fontSize: '0.38rem', letterSpacing: '1px',
+                fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)',
                 color: 'rgba(255,255,255,0.15)',
               }}>{message.length}/2000</div>
             )}

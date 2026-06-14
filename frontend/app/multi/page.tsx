@@ -115,7 +115,7 @@ function MultiLobbyContent() {
 
           <div style={{ textAlign: 'center', marginBottom: '4px' }}>
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '2.5rem', letterSpacing: '8px', color: '#fff', textShadow: '0 0 12px #ffe000, 0 0 30px #ffe00055' }}>{t('multi.title')}</div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.52rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', marginTop: '6px' }}>{t('multi.subtitle')}</div>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.2)', marginTop: '6px' }}>{t('multi.subtitle')}</div>
           </div>
 
           {/* Pseudo */}
@@ -129,7 +129,7 @@ function MultiLobbyContent() {
 
           {/* Avatar picker */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.25)' }}>{t('multi.choose_avatar')}</div>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.25)' }}>{t('multi.choose_avatar')}</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '4px' }}>
               {FIGHTERS.map(slug => {
                 const isSelected = avatar === slug
@@ -155,7 +155,7 @@ function MultiLobbyContent() {
                 )
               })}
             </div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '3px', color: '#ffe000', textAlign: 'center', opacity: 0.7 }}>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: '#ffe000', textAlign: 'center', opacity: 0.7 }}>
               {avatar.toUpperCase()}
             </div>
           </div>

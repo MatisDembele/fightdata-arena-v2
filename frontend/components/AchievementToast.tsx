@@ -55,24 +55,24 @@ export default function AchievementToast({
       <div style={{ padding: '14px 16px', display: 'flex', gap: '14px', alignItems: 'center' }}>
         <div style={{ fontSize: '2.2rem', lineHeight: 1, flexShrink: 0 }}>{current.icon}</div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '4px', color, marginBottom: '5px' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-4)', color, marginBottom: '5px' }}>
             ACHIEVEMENT UNLOCKED
           </div>
           <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.05rem', letterSpacing: '3px', color: '#fff', lineHeight: 1.1 }}>
             {current.name}
           </div>
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.4rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.4)', marginTop: '5px', lineHeight: 1.5 }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.4)', marginTop: '5px', lineHeight: 1.5 }}>
             {current.desc}
           </div>
         </div>
       </div>
 
       <div style={{ padding: '6px 16px 8px', borderTop: `1px solid ${color}22`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.38rem', letterSpacing: '3px', color }}>
+        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-3)', color }}>
           {RARITY_LABEL[current.rarity]}
         </span>
         {achievements.length > 1 && (
-          <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.38rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.3)' }}>
+          <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.3)' }}>
             +{achievements.length - 1}
           </span>
         )}

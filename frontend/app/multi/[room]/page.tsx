@@ -573,7 +573,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
             })}
           </div>
 
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.15)', position: 'relative', zIndex: 1 }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-4)', color: 'rgba(255,255,255,0.15)', position: 'relative', zIndex: 1 }}>
             ROOM {room} — {gameMode.toUpperCase()} — {totalQuestions} Q
           </div>
         </div>
@@ -615,11 +615,11 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
             <div style={{ display: 'flex', gap: '10px' }}>
               <button onClick={() => sendAnswer('punissable')} disabled={!!selected} style={punishBtnStyle('punissable')}>
                 💀 {t('room.punishable_label')}
-                <div style={{ fontSize: '0.55rem', letterSpacing: '2px', marginTop: '4px', opacity: 0.6 }}>{'≤ -4 ON BLOCK'}</div>
+                <div style={{ fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', marginTop: '4px', opacity: 0.6 }}>{'≤ -4 ON BLOCK'}</div>
               </button>
               <button onClick={() => sendAnswer('safe')} disabled={!!selected} style={punishBtnStyle('safe')}>
                 ✓ {t('room.safe_label')}
-                <div style={{ fontSize: '0.55rem', letterSpacing: '2px', marginTop: '4px', opacity: 0.6 }}>{'-3 À +∞ ON BLOCK'}</div>
+                <div style={{ fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', marginTop: '4px', opacity: 0.6 }}>{'-3 À +∞ ON BLOCK'}</div>
               </button>
             </div>
           )}
@@ -648,7 +648,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
                     {isCorrect ? `+${myPts}` : '0'} PTS
                   </span>
                   {isCorrect && (
-                    <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', letterSpacing: '2px', color: 'rgba(255,224,0,0.5)' }}>
+                    <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,224,0,0.5)' }}>
                       {myPts === 1000 ? 'PERFECT' : myPts >= 800 ? 'FAST!' : myPts >= 500 ? 'GOOD' : 'SLOW'}
                     </span>
                   )}
@@ -786,7 +786,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
                   <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '0.95rem' : '0.85rem', letterSpacing: '2px', color: isMe ? COLOR : 'rgba(255,255,255,0.65)', textShadow: isMe ? `0 0 8px ${COLOR}` : 'none' }}>
                     {isMe ? t('room.you') : name.toUpperCase().slice(0, 12)}
                   </div>
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.42rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.2)', marginTop: '2px' }}>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.2)', marginTop: '2px' }}>
                     {acc}% {t('room.precision')}
                   </div>
                 </div>
@@ -801,7 +801,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
 
       const voteGrid = (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.54rem' : '0.46rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.22)', textAlign: isDesktop ? 'left' : 'center' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-4)', color: 'rgba(255,255,255,0.22)', textAlign: isDesktop ? 'left' : 'center' }}>
             {myVote
               ? t('multi.vote_count', { n: Object.keys(playerVotes).length, total: players.length })
               : t('multi.vote_mode')}
@@ -831,7 +831,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
                   {hasVotes && (
                     <span style={{
                       position: 'absolute', top: '3px', right: '5px',
-                      fontFamily: "'Share Tech Mono', monospace", fontSize: '0.44rem',
+                      fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)',
                       color: isMyVote ? m.color : `${m.color}99`,
                     }}>
                       {count}
@@ -842,7 +842,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
             })}
           </div>
           {myVote && (
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.46rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.18)', textAlign: 'center' }}>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.18)', textAlign: 'center' }}>
               {t('multi.vote_waiting')}
             </div>
           )}
