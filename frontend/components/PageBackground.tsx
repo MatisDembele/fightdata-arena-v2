@@ -26,10 +26,10 @@ export default function PageBackground() {
       style={{
         position: 'fixed', inset: 0, zIndex: 0,
         background: `
-          radial-gradient(ellipse 80% 60% at 20% 50%, ${colorAlt} 0%, transparent 60%),
-          radial-gradient(ellipse 70% 70% at 80% 30%, ${color} 0%, transparent 55%),
-          radial-gradient(ellipse 60% 50% at 60% 80%, ${colorAlt} 0%, transparent 50%),
-          linear-gradient(135deg, #0d0010 0%, #1a0030 40%, #0d0015 100%)
+          radial-gradient(ellipse 100% 80% at 50% 100%, ${color}20 0%, transparent 60%),
+          radial-gradient(ellipse 80% 60% at 15% 50%, ${colorAlt}30 0%, transparent 55%),
+          radial-gradient(ellipse 70% 70% at 85% 30%, ${color}20 0%, transparent 55%),
+          linear-gradient(160deg, #0d0010 0%, #1a0030 50%, #0d0015 100%)
         `,
         animation: 'fadeIn 0.35s ease',
       }}
