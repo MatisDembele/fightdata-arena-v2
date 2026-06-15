@@ -33,6 +33,8 @@ function HamburgerIcon({ open }: { open: boolean }) {
   )
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
 export default function Navbar() {
   const path = usePathname()
   const { lang, setLang, t } = useLanguage()
@@ -41,8 +43,22 @@ export default function Navbar() {
   const [menuOpen,    setMenuOpen]    = useState(false)
   const [isMobile,    setIsMobile]    = useState(false)
   const [langOpen,    setLangOpen]    = useState(false)
+  const [warming,     setWarming]     = useState(false)
   const consentRef = useRef<HTMLDivElement>(null)
   const langRef    = useRef<HTMLDivElement>(null)
+
+  async function handleDiscordConnect(closeMenu = false) {
+    if (closeMenu) setMenuOpen(false)
+    setWarming(true)
+    const controller = new AbortController()
+    const tid = setTimeout(() => controller.abort(), 25000)
+    try {
+      await fetch(`${API_URL}/`, { cache: 'no-store', signal: controller.signal })
+    } catch { /* backend may still be starting — proceed anyway */ } finally {
+      clearTimeout(tid)
+    }
+    window.location.href = getDiscordOAuthUrl()
+  }
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
@@ -153,20 +169,21 @@ export default function Navbar() {
           }}
         >
           {inDrawer ? (
-            <a
-              href={getDiscordOAuthUrl()}
+            <button
+              onClick={() => handleDiscordConnect(true)}
+              disabled={warming}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                background: '#5865F2', color: '#fff', padding: '10px',
+                background: warming ? '#3a4299' : '#5865F2', color: '#fff', padding: '10px',
                 fontFamily: "'Share Tech Mono', monospace",
                 fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
-                textDecoration: 'none', width: '100%',
+                border: 'none', cursor: warming ? 'wait' : 'pointer', width: '100%',
+                opacity: warming ? 0.8 : 1, transition: 'all 0.2s',
               }}
-              onClick={() => setMenuOpen(false)}
             >
               <DiscordIcon size={13} />
-              CONNECT DISCORD
-            </a>
+              {warming ? 'DÉMARRAGE...' : 'CONNECT DISCORD'}
+            </button>
           ) : (
             <>
               <button
@@ -196,19 +213,21 @@ export default function Navbar() {
                     Votre identifiant Discord et pseudo sont sauvegardés pour conserver votre progression. Aucune donnée sensible n'est collectée.{' '}
                     <Link href="/privacy" style={{ color: '#5865F2' }} onClick={() => setShowConsent(false)}>Politique de confidentialité</Link>
                   </div>
-                  <a
-                    href={getDiscordOAuthUrl()}
+                  <button
+                    onClick={() => handleDiscordConnect()}
+                    disabled={warming}
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
-                      background: '#5865F2', color: '#fff', padding: '8px',
+                      background: warming ? '#3a4299' : '#5865F2', color: '#fff', padding: '8px',
                       fontFamily: "'Share Tech Mono', monospace",
                       fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
-                      textDecoration: 'none',
+                      border: 'none', cursor: warming ? 'wait' : 'pointer', width: '100%',
+                      opacity: warming ? 0.8 : 1, transition: 'all 0.2s',
                     }}
                   >
                     <DiscordIcon size={12} />
-                    CONTINUER AVEC DISCORD
-                  </a>
+                    {warming ? 'DÉMARRAGE...' : 'CONTINUER AVEC DISCORD'}
+                  </button>
                 </div>
               )}
             </>
