@@ -89,9 +89,10 @@ function QuizPlay() {
   const isAllRandom  = mode === 'allrandom'
 
   // Modes that expose the data-type picker
-  const hasDataTypePicker = mode === 'fighter' || isCustom || isHardcore || isSurvival
+  const hasDataTypePicker = mode === 'fighter' || isCustom || isHardcore || isSurvival || isInput
 
-  const [dataType, setDataType] = useState<'startup'|'active'|'recovery'|'onblock'|'onhit'|'damage'|'punish'>('startup')
+  const dtParam = params.get('dataType') as 'startup'|'active'|'recovery'|'onblock'|'onhit'|'damage'|'punish' | null
+  const [dataType, setDataType] = useState<'startup'|'active'|'recovery'|'onblock'|'onhit'|'damage'|'punish'>(dtParam ?? 'startup')
 
   // Effective question type (data-type modes override via dataType state)
   const mqm = isMistakes ? mistakeQuestionMode.current : ''
@@ -150,7 +151,7 @@ function QuizPlay() {
         default:         return f ? getFighterQuiz(f)     : getRandomQuiz()
       }
     }
-    if (isHardcore || isSurvival) {
+    if (isHardcore || isSurvival || isInput) {
       switch (dataType) {
         case 'active':   return getRandomActive()
         case 'recovery': return getRandomRecovery()
