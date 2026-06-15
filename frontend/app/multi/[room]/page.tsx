@@ -38,11 +38,18 @@ const MULTI_MODES = [
   { id: 'punish',   label: 'PUNISH',   color: '#ffe000', suffix: ''        },
   { id: 'onhit',    label: 'ON HIT',   color: '#4ade80', suffix: ''        },
   { id: 'recovery', label: 'RECOVERY', color: '#00f0ff', suffix: ' frames' },
+  { id: 'active',   label: 'ACTIVE',   color: '#a855f7', suffix: ' frames' },
 ] as const
 type MultiModeId = typeof MULTI_MODES[number]['id']
 
 function getModeConfig(id: string) {
   return MULTI_MODES.find(m => m.id === id) ?? MULTI_MODES[0]
+}
+
+function getAvatarSrc(av: string | null | undefined): string | null {
+  if (!av) return null
+  if (av.startsWith('http')) return av
+  return getFighterPortrait(av)
 }
 
 function playerColor(name: string): string {
@@ -104,7 +111,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
   const [countdown, setCountdown]             = useState(0)
 
   useEffect(() => {
-    const ws = new WebSocket(`${WS_URL}/api/multi/ws/${room}/${encodeURIComponent(playerName)}?avatar=${playerAvatar}`)
+    const ws = new WebSocket(`${WS_URL}/api/multi/ws/${room}/${encodeURIComponent(playerName)}?avatar=${encodeURIComponent(playerAvatar)}`)
     wsRef.current = ws
 
     ws.onmessage = (e) => {
@@ -371,7 +378,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
           {Array.from({ length: 6 }).map((_, i) => {
             const name      = players[i]
             const slug      = name ? (avatars[name] || 'ryu') : null
-            const portrait  = slug ? getFighterPortrait(slug) : null
+            const portrait  = getAvatarSrc(slug)
             const isMe      = name === playerName
             const isReady   = name ? readyPlayers.includes(name) : false
             const isHostP   = name === host
@@ -392,9 +399,9 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
                     {t('multi.host_badge')}
                   </div>
                 )}
-                <div style={{ width: avatarSize, height: avatarSize, overflow: 'hidden', border: `2px solid ${name ? c : 'rgba(255,255,255,0.06)'}`, background: 'rgba(0,0,0,0.4)', flexShrink: 0 }}>
+                <div style={{ width: avatarSize, height: avatarSize, overflow: 'hidden', border: `2px solid ${name ? c : 'rgba(255,255,255,0.06)'}`, background: 'rgba(0,0,0,0.4)', flexShrink: 0, borderRadius: slug?.startsWith('http') ? '50%' : '0' }}>
                   {portrait
-                    ? <img src={portrait} alt={slug!} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ? <img src={portrait} alt={name ?? ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.4rem', color: 'rgba(255,255,255,0.08)' }}>?</div>
                   }
                 </div>
@@ -557,13 +564,14 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'center', maxWidth: '720px', position: 'relative', zIndex: 1 }}>
             {vsPlayers.map((name) => {
               const slug    = avatars[name] || 'ryu'
-              const portrait = getFighterPortrait(slug)
+              const portrait = getAvatarSrc(slug)
               const isMe    = name === playerName
               const c       = playerColor(name)
+              const isDiscord = slug.startsWith('http')
               return (
                 <div key={name} style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: 'clamp(64px, 12vw, 104px)', height: 'clamp(64px, 12vw, 104px)', overflow: 'hidden', border: `3px solid ${c}`, boxShadow: `0 0 24px ${c}55`, background: 'rgba(0,0,0,0.5)' }}>
-                    {portrait ? <img src={portrait} alt={slug} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
+                  <div style={{ width: 'clamp(64px, 12vw, 104px)', height: 'clamp(64px, 12vw, 104px)', overflow: 'hidden', border: `3px solid ${c}`, boxShadow: `0 0 24px ${c}55`, background: 'rgba(0,0,0,0.5)', borderRadius: isDiscord ? '50%' : '0' }}>
+                    {portrait ? <img src={portrait} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
                   </div>
                   <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '3px', color: isMe ? c : '#fff', textShadow: isMe ? `0 0 10px ${c}` : 'none' }}>
                     {isMe ? t('room.you') : name.toUpperCase().slice(0, 8)}
@@ -722,8 +730,9 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
               const isLeader = name === leader
               const isMe     = name === playerName
               const slug     = avatars[name] || 'ryu'
-              const portrait = getFighterPortrait(slug)
+              const portrait = getAvatarSrc(slug)
               const pts      = pointsEarned[name] ?? 0
+              const isDiscord = slug.startsWith('http')
               return (
                 <div key={name} style={{
                   display: 'flex', alignItems: 'center', gap: isDesktop ? '16px' : '12px', padding: isDesktop ? '14px 20px' : '10px 16px',
@@ -734,8 +743,8 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
                   <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1.3rem' : '1.1rem', color: isLeader ? COLOR : 'rgba(255,255,255,0.25)', width: '24px', textAlign: 'center' }}>
                     {rank + 1}
                   </div>
-                  <div style={{ width: avatarSize, height: avatarSize, overflow: 'hidden', border: `2px solid ${isLeader ? COLOR : 'rgba(255,255,255,0.15)'}`, flexShrink: 0 }}>
-                    {portrait ? <img src={portrait} alt={slug} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
+                  <div style={{ width: avatarSize, height: avatarSize, overflow: 'hidden', border: `2px solid ${isLeader ? COLOR : 'rgba(255,255,255,0.15)'}`, flexShrink: 0, borderRadius: isDiscord ? '50%' : '0' }}>
+                    {portrait ? <img src={portrait} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1rem' : '0.9rem', letterSpacing: '2px', color: isLeader ? COLOR : isMe ? '#fff' : 'rgba(255,255,255,0.6)', textShadow: isLeader ? `0 0 10px ${COLOR}` : 'none' }}>
@@ -768,10 +777,11 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
             const isMe      = name === playerName
             const isFirst   = rank === 0
             const slug      = avatars[name] || 'ryu'
-            const portrait  = getFighterPortrait(slug)
+            const portrait  = getAvatarSrc(slug)
             const correct   = correctCounts[name] ?? 0
             const acc       = Math.round((correct / totalQuestions) * 100)
             const medal     = MEDALS[rank] ?? `#${rank + 1}`
+            const isDiscord = slug.startsWith('http')
             return (
               <div key={name} style={{
                 display: 'flex', alignItems: 'center', gap: isDesktop ? '14px' : '10px', padding: isDesktop ? '12px 18px' : '10px 14px',
@@ -779,8 +789,8 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
                 border: `1px solid ${isMe ? `${COLOR}30` : isFirst ? `${COLOR_WIN}20` : 'rgba(255,255,255,0.06)'}`,
               }}>
                 <span style={{ fontSize: isDesktop ? '1.1rem' : '1rem', width: '28px', textAlign: 'center', flexShrink: 0 }}>{medal}</span>
-                <div style={{ width: avatarSize, height: avatarSize, overflow: 'hidden', border: `2px solid ${isMe ? COLOR : 'rgba(255,255,255,0.12)'}`, flexShrink: 0 }}>
-                  {portrait ? <img src={portrait} alt={slug} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
+                <div style={{ width: avatarSize, height: avatarSize, overflow: 'hidden', border: `2px solid ${isMe ? COLOR : 'rgba(255,255,255,0.12)'}`, flexShrink: 0, borderRadius: isDiscord ? '50%' : '0' }}>
+                  {portrait ? <img src={portrait} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
                 </div>
                 <div style={{ flex: 1, textAlign: 'left' }}>
                   <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '0.95rem' : '0.85rem', letterSpacing: '2px', color: isMe ? COLOR : 'rgba(255,255,255,0.65)', textShadow: isMe ? `0 0 8px ${COLOR}` : 'none' }}>
@@ -956,12 +966,13 @@ function Scoreboard({ scores, playerName, avatars, color, youLabel }: { scores: 
       {sorted.map(([name, score]) => {
         const isMe    = name === playerName
         const slug    = avatars[name] || 'ryu'
-        const portrait = getFighterPortrait(slug)
+        const portrait = getAvatarSrc(slug)
+        const isDiscord = slug.startsWith('http')
         return (
           <div key={name} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <div style={{ width: '22px', height: '22px', overflow: 'hidden', border: `1px solid ${isMe ? color : 'rgba(255,255,255,0.2)'}`, flexShrink: 0 }}>
+            <div style={{ width: '22px', height: '22px', overflow: 'hidden', border: `1px solid ${isMe ? color : 'rgba(255,255,255,0.2)'}`, flexShrink: 0, borderRadius: isDiscord ? '50%' : '0' }}>
               {portrait
-                ? <img src={portrait} alt={slug} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ? <img src={portrait} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 : <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>{name[0]}</span>
               }
             </div>

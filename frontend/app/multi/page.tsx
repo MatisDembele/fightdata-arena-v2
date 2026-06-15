@@ -6,6 +6,7 @@ import { track } from '@vercel/analytics'
 import { useLanguage } from '@/lib/i18n'
 import { getFighterPortrait } from '@/lib/portraits'
 import { useAuth } from '@/components/AuthProvider'
+import { getDiscordAvatarUrl } from '@/lib/auth'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -33,9 +34,15 @@ function MultiLobbyContent() {
   useEffect(() => {
     const storedName   = localStorage.getItem('fda_pseudo') || ''
     const storedAvatar = localStorage.getItem('fda_avatar') || 'ryu'
-    const prefillName  = user?.username?.slice(0, 12) || storedName
+    const prefillName  = user?.username?.slice(0, 20) || storedName
     if (prefillName)  setName(prefillName)
-    if (storedAvatar) setAvatar(storedAvatar)
+    // If Discord user with avatar, use their profile picture
+    if (user?.avatar) {
+      const discordUrl = getDiscordAvatarUrl(user, 128)
+      if (discordUrl) setAvatar(discordUrl)
+    } else if (storedAvatar) {
+      setAvatar(storedAvatar)
+    }
     const roomParam = searchParams.get('room')
     if (roomParam) { setCode(roomParam.toUpperCase()); setJoining(true) }
   }, [searchParams, user])
@@ -55,7 +62,7 @@ function MultiLobbyContent() {
       const data = await res.json()
       clearTimeout(timer)
       track('multi_game_created')
-      router.push(`/multi/${data.room_code}?name=${encodeURIComponent(name.trim())}&avatar=${avatar}`)
+      router.push(`/multi/${data.room_code}?name=${encodeURIComponent(name.trim())}&avatar=${encodeURIComponent(avatar)}`)
     } catch {
       clearTimeout(timer)
       setError(t('multi.err_network'))
@@ -78,7 +85,7 @@ function MultiLobbyContent() {
     }
     persistPlayer(name.trim(), avatar)
     track('multi_game_joined')
-    router.push(`/multi/${trimmed}?name=${encodeURIComponent(name.trim())}&avatar=${avatar}`)
+    router.push(`/multi/${trimmed}?name=${encodeURIComponent(name.trim())}&avatar=${encodeURIComponent(avatar)}`)
   }
 
   const inputStyle: React.CSSProperties = {
@@ -123,42 +130,60 @@ function MultiLobbyContent() {
             style={inputStyle}
             placeholder={t('multi.your_name')}
             value={name}
-            onChange={e => setName(e.target.value.slice(0, 12))}
-            maxLength={12}
+            onChange={e => setName(e.target.value.slice(0, 20))}
+            maxLength={20}
           />
 
-          {/* Avatar picker */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.25)' }}>{t('multi.choose_avatar')}</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '4px' }}>
-              {FIGHTERS.map(slug => {
-                const isSelected = avatar === slug
-                const portrait   = getFighterPortrait(slug)
-                return (
-                  <button
-                    key={slug}
-                    onClick={() => setAvatar(slug)}
-                    title={slug.toUpperCase()}
-                    style={{
-                      padding: 0, border: `2px solid ${isSelected ? '#ffe000' : 'rgba(255,255,255,0.08)'}`,
-                      background: isSelected ? 'rgba(255,224,0,0.12)' : 'rgba(255,255,255,0.03)',
-                      cursor: 'pointer', transition: 'all 0.15s', aspectRatio: '1',
-                      boxShadow: isSelected ? '0 0 10px rgba(255,224,0,0.4)' : 'none',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {portrait
-                      ? <img src={portrait} alt={slug} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                      : <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)' }}>{slug[0].toUpperCase()}</span>
-                    }
-                  </button>
-                )
-              })}
+          {/* Avatar picker — Discord photo if connected, fighter grid otherwise */}
+          {user?.avatar ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '12px 16px', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)' }}>
+              <img
+                src={getDiscordAvatarUrl(user, 128) ?? ''}
+                alt={user.username}
+                style={{ width: '52px', height: '52px', borderRadius: '50%', border: '2px solid #ffe000', boxShadow: '0 0 12px rgba(255,224,0,0.35)', objectFit: 'cover', flexShrink: 0 }}
+              />
+              <div>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: '#ffe000', marginBottom: '2px' }}>
+                  {user.username}
+                </div>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.25)' }}>
+                  {t('multi.discord_avatar')}
+                </div>
+              </div>
             </div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: '#ffe000', textAlign: 'center', opacity: 0.7 }}>
-              {avatar.toUpperCase()}
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.25)' }}>{t('multi.choose_avatar')}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '4px' }}>
+                {FIGHTERS.map(slug => {
+                  const isSelected = avatar === slug
+                  const portrait   = getFighterPortrait(slug)
+                  return (
+                    <button
+                      key={slug}
+                      onClick={() => setAvatar(slug)}
+                      title={slug.toUpperCase()}
+                      style={{
+                        padding: 0, border: `2px solid ${isSelected ? '#ffe000' : 'rgba(255,255,255,0.08)'}`,
+                        background: isSelected ? 'rgba(255,224,0,0.12)' : 'rgba(255,255,255,0.03)',
+                        cursor: 'pointer', transition: 'all 0.15s', aspectRatio: '1',
+                        boxShadow: isSelected ? '0 0 10px rgba(255,224,0,0.4)' : 'none',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {portrait
+                        ? <img src={portrait} alt={slug} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                        : <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)' }}>{slug[0].toUpperCase()}</span>
+                      }
+                    </button>
+                  )
+                })}
+              </div>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: '#ffe000', textAlign: 'center', opacity: 0.7 }}>
+                {avatar.toUpperCase()}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Join code input */}
           {joining && (

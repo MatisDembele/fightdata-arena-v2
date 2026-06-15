@@ -81,6 +81,16 @@ export default function QuizSelectPage() {
       icon: '💥',
       category: 'data',
     },
+    {
+      id: 'active',
+      label: 'ACTIVE',
+      sub: t('quiz.mode_active_sub'),
+      desc: t('quiz.mode_active_desc'),
+      color: '#a855f7', colorAlt: '#7c3aed',
+      href: '/quiz/play?mode=active',
+      icon: '🟣',
+      category: 'data',
+    },
     // ── ÉTUDE ──
     {
       id: 'allrandom',

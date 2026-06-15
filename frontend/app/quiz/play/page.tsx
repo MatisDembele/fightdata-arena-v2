@@ -83,6 +83,7 @@ function QuizPlay() {
   const isOnBlock    = mode === 'onblock'
   const isOnHit      = mode === 'onhit'
   const isRecovery   = mode === 'recovery'
+  const isActive     = mode === 'active'
   const isCustom     = mode === 'custom'
   const isMistakes   = mode === 'mistakes'
   const isAllRandom  = mode === 'allrandom'
@@ -98,7 +99,7 @@ function QuizPlay() {
   const effectiveOnBlock  = isOnBlock  || (hasDataTypePicker && dataType === 'onblock')  || (isMistakes && mqm === 'onblock')
   const effectiveOnHit    = isOnHit    || (hasDataTypePicker && dataType === 'onhit')    || (isMistakes && mqm === 'onhit')
   const effectiveDamage   = isDamage   || (hasDataTypePicker && dataType === 'damage')   || (isMistakes && mqm === 'damage')
-  const effectiveActive   = (hasDataTypePicker && dataType === 'active')                 || (isMistakes && mqm === 'active')
+  const effectiveActive   = isActive || (hasDataTypePicker && dataType === 'active')     || (isMistakes && mqm === 'active')
   const effectiveRecovery = isRecovery || (hasDataTypePicker && dataType === 'recovery') || (isMistakes && mqm === 'recovery')
 
   const [soundEnabled, setSoundEnabled] = useState(true)
@@ -166,8 +167,9 @@ function QuizPlay() {
     if (isRecovery) return getRandomRecovery()
     if (isPunish)   return getRandomPunish()
     if (isDamage)   return getRandomDamage()
+    if (isActive)   return getRandomActive()
     return getRandomQuiz()
-  }, [mode, slug, dataType, isPunish, isDamage, isOnBlock, isOnHit, isRecovery, isCustom, isMistakes, isAllRandom, isHardcore, isSurvival, params])
+  }, [mode, slug, dataType, isPunish, isDamage, isOnBlock, isOnHit, isRecovery, isActive, isCustom, isMistakes, isAllRandom, isHardcore, isSurvival, params])
 
   const fetchUnique = useCallback(async (): Promise<QuizQuestion> => {
     for (let i = 0; i < 4; i++) {
@@ -514,6 +516,7 @@ function QuizPlay() {
     onblock:   t('play.mode_onblock_label'),
     onhit:     t('play.mode_onhit_label'),
     recovery:  t('play.mode_recovery_label'),
+    active:    'ACTIVE MODE',
     custom:    'CUSTOM MODE',
     mistakes:  t('play.mode_mistakes_label'),
   }[mode] ?? 'QUIZ'
