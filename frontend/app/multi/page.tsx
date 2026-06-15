@@ -120,7 +120,7 @@ function MultiLobbyContent() {
       <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', padding: '48px 20px 60px', minHeight: 'calc(100vh - 60px)' }}>
         <div style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
 
-          <div style={{ marginBottom: '40px' }}>
+          <div style={{ marginBottom: '40px', textAlign: 'center' }}>
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2rem, 6vw, 3rem)', letterSpacing: '8px', color: '#fff', textShadow: '0 0 20px rgba(255,224,0,0.3)', lineHeight: 1 }}>{t('multi.title')}</div>
             <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.2)', marginTop: '8px' }}>{t('multi.subtitle')}</div>
           </div>

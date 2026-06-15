@@ -135,7 +135,7 @@ export default function ChallengesPage() {
         <div style={{ width: '100%', maxWidth: '600px' }}>
 
           {/* Header */}
-          <div style={{ marginBottom: '40px' }}>
+          <div style={{ marginBottom: '40px', textAlign: 'center' }}>
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2rem, 6vw, 3rem)', letterSpacing: '8px', color: '#fff', textShadow: '0 0 20px rgba(255,224,0,0.3)', lineHeight: 1 }}>
               CHALLENGES
             </div>
