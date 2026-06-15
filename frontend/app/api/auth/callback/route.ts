@@ -7,7 +7,9 @@ export async function GET(req: NextRequest) {
   const error = req.nextUrl.searchParams.get('error')
 
   if (error || !code) {
-    return NextResponse.redirect(new URL('/?auth=cancelled', req.url))
+    const res = NextResponse.redirect(new URL('/?auth=cancelled', req.url))
+    res.headers.set('Cache-Control', 'no-store')
+    return res
   }
 
   try {
@@ -41,8 +43,12 @@ export async function GET(req: NextRequest) {
     dest.searchParams.set('username', data.user.username)
     dest.searchParams.set('did', data.user.discord_id)
     if (data.user.avatar) dest.searchParams.set('avatar', data.user.avatar)
-    return NextResponse.redirect(dest)
+    const successRes = NextResponse.redirect(dest)
+    successRes.headers.set('Cache-Control', 'no-store')
+    return successRes
   } catch {
-    return NextResponse.redirect(new URL('/?auth=error', req.url))
+    const errRes = NextResponse.redirect(new URL('/?auth=error', req.url))
+    errRes.headers.set('Cache-Control', 'no-store')
+    return errRes
   }
 }
