@@ -237,15 +237,6 @@ export default function ChallengesPage() {
             />
           </div>
 
-          <div style={{ marginTop: '32px', display: 'flex', gap: '20px', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
-            <Link href="/quiz" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
-              ← {t('quiz.choose_mode')}
-            </Link>
-            <span style={{ color: 'rgba(255,255,255,0.1)', fontSize: '0.6rem' }}>|</span>
-            <Link href="/quiz/duel" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: '#14b8a6', textDecoration: 'none' }}>
-              ⚔️ {t('challenge.duel')}
-            </Link>
-          </div>
         </div>
       </main>
     </>
