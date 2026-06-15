@@ -75,6 +75,9 @@ async def discord_callback(code: str, redirect_uri: Optional[str] = None, db: Se
     else:
         user.username = username
         user.avatar = avatar
+        # Ensure profile exists for users created before profiles were introduced
+        if not db.query(UserProfile).filter(UserProfile.user_id == user.id).first():
+            db.add(UserProfile(user_id=user.id))
     db.commit()
     db.refresh(user)
 
@@ -94,11 +97,11 @@ def get_me(payload: dict = Depends(get_current_user), db: Session = Depends(get_
     return {
         "user": {"id": user.id, "username": user.username, "discord_id": user.discord_id, "avatar": user.avatar},
         "profile": {
-            "achievements": profile.achievements if profile else {},
-            "lifetime": profile.lifetime if profile else {},
-            "history": profile.history if profile else [],
-            "mode_bests": profile.mode_bests if profile else {},
-            "mistakes": profile.mistakes if profile else {},
+            "achievements": (profile.achievements or {}) if profile else {},
+            "lifetime":     (profile.lifetime     or {}) if profile else {},
+            "history":      (profile.history      or []) if profile else [],
+            "mode_bests":   (profile.mode_bests   or {}) if profile else {},
+            "mistakes":     (profile.mistakes      or {}) if profile else {},
         },
     }
 

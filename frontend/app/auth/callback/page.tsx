@@ -4,25 +4,47 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
 function CallbackInner() {
   const router = useRouter()
   const params = useSearchParams()
   const { login } = useAuth()
 
   useEffect(() => {
-    const token    = params.get('token')
-    const uid      = params.get('uid')
-    const username = params.get('username')
-    const did      = params.get('did')
-    const avatar   = params.get('avatar')
+    const code        = params.get('code')
+    const redirectUri = params.get('redirect_uri')
 
-    if (token && uid && username && did) {
-      login(token, { id: Number(uid), username, discord_id: did, avatar: avatar ?? null }).then(() => {
-        router.replace('/profile')
-      })
-    } else {
+    if (!code || !redirectUri) {
       router.replace('/?auth=error')
+      return
     }
+
+    async function doAuth() {
+      try {
+        const url = `${API_URL}/api/auth/discord/callback?code=${encodeURIComponent(code!)}&redirect_uri=${encodeURIComponent(redirectUri!)}`
+        const res = await fetch(url, { cache: 'no-store' })
+        if (!res.ok) throw new Error('Backend auth failed')
+
+        const data = await res.json() as {
+          token: string
+          user: { id: number; username: string; discord_id: string; avatar: string | null }
+        }
+
+        await login(data.token, {
+          id: data.user.id,
+          username: data.user.username,
+          discord_id: data.user.discord_id,
+          avatar: data.user.avatar,
+        })
+
+        router.replace('/profile')
+      } catch {
+        router.replace('/?auth=error')
+      }
+    }
+
+    doAuth()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
