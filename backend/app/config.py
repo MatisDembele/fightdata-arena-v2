@@ -9,8 +9,11 @@ class Settings(BaseSettings):
     DISCORD_CLIENT_SECRET: str = ""
     DISCORD_REDIRECT_URI: str = "http://localhost:3000/api/auth/callback"
 
-    # Frontend base URL — used for redirects after OAuth
-    FRONTEND_URL: str = "https://fightdata.app"
+    # Frontend base URL — used for redirects after OAuth.
+    # MUST be the canonical www host: apex (fightdata.app) 307-redirects to www,
+    # and that apex→www bounce mid-OAuth-chain triggers ERR_HTTP2_PROTOCOL_ERROR
+    # ("This page couldn't load") in browsers due to HTTP/2 connection coalescing.
+    FRONTEND_URL: str = "https://www.fightdata.app"
 
     # JWT — generate with: python -c "import secrets; print(secrets.token_hex(32))"
     JWT_SECRET: str = "change-me-in-production"
