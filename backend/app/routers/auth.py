@@ -1,7 +1,9 @@
+import urllib.parse
 from typing import Optional
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -23,16 +25,16 @@ class SyncPayload(BaseModel):
 
 
 @router.get("/discord/callback")
-async def discord_callback(code: str, redirect_uri: Optional[str] = None, db: Session = Depends(get_db)):
-    if not settings.DISCORD_CLIENT_ID or not settings.DISCORD_CLIENT_SECRET:
-        raise HTTPException(503, "Discord OAuth non configuré")
+async def discord_callback(code: Optional[str] = None, error: Optional[str] = None, db: Session = Depends(get_db)):
+    frontend = settings.FRONTEND_URL
 
-    # Use the redirect_uri passed by the frontend (mirrors the one used in the authorize URL)
-    # Fall back to the env setting if not provided
-    actual_redirect_uri = redirect_uri or settings.DISCORD_REDIRECT_URI
+    if error or not code:
+        return RedirectResponse(url=f"{frontend}/?auth=cancelled", status_code=302)
+
+    if not settings.DISCORD_CLIENT_ID or not settings.DISCORD_CLIENT_SECRET:
+        return RedirectResponse(url=f"{frontend}/?auth=error", status_code=302)
 
     async with httpx.AsyncClient() as client:
-        # Exchange authorization code for access token
         token_res = await client.post(
             "https://discord.com/api/oauth2/token",
             data={
@@ -40,52 +42,56 @@ async def discord_callback(code: str, redirect_uri: Optional[str] = None, db: Se
                 "client_secret": settings.DISCORD_CLIENT_SECRET,
                 "grant_type": "authorization_code",
                 "code": code,
-                "redirect_uri": actual_redirect_uri,
+                "redirect_uri": settings.DISCORD_REDIRECT_URI,
             },
             headers={"Content-Type": "application/x-www-form-urlencoded"},
             timeout=10.0,
         )
         if not token_res.is_success:
-            raise HTTPException(400, "Échange de code Discord échoué")
+            return RedirectResponse(url=f"{frontend}/?auth=error", status_code=302)
         access_token: Optional[str] = token_res.json().get("access_token")
         if not access_token:
-            raise HTTPException(400, "Access token Discord manquant")
+            return RedirectResponse(url=f"{frontend}/?auth=error", status_code=302)
 
-        # Fetch Discord user info
         user_res = await client.get(
             "https://discord.com/api/users/@me",
             headers={"Authorization": f"Bearer {access_token}"},
             timeout=10.0,
         )
         if not user_res.is_success:
-            raise HTTPException(400, "Impossible de récupérer l'utilisateur Discord")
+            return RedirectResponse(url=f"{frontend}/?auth=error", status_code=302)
         d = user_res.json()
 
     discord_id: str = d["id"]
     username: str = d.get("global_name") or d.get("username") or "Player"
-    avatar: Optional[str] = d.get("avatar")  # hash string or None
+    avatar: Optional[str] = d.get("avatar")
 
-    # Upsert user
-    user = db.query(User).filter(User.discord_id == discord_id).first()
-    if not user:
-        user = User(discord_id=discord_id, username=username, avatar=avatar)
-        db.add(user)
-        db.flush()
-        db.add(UserProfile(user_id=user.id))
-    else:
-        user.username = username
-        user.avatar = avatar
-        # Ensure profile exists for users created before profiles were introduced
-        if not db.query(UserProfile).filter(UserProfile.user_id == user.id).first():
+    try:
+        user = db.query(User).filter(User.discord_id == discord_id).first()
+        if not user:
+            user = User(discord_id=discord_id, username=username, avatar=avatar)
+            db.add(user)
+            db.flush()
             db.add(UserProfile(user_id=user.id))
-    db.commit()
-    db.refresh(user)
+        else:
+            user.username = username
+            user.avatar = avatar
+            if not db.query(UserProfile).filter(UserProfile.user_id == user.id).first():
+                db.add(UserProfile(user_id=user.id))
+        db.commit()
+        db.refresh(user)
+    except Exception:
+        return RedirectResponse(url=f"{frontend}/?auth=error", status_code=302)
 
     token = create_token(user.id, user.discord_id, user.username, user.avatar)
-    return {
+    params = urllib.parse.urlencode({
         "token": token,
-        "user": {"id": user.id, "username": user.username, "discord_id": user.discord_id, "avatar": user.avatar},
-    }
+        "id": str(user.id),
+        "username": user.username,
+        "discord_id": user.discord_id,
+        "avatar": user.avatar or "",
+    })
+    return RedirectResponse(url=f"{frontend}/auth/complete?{params}", status_code=302)
 
 
 @router.get("/me")
