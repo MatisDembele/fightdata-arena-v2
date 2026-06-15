@@ -13,10 +13,19 @@ export async function GET(req: NextRequest) {
   try {
     // Pass the actual redirect_uri so the backend uses the same value during token exchange
     const redirectUri = new URL('/api/auth/callback', req.url).toString()
-    const res = await fetch(
-      `${API_URL}/api/auth/discord/callback?code=${encodeURIComponent(code)}&redirect_uri=${encodeURIComponent(redirectUri)}`,
-      { cache: 'no-store' },
-    )
+
+    // Abort after 8s so Vercel (10s limit) can still return a redirect instead of an empty response
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 8000)
+    let res: Response
+    try {
+      res = await fetch(
+        `${API_URL}/api/auth/discord/callback?code=${encodeURIComponent(code)}&redirect_uri=${encodeURIComponent(redirectUri)}`,
+        { cache: 'no-store', signal: controller.signal },
+      )
+    } finally {
+      clearTimeout(timeoutId)
+    }
     if (!res.ok) throw new Error('Backend auth failed')
 
     const data = (await res.json()) as {

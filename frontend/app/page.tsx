@@ -15,6 +15,11 @@ export default function Home() {
   const [active, setActive] = useState(0)
   const [langOpen, setLangOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [authError, setAuthError] = useState<'error' | 'cancelled' | null>(() => {
+    if (typeof window === 'undefined') return null
+    const auth = new URLSearchParams(window.location.search).get('auth')
+    return auth === 'error' ? 'error' : auth === 'cancelled' ? 'cancelled' : null
+  })
   const langRef = useRef<HTMLDivElement>(null)
   const { t, lang, setLang } = useLanguage()
 
@@ -24,6 +29,7 @@ export default function Home() {
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
+
 
   useEffect(() => {
     if (!langOpen) return
@@ -81,6 +87,23 @@ export default function Home() {
 
   return (
     <>
+    {authError && (
+      <div style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999,
+        background: authError === 'error' ? 'rgba(220,38,38,0.95)' : 'rgba(100,100,100,0.92)',
+        backdropFilter: 'blur(8px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
+        padding: '10px 20px',
+        borderBottom: '1px solid rgba(255,255,255,0.1)',
+      }}>
+        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.72rem', letterSpacing: '2px', color: '#fff' }}>
+          {authError === 'error'
+            ? '⚠ Connexion Discord échouée — le serveur est peut-être en train de démarrer, réessaie dans 30 secondes.'
+            : '— Connexion Discord annulée.'}
+        </span>
+        <button onClick={() => setAuthError(null)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '1rem', lineHeight: 1, flexShrink: 0 }}>✕</button>
+      </div>
+    )}
     <div style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
 
       {/* Lang dropdown */}
