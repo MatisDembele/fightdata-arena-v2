@@ -89,6 +89,9 @@ function saveResultAndStreak(answers: boolean[], score: number): DailyStreak {
   // Write both synchronously — minimizes desync window
   localStorage.setItem('fda_daily_result', JSON.stringify({ date: today, answers, score }))
   localStorage.setItem('fda_daily_streak', JSON.stringify(streakData))
+  const hist = JSON.parse(localStorage.getItem('fda_daily_history') || '{}') as Record<string, {score:number;total:number}>
+  hist[today] = { score, total: answers.length }
+  localStorage.setItem('fda_daily_history', JSON.stringify(hist))
   return streakData
 }
 

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import { useLanguage } from '@/lib/i18n'
 import { getDailyLeaderboard, getWeeklyLeaderboard, type LeaderboardEntry } from '@/lib/api'
+import { getRank, type Rank } from '@/lib/constants'
 
 interface DailyResult  { date: string;  answers: boolean[]; score: number }
 interface WeeklyResult { week: string;  answers: boolean[]; score: number }
@@ -66,12 +67,24 @@ function formatTime(s: number): string {
   return `${sec}s`
 }
 
+function getLast7Days(): string[] {
+  const days: string[] = []
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    days.push(d.toISOString().split('T')[0])
+  }
+  return days
+}
+
 export default function ChallengesPage() {
   const { t } = useLanguage()
 
   const [dailyResult,  setDailyResult]  = useState<DailyResult | null>(null)
   const [weeklyResult, setWeeklyResult] = useState<WeeklyResult | null>(null)
   const [streak,       setStreak]       = useState(0)
+  const [dailyHistory, setDailyHistory] = useState<Record<string, {score:number;total:number}>>({})
+  const [pseudo,       setPseudo]       = useState('')
   const [dailyMs,      setDailyMs]      = useState(0)
   const [weeklyMs,     setWeeklyMs]     = useState(0)
   const [dailyLb,      setDailyLb]      = useState<LeaderboardEntry[]>([])
@@ -82,11 +95,15 @@ export default function ChallengesPage() {
       const dr = localStorage.getItem('fda_daily_result')
       const wr = localStorage.getItem('fda_weekly_result')
       const sk = localStorage.getItem('fda_daily_streak')
+      const dh = localStorage.getItem('fda_daily_history')
+      const ps = localStorage.getItem('fda_pseudo')
       const parsed: DailyResult | null = dr ? JSON.parse(dr) : null
       const wparsed: WeeklyResult | null = wr ? JSON.parse(wr) : null
       if (parsed?.date === todayStr())    setDailyResult(parsed)
       if (wparsed?.week === mondayStr())  setWeeklyResult(wparsed)
       if (sk) setStreak((JSON.parse(sk) as DailyStreak).streak)
+      if (dh) setDailyHistory(JSON.parse(dh))
+      if (ps) setPseudo(ps.trim())
     } catch { /* ignore */ }
 
     setDailyMs(msUntilMidnight())
@@ -103,8 +120,13 @@ export default function ChallengesPage() {
     return () => clearInterval(tick)
   }, [])
 
-  const dailyAcc   = dailyResult  ? Math.round(dailyResult.score / 10 * 100)                  : null
-  const weeklyAcc  = weeklyResult ? Math.round(weeklyResult.score / weeklyResult.answers.length * 100) : null
+  const dailyAcc   = dailyResult  ? Math.round(dailyResult.score / 10 * 100)                              : null
+  const weeklyAcc  = weeklyResult ? Math.round(weeklyResult.score / weeklyResult.answers.length * 100)    : null
+  const dailyRank  = dailyAcc  !== null ? getRank(dailyAcc)  : null
+  const weeklyRank = weeklyAcc !== null ? getRank(weeklyAcc) : null
+
+  const last7Days = getLast7Days()
+  const today = todayStr()
 
   return (
     <>
@@ -121,6 +143,57 @@ export default function ChallengesPage() {
               FIGHT DATA ARENA // TIME-BASED CHALLENGES
             </div>
           </div>
+
+          {/* Streak Hero */}
+          {streak > 0 && (
+            <div style={{ marginBottom: '32px', padding: '20px 24px', border: '1px solid rgba(255,224,0,0.22)', background: 'rgba(255,224,0,0.04)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg, transparent, #ffe000, transparent)' }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
+                <div style={{ textAlign: 'center', minWidth: '64px' }}>
+                  <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '3.5rem', letterSpacing: '2px', lineHeight: 1, color: '#ffe000', textShadow: '0 0 20px #ffe00066' }}>
+                    {streak}
+                  </div>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: 'rgba(255,224,0,0.55)', marginTop: '2px' }}>
+                    {t('daily.streak_unit')}
+                  </div>
+                </div>
+                <div style={{ flex: 1, minWidth: '180px' }}>
+                  <div style={{ display: 'flex', gap: '5px', flexWrap: 'nowrap' }}>
+                    {last7Days.map(day => {
+                      const entry = dailyHistory[day]
+                      let bg = 'rgba(255,255,255,0.08)'
+                      let glow = 'none'
+                      if (entry) {
+                        const pct = (entry.score / entry.total) * 100
+                        if (pct >= 80)      { bg = '#4ade80'; glow = '0 0 8px #4ade8055' }
+                        else if (pct >= 50) { bg = '#ffe000'; glow = '0 0 8px #ffe00055' }
+                        else                { bg = '#ff2d78'; glow = '0 0 8px #ff2d7855' }
+                      }
+                      return (
+                        <div
+                          key={day}
+                          title={day + (entry ? ` — ${entry.score}/${entry.total}` : '')}
+                          style={{
+                            flex: 1, aspectRatio: '1', borderRadius: '50%',
+                            background: bg, boxShadow: glow,
+                            border: day === today ? '2px solid rgba(255,255,255,0.35)' : '2px solid transparent',
+                          }}
+                        />
+                      )
+                    })}
+                  </div>
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '8px', flexWrap: 'wrap' }}>
+                    {[['#4ade80','≥80%'],['#ffe000','≥50%'],['#ff2d78','<50%']].map(([c, l]) => (
+                      <div key={c} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: c }} />
+                        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.48rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.22)' }}>{l}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Cards */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -140,6 +213,8 @@ export default function ChallengesPage() {
               href="/quiz/daily"
               icon="📅"
               leaderboard={dailyLb}
+              rank={dailyRank}
+              pseudo={pseudo}
             />
 
             <ChallengeCard
@@ -157,12 +232,18 @@ export default function ChallengesPage() {
               href="/quiz/weekly"
               icon="📆"
               leaderboard={weeklyLb}
+              rank={weeklyRank}
+              pseudo={pseudo}
             />
           </div>
 
-          <div style={{ marginTop: '32px', textAlign: 'center' }}>
+          <div style={{ marginTop: '32px', display: 'flex', gap: '20px', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
             <Link href="/quiz" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
               ← {t('quiz.choose_mode')}
+            </Link>
+            <span style={{ color: 'rgba(255,255,255,0.1)', fontSize: '0.6rem' }}>|</span>
+            <Link href="/quiz/duel" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: '#14b8a6', textDecoration: 'none' }}>
+              ⚔️ {t('challenge.duel')}
             </Link>
           </div>
         </div>
@@ -186,14 +267,18 @@ interface CardProps {
   href: string
   icon: string
   leaderboard: LeaderboardEntry[]
+  rank: Rank | null
+  pseudo: string
 }
 
-function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accuracy, answers, streakLabel, resetLabel, href, icon, leaderboard }: CardProps) {
+function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accuracy, answers, streakLabel, resetLabel, href, icon, leaderboard, rank, pseudo }: CardProps) {
   const { t } = useLanguage()
-  const pseudo = typeof window !== 'undefined' ? localStorage.getItem('fda_pseudo')?.trim() ?? '' : ''
   const lbTitle = title === 'DAILY'
     ? t('challenge.top_daily',  { n: Math.min(leaderboard.length, 5) })
     : t('challenge.top_weekly', { n: Math.min(leaderboard.length, 5) })
+
+  const myEntry = pseudo ? leaderboard.find(e => e.player_name === pseudo) : undefined
+  const showMyPosition = myEntry && myEntry.rank > 5
 
   return (
     <div style={{
@@ -245,7 +330,7 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
           </div>
 
           {/* Right */}
-          <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'space-between', gap: '12px', minWidth: '100px' }}>
+          <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'space-between', gap: '8px', minWidth: '100px' }}>
             {played && score !== null ? (
               <>
                 <div style={{ textAlign: 'right' }}>
@@ -255,6 +340,13 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
                   {accuracy !== null && (
                     <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.3)', marginTop: '2px' }}>
                       {accuracy}% {t('stats.accuracy').toLowerCase()}
+                    </div>
+                  )}
+                  {rank && (
+                    <div style={{ marginTop: '6px', padding: '2px 8px', background: `${rank.color}18`, border: `1px solid ${rank.color}44`, display: 'inline-block' }}>
+                      <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.78rem', letterSpacing: '2px', color: rank.color }}>
+                        {rank.label}
+                      </span>
                     </div>
                   )}
                   <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: color + '88', marginTop: '4px' }}>
@@ -325,6 +417,36 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
                 </div>
               )
             })}
+
+            {/* User position if outside top 5 */}
+            {showMyPosition && myEntry && (
+              <>
+                <div style={{ textAlign: 'center', padding: '2px 0', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.12)' }}>
+                  ···
+                </div>
+                <div style={{
+                  display: 'grid', gridTemplateColumns: '22px 1fr 44px 44px',
+                  padding: '5px 10px', alignItems: 'center', gap: '8px',
+                  background: `${color}10`,
+                  border: `1px solid ${color}33`,
+                }}>
+                  <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.72rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.25)' }}>
+                    #{myEntry.rank}
+                  </span>
+                  <span style={{
+                    fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-1)',
+                    color: color, textShadow: `0 0 8px ${color}`,
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  }}>{myEntry.player_name}</span>
+                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.2)', textAlign: 'right' }}>
+                    {myEntry.elapsed_seconds != null ? formatTime(myEntry.elapsed_seconds) : '—'}
+                  </span>
+                  <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.78rem', letterSpacing: '1px', color: color, textAlign: 'right' }}>
+                    {myEntry.score}/{total}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
