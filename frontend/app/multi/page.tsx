@@ -143,11 +143,8 @@ function MultiLobbyContent() {
                 style={{ width: '52px', height: '52px', borderRadius: '50%', border: '2px solid #ffe000', boxShadow: '0 0 12px rgba(255,224,0,0.35)', objectFit: 'cover', flexShrink: 0 }}
               />
               <div>
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: '#ffe000', marginBottom: '2px' }}>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: '#ffe000' }}>
                   {user.username}
-                </div>
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.25)' }}>
-                  {t('multi.discord_avatar')}
                 </div>
               </div>
             </div>
