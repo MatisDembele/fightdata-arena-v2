@@ -49,6 +49,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_API_URL} />
           </>
         )}
+        {/* Hitbox GIFs are hotlinked from ultimateframedata.com — warm DNS/TLS early */}
+        <link rel="preconnect" href="https://ultimateframedata.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://ultimateframedata.com" />
       </head>
       <body>
         <div className="sf6-bg" />
