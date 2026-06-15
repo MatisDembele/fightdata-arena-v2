@@ -540,9 +540,22 @@ function QuizPlay() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionPhase])
 
+  // Auto-reset session length if it exceeds available mistakes
+  useEffect(() => {
+    if (isMistakes && mistakesCount > 0 && sessionLength !== Infinity && sessionLength > mistakesCount) {
+      setSessionLength(mistakesCount)
+    }
+  }, [isMistakes, mistakesCount, sessionLength])
+
   useEffect(() => {
     if (sessionPhase !== 'selector') return
-    const LENGTHS = [10, 20, 30, 40, 50, Infinity]
+    const LENGTHS = isMistakes
+      ? (() => {
+          const std = [10, 20, 30, 40, 50].filter(n => n <= mistakesCount)
+          const showExact = mistakesCount > 0 && mistakesCount <= 50 && ![10, 20, 30, 40, 50].includes(mistakesCount)
+          return [...std, ...(showExact ? [mistakesCount] : []), Infinity]
+        })()
+      : [10, 20, 30, 40, 50, Infinity]
     const handler = (e: KeyboardEvent) => {
       const n = parseInt(e.key)
       if (n >= 1 && n <= LENGTHS.length) { setSessionLength(LENGTHS[n - 1]); return }
@@ -551,14 +564,22 @@ function QuizPlay() {
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionPhase])
+  }, [sessionPhase, isMistakes, mistakesCount])
 
   const isPunishable = question?.answer === 'punissable'
 
   // ── SELECTOR ────────────────────────────────────────────────────────────────
   if (sessionPhase === 'selector') {
-    const LENGTHS = [10, 20, 30, 40, 50, Infinity] as number[]
+    const STD_LENGTHS = [10, 20, 30, 40, 50]
+    const LENGTHS: number[] = isMistakes
+      ? (() => {
+          const std = STD_LENGTHS.filter(n => n <= mistakesCount)
+          const showExact = mistakesCount > 0 && mistakesCount <= 50 && !STD_LENGTHS.includes(mistakesCount)
+          return [...std, ...(showExact ? [mistakesCount] : []), Infinity]
+        })()
+      : [...STD_LENGTHS, Infinity]
     const TIME_EST: Record<number, string> = { 10: '~3 min', 20: '~6 min', 30: '~9 min', 40: '~12 min', 50: '~15 min' }
+    const getTimeEst = (len: number) => TIME_EST[len] ?? `~${Math.round(len * 0.3)} min`
     const modeSub = ({
       random:    t('quiz.mode_random_sub'),
       allrandom: t('quiz.mode_allrandom_sub'),
@@ -689,7 +710,7 @@ function QuizPlay() {
                         {isInf ? t('play.infinite_label') : 'Q'}
                       </span>
                       <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color: isSel ? `${modeColor}66` : 'rgba(255,255,255,0.13)', marginTop: '2px' }}>
-                        {isInf ? '∞' : TIME_EST[len]}
+                        {isInf ? '∞' : getTimeEst(len)}
                       </span>
                     </button>
                   )
