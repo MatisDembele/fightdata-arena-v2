@@ -39,7 +39,7 @@ export function getDiscordOAuthUrl(): string {
   const clientId = process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID ?? ''
   // Derive redirect URI from the current domain so it works in any environment
   const redirectUri = typeof window !== 'undefined'
-    ? `${window.location.origin}/api/auth/callback`
+    ? `${window.location.origin}/connect`
     : (process.env.NEXT_PUBLIC_DISCORD_REDIRECT_URI ?? '')
   const params = new URLSearchParams({
     client_id: clientId,
