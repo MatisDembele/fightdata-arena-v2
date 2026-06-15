@@ -14,8 +14,16 @@ const LANGS = [
 export default function Home() {
   const [active, setActive] = useState(0)
   const [langOpen, setLangOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const langRef = useRef<HTMLDivElement>(null)
   const { t, lang, setLang } = useLanguage()
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   useEffect(() => {
     if (!langOpen) return
@@ -88,9 +96,11 @@ export default function Home() {
           }}
         >
           <span className={`fi fi-${currentLang.cc}`} style={{ width: '20px', height: '15px', display: 'inline-block', borderRadius: '2px' }} />
-          <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.8)' }}>
-            {currentLang.name}
-          </span>
+          {!isMobile && (
+            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.8)' }}>
+              {currentLang.name}
+            </span>
+          )}
           <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)', display: 'inline-block', transition: 'transform 0.2s', transform: langOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
         </button>
         {langOpen && (
