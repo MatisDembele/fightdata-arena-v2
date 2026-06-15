@@ -26,7 +26,7 @@ interface ModeStats { bestScore: number; bestAccuracy: number; totalGames: numbe
 interface FighterEntry { slug: string; stats: ModeStats }
 interface MistakeEntry { question: QuizQuestion; mode: string; count: number; lastSeen: string }
 
-type ProfileTab = 'stats' | 'achievements' | 'history' | 'fighters'
+type ProfileTab = 'stats' | 'achievements' | 'history' | 'fighters' | 'mistakes'
 
 const QUIZ_MODES = [
   'random','fighter','input','punish','hardcore','survival',
@@ -193,9 +193,10 @@ export default function ProfilePage() {
 
   const TABS: { id: ProfileTab; label: string; badge?: number }[] = [
     { id: 'stats',        label: 'STATS' },
-    { id: 'achievements', label: t('stats.achievements'), badge: unlockedCount || undefined },
-    { id: 'history',      label: t('profile.history'),   badge: history.length || undefined },
-    { id: 'fighters',     label: 'FIGHTERS',             badge: fighters.length || undefined },
+    { id: 'achievements', label: t('stats.achievements'),  badge: unlockedCount || undefined },
+    { id: 'history',      label: t('profile.history'),    badge: history.length || undefined },
+    { id: 'fighters',     label: 'FIGHTERS',              badge: fighters.length || undefined },
+    { id: 'mistakes',     label: t('profile.error_bank'), badge: mistakesCount || undefined },
   ]
 
   return (
@@ -432,110 +433,6 @@ export default function ProfilePage() {
                 )}
               </div>
 
-              {/* ── ERROR BANK ── */}
-              <Section
-                title={`${t('profile.error_bank')} — ${mistakesCount} ${t(mistakesCount === 1 ? 'profile.mistake_saved' : 'profile.mistakes_saved')}`}
-                color="#f43f5e" isDesktop={isDesktop}
-              >
-                {mistakesCount === 0 ? (
-                  <div style={{ padding: '32px', textAlign: 'center', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.2)' }}>
-                    {t('profile.bank_empty')}
-                  </div>
-                ) : (
-                  <>
-                    {/* Controls bar */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap' }}>
-                      <Link href="/quiz/play?mode=mistakes" style={{
-                        padding: '7px 18px', background: 'linear-gradient(90deg, #be123c, #f43f5e)',
-                        color: '#fff', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '3px', textDecoration: 'none',
-                      }}>
-                        {t('profile.mistakes_play')}
-                      </Link>
-                      <div style={{ flex: 1 }} />
-                      <div style={{ display: 'flex', gap: '4px' }}>
-                        {(['count', 'recent'] as const).map(s => (
-                          <button key={s} onClick={() => setMistakeSortBy(s)} style={{
-                            background: mistakeSortBy === s ? 'rgba(244,63,94,0.18)' : 'none',
-                            border: `1px solid ${mistakeSortBy === s ? '#f43f5e' : 'rgba(255,255,255,0.1)'}`,
-                            color: mistakeSortBy === s ? '#f43f5e' : 'rgba(255,255,255,0.3)',
-                            cursor: 'pointer', padding: '4px 10px',
-                            fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)',
-                          }}>
-                            {s === 'count' ? 'FRÉQUENCE' : 'RÉCENT'}
-                          </button>
-                        ))}
-                      </div>
-                      {!clearConfirm ? (
-                        <button onClick={() => setClearConfirm(true)} style={{
-                          background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.25)',
-                          cursor: 'pointer', padding: '4px 10px',
-                          fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)',
-                        }}>TOUT EFFACER</button>
-                      ) : (
-                        <div style={{ display: 'flex', gap: '4px' }}>
-                          <button onClick={clearAllMistakes} style={{ background: 'rgba(244,63,94,0.15)', border: '1px solid #f43f5e', color: '#f43f5e', cursor: 'pointer', padding: '4px 10px', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)' }}>CONFIRMER</button>
-                          <button onClick={() => setClearConfirm(false)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', padding: '4px 10px', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)' }}>ANNULER</button>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Column headers */}
-                    <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr 130px 60px 80px 32px' : '1fr 52px 60px 32px', gap: '8px', padding: '7px 16px', background: 'rgba(255,255,255,0.03)' }}>
-                      {(isDesktop
-                        ? ['MOVE / FIGHTER', 'MODE', '×', 'VU', '']
-                        : ['MOVE / FIGHTER', '×', 'VU', '']
-                      ).map((h, i) => (
-                        <div key={i} style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.25)' }}>{h}</div>
-                      ))}
-                    </div>
-
-                    {/* Mistake rows */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-                      {mistakeEntries.map(({ key, question, mode: modeKey, count, lastSeen }) => {
-                        const mc = MODE_COLORS[modeKey] || '#888'
-                        const countColor = count >= 4 ? '#f43f5e' : count >= 2 ? '#f59e0b' : 'rgba(255,255,255,0.45)'
-                        return (
-                          <div key={key} style={{
-                            display: 'grid',
-                            gridTemplateColumns: isDesktop ? '1fr 130px 60px 80px 32px' : '1fr 52px 60px 32px',
-                            gap: '8px', padding: isDesktop ? '11px 16px' : '10px 12px', alignItems: 'center',
-                            borderBottom: '1px solid rgba(255,255,255,0.04)',
-                            background: 'rgba(244,63,94,0.02)',
-                          }}>
-                            <div style={{ minWidth: 0 }}>
-                              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '0.9rem' : '0.8rem', letterSpacing: '1px', color: '#fff', lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                {question.move_name}
-                              </div>
-                              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.28)', marginTop: '3px' }}>
-                                {question.fighter_slug.toUpperCase()}
-                              </div>
-                            </div>
-                            {isDesktop && (
-                              <div style={{ padding: '3px 8px', background: `${mc}15`, border: `1px solid ${mc}33`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                                <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: mc, whiteSpace: 'nowrap' }}>
-                                  {MODE_LABEL[modeKey] || modeKey.toUpperCase()}
-                                </span>
-                              </div>
-                            )}
-                            <div style={{ textAlign: 'center' }}>
-                              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.2rem', color: countColor, letterSpacing: '1px' }}>×{count}</span>
-                            </div>
-                            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.2)', textAlign: 'center', lineHeight: 1.3 }}>
-                              {timeAgo(lastSeen, t)}
-                            </div>
-                            <button onClick={() => removeMistake(key)} style={{
-                              background: 'none', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.2)',
-                              cursor: 'pointer', padding: '3px 6px', fontFamily: "'Share Tech Mono', monospace",
-                              fontSize: 'var(--fs-xs)', lineHeight: 1, transition: 'all 0.15s',
-                            }}>✕</button>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </>
-                )}
-              </Section>
-
               {/* Delete account */}
               {user && token && (
                 <DeleteAccountSection token={token} onDeleted={() => { window.location.href = '/' }} />
@@ -637,6 +534,112 @@ export default function ProfilePage() {
                 </div>
               </Section>
             )
+          )}
+
+          {/* ── TAB: ERROR BANK ── */}
+          {activeTab === 'mistakes' && (
+            <Section
+              title={`${t('profile.error_bank')} — ${mistakesCount} ${t(mistakesCount === 1 ? 'profile.mistake_saved' : 'profile.mistakes_saved')}`}
+              color="#f43f5e" isDesktop={isDesktop}
+            >
+              {mistakesCount === 0 ? (
+                <div style={{ padding: '32px', textAlign: 'center', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.2)' }}>
+                  {t('profile.bank_empty')}
+                </div>
+              ) : (
+                <>
+                  {/* Controls bar */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap' }}>
+                    <Link href="/quiz/play?mode=mistakes" style={{
+                      padding: '7px 18px', background: 'linear-gradient(90deg, #be123c, #f43f5e)',
+                      color: '#fff', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '3px', textDecoration: 'none',
+                    }}>
+                      {t('profile.mistakes_play')}
+                    </Link>
+                    <div style={{ flex: 1 }} />
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      {(['count', 'recent'] as const).map(s => (
+                        <button key={s} onClick={() => setMistakeSortBy(s)} style={{
+                          background: mistakeSortBy === s ? 'rgba(244,63,94,0.18)' : 'none',
+                          border: `1px solid ${mistakeSortBy === s ? '#f43f5e' : 'rgba(255,255,255,0.1)'}`,
+                          color: mistakeSortBy === s ? '#f43f5e' : 'rgba(255,255,255,0.3)',
+                          cursor: 'pointer', padding: '4px 10px',
+                          fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)',
+                        }}>
+                          {s === 'count' ? 'FRÉQUENCE' : 'RÉCENT'}
+                        </button>
+                      ))}
+                    </div>
+                    {!clearConfirm ? (
+                      <button onClick={() => setClearConfirm(true)} style={{
+                        background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.25)',
+                        cursor: 'pointer', padding: '4px 10px',
+                        fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)',
+                      }}>TOUT EFFACER</button>
+                    ) : (
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button onClick={clearAllMistakes} style={{ background: 'rgba(244,63,94,0.15)', border: '1px solid #f43f5e', color: '#f43f5e', cursor: 'pointer', padding: '4px 10px', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)' }}>CONFIRMER</button>
+                        <button onClick={() => setClearConfirm(false)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', padding: '4px 10px', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)' }}>ANNULER</button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Column headers */}
+                  <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr 130px 60px 80px 32px' : '1fr 52px 60px 32px', gap: '8px', padding: '7px 16px', background: 'rgba(255,255,255,0.03)' }}>
+                    {(isDesktop
+                      ? ['MOVE / FIGHTER', 'MODE', '×', 'VU', '']
+                      : ['MOVE / FIGHTER', '×', 'VU', '']
+                    ).map((h, i) => (
+                      <div key={i} style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.25)' }}>{h}</div>
+                    ))}
+                  </div>
+
+                  {/* Mistake rows */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                    {mistakeEntries.map(({ key, question, mode: modeKey, count, lastSeen }) => {
+                      const mc = MODE_COLORS[modeKey] || '#888'
+                      const countColor = count >= 4 ? '#f43f5e' : count >= 2 ? '#f59e0b' : 'rgba(255,255,255,0.45)'
+                      return (
+                        <div key={key} style={{
+                          display: 'grid',
+                          gridTemplateColumns: isDesktop ? '1fr 130px 60px 80px 32px' : '1fr 52px 60px 32px',
+                          gap: '8px', padding: isDesktop ? '11px 16px' : '10px 12px', alignItems: 'center',
+                          borderBottom: '1px solid rgba(255,255,255,0.04)',
+                          background: 'rgba(244,63,94,0.02)',
+                        }}>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '0.9rem' : '0.8rem', letterSpacing: '1px', color: '#fff', lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {question.move_name}
+                            </div>
+                            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.28)', marginTop: '3px' }}>
+                              {question.fighter_slug.toUpperCase()}
+                            </div>
+                          </div>
+                          {isDesktop && (
+                            <div style={{ padding: '3px 8px', background: `${mc}15`, border: `1px solid ${mc}33`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: mc, whiteSpace: 'nowrap' }}>
+                                {MODE_LABEL[modeKey] || modeKey.toUpperCase()}
+                              </span>
+                            </div>
+                          )}
+                          <div style={{ textAlign: 'center' }}>
+                            <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.2rem', color: countColor, letterSpacing: '1px' }}>×{count}</span>
+                          </div>
+                          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.2)', textAlign: 'center', lineHeight: 1.3 }}>
+                            {timeAgo(lastSeen, t)}
+                          </div>
+                          <button onClick={() => removeMistake(key)} style={{
+                            background: 'none', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.2)',
+                            cursor: 'pointer', padding: '3px 6px', fontFamily: "'Share Tech Mono', monospace",
+                            fontSize: 'var(--fs-xs)', lineHeight: 1, transition: 'all 0.15s',
+                          }}>✕</button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </>
+              )}
+            </Section>
           )}
 
         </div>
