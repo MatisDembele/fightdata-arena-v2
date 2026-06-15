@@ -1,4 +1,5 @@
 'use client'
+export const dynamic = 'force-static'
 import { useState, useEffect, useCallback, type ReactNode } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'

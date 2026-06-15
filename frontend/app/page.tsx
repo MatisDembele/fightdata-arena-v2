@@ -1,4 +1,5 @@
 'use client'
+export const dynamic = 'force-static'
 import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
 import { useLanguage } from '@/lib/i18n'
