@@ -40,9 +40,7 @@ export default function Navbar() {
   const [showConsent, setShowConsent] = useState(false)
   const [menuOpen,    setMenuOpen]    = useState(false)
   const [isMobile,    setIsMobile]    = useState(false)
-  const [langOpen,    setLangOpen]    = useState(false)
   const consentRef = useRef<HTMLDivElement>(null)
-  const langRef    = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
@@ -66,19 +64,7 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [showConsent])
 
-  // Close lang dropdown on outside click
-  useEffect(() => {
-    if (!langOpen) return
-    function handleClick(e: MouseEvent) {
-      if (langRef.current && !langRef.current.contains(e.target as Node)) {
-        setLangOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [langOpen])
-
-  // Prevent body scroll when mobile menu is open
+// Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (!isMobile) return
     document.body.style.overflow = menuOpen ? 'hidden' : ''
@@ -219,97 +205,50 @@ export default function Navbar() {
   )
 
   // ── Lang toggle (shared) ────────────────────────────────────────────────────
-  const currentLang = LANGS.find(l => l.code === lang) ?? LANGS[0]
-
-  const LangToggle = ({ inDrawer = false }: { inDrawer?: boolean }) => {
-    if (inDrawer) {
-      return (
-        <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-          {LANGS.map(l => (
-            <button
-              key={l.code}
-              onClick={() => { setLang(l.code); setMenuOpen(false) }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '6px',
-                padding: '8px 10px',
-                border: `1px solid ${lang === l.code ? '#ffe000' : 'rgba(255,255,255,0.1)'}`,
-                background: lang === l.code ? 'rgba(255,224,0,0.1)' : 'transparent',
-                color: lang === l.code ? '#ffe000' : 'rgba(255,255,255,0.4)',
-                cursor: 'pointer',
-                fontFamily: "'Share Tech Mono', monospace",
-                fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
-              }}
-            >
-              <span style={{ fontSize: '1rem' }}>{l.flag}</span>
-              <span>{l.name}</span>
-            </button>
-          ))}
-        </div>
-      )
-    }
-
-    return (
-      <div ref={langRef} style={{ position: 'relative', display: 'flex', alignItems: 'stretch', borderLeft: '1px solid rgba(255,255,255,0.07)' }}>
+  const LangToggle = ({ inDrawer = false }: { inDrawer?: boolean }) => (
+    <div style={{
+      display: 'flex',
+      ...(inDrawer
+        ? { gap: '6px', padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.07)', flexWrap: 'wrap' }
+        : { alignItems: 'stretch', borderLeft: '1px solid rgba(255,255,255,0.07)' }),
+    }}>
+      {LANGS.map(l => (
         <button
-          onClick={() => setLangOpen(v => !v)}
+          key={l.code}
+          onClick={() => { setLang(l.code); if (inDrawer) setMenuOpen(false) }}
+          title={l.name}
           style={{
-            display: 'flex', alignItems: 'center', gap: '8px',
-            padding: '0 14px',
-            background: langOpen ? 'rgba(255,224,0,0.06)' : 'none',
-            border: 'none', cursor: 'pointer',
-            transition: 'background 0.15s',
-            whiteSpace: 'nowrap',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            ...(inDrawer
+              ? {
+                  padding: '6px 10px', gap: '6px',
+                  border: `1px solid ${lang === l.code ? '#ffe000' : 'rgba(255,255,255,0.1)'}`,
+                  background: lang === l.code ? 'rgba(255,224,0,0.1)' : 'transparent',
+                }
+              : {
+                  width: '40px',
+                  background: lang === l.code ? 'rgba(255,224,0,0.08)' : 'transparent',
+                  border: 'none',
+                  borderBottom: lang === l.code ? '2px solid #ffe000' : '2px solid transparent',
+                }),
+            cursor: 'pointer',
+            fontSize: '1.15rem', lineHeight: 1,
+            opacity: lang === l.code ? 1 : 0.45,
+            transition: 'all 0.15s',
           }}
         >
-          <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>{currentLang.flag}</span>
-          <span style={{
-            fontFamily: "'Share Tech Mono', monospace",
-            fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
-            color: 'rgba(255,255,255,0.7)',
-          }}>{currentLang.name}</span>
-          <span style={{
-            fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)',
-            display: 'inline-block',
-            transition: 'transform 0.2s',
-            transform: langOpen ? 'rotate(180deg)' : 'none',
-          }}>▼</span>
+          {l.flag}
+          {inDrawer && (
+            <span style={{
+              fontFamily: "'Share Tech Mono', monospace",
+              fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
+              color: lang === l.code ? '#ffe000' : 'rgba(255,255,255,0.5)',
+            }}>{l.name}</span>
+          )}
         </button>
-        {langOpen && (
-          <div style={{
-            position: 'absolute', top: '100%', right: 0,
-            background: 'rgba(4,0,12,0.98)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            minWidth: '150px', zIndex: 999,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
-          }}>
-            {LANGS.map(l => (
-              <button
-                key={l.code}
-                onClick={() => { setLang(l.code); setLangOpen(false) }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '10px',
-                  width: '100%', padding: '10px 14px',
-                  background: lang === l.code ? 'rgba(255,224,0,0.08)' : 'transparent',
-                  border: 'none', borderBottom: '1px solid rgba(255,255,255,0.05)',
-                  cursor: 'pointer', transition: 'background 0.15s',
-                }}
-              >
-                <span style={{ fontSize: '1rem' }}>{l.flag}</span>
-                <span style={{
-                  fontFamily: "'Share Tech Mono', monospace",
-                  fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
-                  color: lang === l.code ? '#ffe000' : 'rgba(255,255,255,0.6)',
-                }}>{l.name}</span>
-                {lang === l.code && (
-                  <span style={{ marginLeft: 'auto', color: '#ffe000', fontSize: '0.6rem' }}>✓</span>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    )
-  }
+      ))}
+    </div>
+  )
 
   return (
     <>

@@ -1,6 +1,6 @@
 'use client'
 import Link from 'next/link'
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import { useLanguage } from '@/lib/i18n'
 import Footer from '@/components/Footer'
 
@@ -13,22 +13,7 @@ const LANGS = [
 
 export default function Home() {
   const [active, setActive] = useState(0)
-  const [langOpen, setLangOpen] = useState(false)
-  const langRef = useRef<HTMLDivElement>(null)
   const { t, lang, setLang } = useLanguage()
-
-  useEffect(() => {
-    if (!langOpen) return
-    function handleClick(e: MouseEvent) {
-      if (langRef.current && !langRef.current.contains(e.target as Node)) {
-        setLangOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [langOpen])
-
-  const currentLang = LANGS.find(l => l.code === lang) ?? LANGS[0]
 
   const MODES = [
     {
@@ -75,66 +60,28 @@ export default function Home() {
     <>
     <div style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
 
-      {/* Lang dropdown */}
-      <div ref={langRef} style={{ position: 'fixed', top: '16px', right: '20px', zIndex: 100 }}>
-        <button
-          onClick={() => setLangOpen(v => !v)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '8px',
-            padding: '6px 12px',
-            background: 'rgba(4,0,12,0.85)',
-            border: '1px solid rgba(255,255,255,0.15)',
-            cursor: 'pointer',
-            backdropFilter: 'blur(8px)',
-          }}
-        >
-          <span style={{ fontSize: '1rem', lineHeight: 1 }}>{currentLang.flag}</span>
-          <span style={{
-            fontFamily: "'Share Tech Mono', monospace",
-            fontSize: '0.7rem', letterSpacing: '2px',
-            color: 'rgba(255,255,255,0.7)',
-          }}>{currentLang.name}</span>
-          <span style={{
-            fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)',
-            display: 'inline-block',
-            transition: 'transform 0.2s',
-            transform: langOpen ? 'rotate(180deg)' : 'none',
-          }}>▼</span>
-        </button>
-        {langOpen && (
-          <div style={{
-            position: 'absolute', top: 'calc(100% + 4px)', right: 0,
-            background: 'rgba(4,0,12,0.97)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            backdropFilter: 'blur(8px)',
-            minWidth: '150px', zIndex: 101,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
-          }}>
-            {LANGS.map(l => (
-              <button
-                key={l.code}
-                onClick={() => { setLang(l.code); setLangOpen(false) }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '10px',
-                  width: '100%', padding: '10px 14px',
-                  background: lang === l.code ? 'rgba(255,224,0,0.08)' : 'transparent',
-                  border: 'none', borderBottom: '1px solid rgba(255,255,255,0.05)',
-                  cursor: 'pointer', transition: 'background 0.15s',
-                }}
-              >
-                <span style={{ fontSize: '1rem' }}>{l.flag}</span>
-                <span style={{
-                  fontFamily: "'Share Tech Mono', monospace",
-                  fontSize: '0.7rem', letterSpacing: '2px',
-                  color: lang === l.code ? '#ffe000' : 'rgba(255,255,255,0.6)',
-                }}>{l.name}</span>
-                {lang === l.code && (
-                  <span style={{ marginLeft: 'auto', color: '#ffe000', fontSize: '0.6rem' }}>✓</span>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
+      {/* Lang toggle */}
+      <div style={{ position: 'fixed', top: '16px', right: '20px', zIndex: 100, display: 'flex', gap: '4px' }}>
+        {LANGS.map(l => (
+          <button
+            key={l.code}
+            onClick={() => setLang(l.code)}
+            title={l.name}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '4px 6px',
+              background: lang === l.code ? 'rgba(255,224,0,0.12)' : 'rgba(4,0,12,0.6)',
+              border: `1px solid ${lang === l.code ? '#ffe000' : 'rgba(255,255,255,0.1)'}`,
+              cursor: 'pointer',
+              fontSize: '1.2rem', lineHeight: 1,
+              opacity: lang === l.code ? 1 : 0.45,
+              backdropFilter: 'blur(8px)',
+              transition: 'all 0.15s',
+            }}
+          >
+            {l.flag}
+          </button>
+        ))}
       </div>
 
       {/* BG dynamique */}
