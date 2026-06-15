@@ -1064,12 +1064,12 @@ function QuizPlay() {
                   {t('play.q_is_it_punishable')}{' '}
                   <span style={{ color: modeColor }}>{t('play.q_punishable_on_block')}</span>
                 </p>
-              ) : isOnBlock ? (
+              ) : effectiveOnBlock ? (
                 <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1rem', fontWeight: 600, lineHeight: 1.4, color: 'rgba(255,255,255,0.9)' }}>
                   {t('play.q_what_is')} <span style={{ color: modeColor }}>on block value</span> {t('play.q_of')}{' '}
                   <strong style={{ color: '#fff' }}>{question.move_name}</strong> ?
                 </p>
-              ) : isOnHit ? (
+              ) : effectiveOnHit ? (
                 <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1rem', fontWeight: 600, lineHeight: 1.4, color: 'rgba(255,255,255,0.9)' }}>
                   {t('play.q_what_is')} <span style={{ color: modeColor }}>on hit value</span> {t('play.q_of')}{' '}
                   <strong style={{ color: '#fff' }}>{question.move_name}</strong> ?
