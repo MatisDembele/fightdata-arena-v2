@@ -1,22 +1,21 @@
 'use client'
-// Discord OAuth landing page — registered as redirect_uri in Discord Developer Portal.
-// This is a STATIC client page (no Vercel serverless function), so there is zero
-// Vercel timeout risk. The backend call happens entirely in the browser.
+export const dynamic = 'force-static'
+
 import { useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
-function ConnectInner() {
+export default function ConnectPage() {
   const router = useRouter()
-  const params = useSearchParams()
   const { login } = useAuth()
   const [status,   setStatus]   = useState<'connecting' | 'error'>('connecting')
   const [errorMsg, setErrorMsg] = useState('')
 
   useEffect(() => {
+    // Read URL params client-side so this page can be fully static (no serverless function)
+    const params = new URLSearchParams(window.location.search)
     const code  = params.get('code')
     const error = params.get('error')
 
@@ -44,7 +43,7 @@ function ConnectInner() {
 
         if (!res.ok) {
           const body = await res.text().catch(() => '')
-          throw new Error(`Backend ${res.status}: ${body.slice(0, 120)}`)
+          throw new Error(`Backend ${res.status}: ${body.slice(0, 200)}`)
         }
 
         const data = await res.json() as {
@@ -103,8 +102,4 @@ function ConnectInner() {
       <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
     </main>
   )
-}
-
-export default function ConnectPage() {
-  return <Suspense><ConnectInner /></Suspense>
 }
