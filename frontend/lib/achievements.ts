@@ -1,62 +1,65 @@
+import type { IconName } from '@/components/Icon'
+
 export type Rarity = 'common' | 'rare' | 'epic' | 'master' | 'legendary'
 
 export interface Achievement {
   id: string
-  icon: string
+  icon: IconName
   name: string
   desc: string
   rarity: Rarity
 }
 
 export const ACHIEVEMENTS: Achievement[] = [
-  // COMMON
-  { id: 'first_quiz',      icon: '🩸', name: 'FIRST BLOOD',        desc: 'Complete your first quiz session.',           rarity: 'common' },
-  { id: 'first_daily',     icon: '📅', name: 'DAILY PLAYER',       desc: 'Complete a daily challenge.',                 rarity: 'common' },
-  { id: 'first_punish',    icon: '💀', name: 'PUNISHER',           desc: 'Get a correct answer in PUNISH mode.',        rarity: 'common' },
-  { id: 'first_input',     icon: '⌨️', name: 'TYPE FIGHTER',       desc: 'Get a correct answer in INPUT mode.',         rarity: 'common' },
-  { id: 'first_multi_win', icon: '⚔️', name: 'FIRST VICTORY',     desc: 'Win your first multiplayer match.',           rarity: 'common' },
-  { id: 'first_onblock',   icon: '🛡️', name: 'BLOCK CHECKER',     desc: 'Get a correct answer in ON BLOCK mode.',      rarity: 'common' },
-  { id: 'first_onhit',    icon: '🎯', name: 'HIT CHECK',          desc: 'Get a correct answer in ON HIT mode.',        rarity: 'common' },
-  { id: 'first_recovery', icon: '⏱️', name: 'RECOVERY CHECK',     desc: 'Get a correct answer in RECOVERY mode.',      rarity: 'common' },
-  { id: 'first_weekly',   icon: '📆', name: 'WEEK ONE',           desc: 'Complete your first weekly challenge.',       rarity: 'common' },
-  // RARE
-  { id: 'perfect_random',   icon: '🎯', name: 'STARTUP GOD',      desc: 'Score 10/10 in RANDOM mode.',                 rarity: 'rare' },
-  { id: 'perfect_daily',    icon: '✨', name: 'PERFECT DAY',      desc: 'Score 10/10 on a daily challenge.',            rarity: 'rare' },
-  { id: 'perfect_hardcore', icon: '⚡', name: 'SPEED DEMON',      desc: 'Score 10/10 in HARDCORE mode.',               rarity: 'rare' },
-  { id: 'perfect_damage',   icon: '💥', name: 'DAMAGE DEALER',    desc: 'Score 10/10 in DAMAGE mode.',                 rarity: 'rare' },
-  { id: 'onblock_ace',      icon: '🔒', name: 'BLOCK ACE',        desc: 'Score 10/10 in ON BLOCK mode.',               rarity: 'rare' },
-  { id: 'onhit_ace',        icon: '⚡', name: 'ON HIT ACE',       desc: 'Score 10/10 in ON HIT mode.',                 rarity: 'rare' },
-  { id: 'custom_perfect',   icon: '🎨', name: 'MATCHUP READY',    desc: '100% accuracy in a CUSTOM session (10+ Q).',  rarity: 'rare' },
-  { id: 'all_modes',        icon: '🧠', name: 'LAB MONSTER',      desc: 'Play all 7 original quiz modes.',             rarity: 'rare' },
-  { id: 'streak_3',         icon: '🔥', name: 'DAILY ×3',         desc: 'Reach a 3-day daily streak.',                 rarity: 'rare' },
-  { id: 'survival_10',      icon: '💪', name: 'SURVIVOR',         desc: 'Survive 10 questions in SURVIVAL mode.',      rarity: 'rare' },
-  { id: 'hot_streak_10',    icon: '🌡️', name: 'ON FIRE',          desc: 'Hit a 10-hit combo in one session.',          rarity: 'rare' },
-  // EPIC
-  { id: 'survival_25',   icon: '🛡️', name: 'IRON WILL',          desc: 'Survive 25 questions in SURVIVAL mode.',      rarity: 'epic' },
-  { id: 'onblock_master',icon: '🔐', name: 'FRAME TRAP',         desc: 'Score 20/20 in ON BLOCK mode.',               rarity: 'epic' },
-  { id: 'fighter_main',  icon: '🏅', name: 'FIGHTER MAIN',       desc: 'Score 50 correct answers on one fighter.',    rarity: 'epic' },
-  { id: 'multi_wins_10', icon: '⚔️', name: 'WARRIOR',            desc: 'Win 10 multiplayer matches.',                 rarity: 'epic' },
-  { id: 'streak_7',      icon: '🔥', name: 'DAILY ×7',           desc: 'Reach a 7-day daily streak.',                 rarity: 'epic' },
-  { id: 'veteran_500',   icon: '🌍', name: 'VETERAN',            desc: 'Answer 500 total questions.',                 rarity: 'epic' },
-  { id: 'hot_streak_20', icon: '💎', name: 'FLAWLESS',           desc: 'Hit a 20-hit combo in one session.',          rarity: 'epic' },
-  { id: 'frame_perfect', icon: '🎯', name: 'FRAME PERFECT',      desc: 'Finish a 20-question session with 20/20.',    rarity: 'epic' },
-  // MASTER
-  { id: 'survival_50',        icon: '☠️', name: 'UNDYING',          desc: 'Survive 50 questions in SURVIVAL mode.',   rarity: 'master' },
-  { id: 'keyboard_warrior',   icon: '👑', name: 'KEYBOARD WARRIOR', desc: 'Score 20/20 in INPUT mode.',               rarity: 'master' },
-  { id: 'lightning_reflexes', icon: '⚡', name: 'LIGHTNING REFLEX', desc: 'Score 20/20 in HARDCORE mode.',            rarity: 'master' },
-  { id: 'streak_30',          icon: '🔥', name: 'DAILY ×30',        desc: 'Reach a 30-day daily streak.',             rarity: 'master' },
-  { id: 'hot_streak_30',      icon: '🤖', name: 'PERFECT MACHINE',  desc: 'Hit a 30-hit combo in one session.',       rarity: 'master' },
-  { id: 'true_lab_monster',   icon: '🔬', name: 'TRUE LAB MONSTER', desc: 'Play all 10 quiz modes at least once.',    rarity: 'master' },
-  // FLASH MODE
-  { id: 'flash_debut', icon: '⚡', name: 'FLASH PLAYER',  desc: 'Play your first Flash game.',                  rarity: 'common' },
-  { id: 'flash_5',     icon: '🌩️', name: 'FLASH ×5',     desc: 'Score 5 correct in a single Flash game.',      rarity: 'rare' },
-  { id: 'flash_10',    icon: '💥', name: 'FLASH MASTER',  desc: 'Score 10 correct in a single Flash game.',     rarity: 'epic' },
-  { id: 'flash_20',    icon: '🔱', name: 'FLASH LEGEND',  desc: 'Score 20 correct in a single Flash game.',     rarity: 'master' },
-  // LEGENDARY
-  { id: 'grandmaster',     icon: '👑', name: 'GRANDMASTER',     desc: 'Answer 1000 total questions.',                 rarity: 'legendary' },
-  { id: 'encyclopedia',    icon: '📚', name: 'ENCYCLOPEDIA',    desc: 'Play all 30 fighters in FIGHTER mode.',        rarity: 'legendary' },
-  { id: 'daily_champion',  icon: '🏆', name: 'DAILY CHAMPION',  desc: 'Reach #1 on the daily leaderboard.',           rarity: 'legendary' },
-  { id: 'weekly_champion', icon: '🥇', name: 'WEEKLY CHAMPION', desc: 'Reach #1 on the weekly leaderboard.',          rarity: 'legendary' },
+  // ── COMMON ──
+  { id: 'first_quiz',      icon: 'fist',     name: 'ROUND 1, FIGHT!',  desc: 'Complete your first quiz session.',           rarity: 'common' },
+  { id: 'first_daily',     icon: 'calendar', name: 'RISE UP',          desc: 'Complete a Daily challenge.',                 rarity: 'common' },
+  { id: 'first_punish',    icon: 'punish',   name: 'PUNISH COUNTER',   desc: 'Land a correct answer in PUNISH mode.',       rarity: 'common' },
+  { id: 'first_input',     icon: 'input',    name: 'JUST FRAME',       desc: 'Land a correct answer in INPUT mode.',        rarity: 'common' },
+  { id: 'first_multi_win', icon: 'duel',     name: 'YOU WIN',          desc: 'Win your first multiplayer match.',           rarity: 'common' },
+  { id: 'first_onblock',   icon: 'onblock',  name: 'DRIVE PARRY',      desc: 'Land a correct answer in ON BLOCK mode.',     rarity: 'common' },
+  { id: 'first_onhit',     icon: 'onhit',    name: 'PUNISH WINDOW',    desc: 'Land a correct answer in ON HIT mode.',       rarity: 'common' },
+  { id: 'first_recovery',  icon: 'startup',  name: 'WHIFF PUNISH',     desc: 'Land a correct answer in RECOVERY mode.',     rarity: 'common' },
+  { id: 'first_weekly',    icon: 'calendar', name: 'WEEKEND WARRIOR',  desc: 'Complete your first Weekly challenge.',       rarity: 'common' },
+  // ── RARE ──
+  { id: 'perfect_random',   icon: 'onhit',    name: 'HADOKEN!',          desc: 'Score 10/10 in RANDOM mode.',                rarity: 'rare' },
+  { id: 'perfect_daily',    icon: 'diamond',  name: 'PERFECT',           desc: 'Score 10/10 on a Daily challenge.',          rarity: 'rare' },
+  { id: 'perfect_hardcore', icon: 'flash',    name: 'FLASH KICK',        desc: 'Score 10/10 in HARDCORE mode.',              rarity: 'rare' },
+  { id: 'perfect_damage',   icon: 'damage',   name: 'CRITICAL ART',      desc: 'Score 10/10 in DAMAGE mode.',                rarity: 'rare' },
+  { id: 'onblock_ace',      icon: 'onblock',  name: 'SHIMMY',            desc: 'Score 10/10 in ON BLOCK mode.',              rarity: 'rare' },
+  { id: 'onhit_ace',        icon: 'onhit',    name: 'DRIVE RUSH',        desc: 'Score 10/10 in ON HIT mode.',                rarity: 'rare' },
+  { id: 'custom_perfect',   icon: 'book',     name: 'MATCHUP KNOWLEDGE', desc: '100% accuracy in a CUSTOM session (10+ Q).', rarity: 'rare' },
+  { id: 'all_modes',        icon: 'classic',  name: 'BATTLE HUB',        desc: 'Play all 7 original quiz modes.',            rarity: 'rare' },
+  { id: 'streak_3',         icon: 'hardcore', name: 'TARGET COMBO ×3',   desc: 'Reach a 3-day Daily streak.',                rarity: 'rare' },
+  { id: 'survival_10',      icon: 'survival', name: 'SECOND WIND',       desc: 'Survive 10 questions in SURVIVAL mode.',     rarity: 'rare' },
+  { id: 'hot_streak_10',    icon: 'hardcore', name: '10-HIT COMBO',      desc: 'Hit a 10-hit combo in one session.',         rarity: 'rare' },
+  { id: 'bison_tuesday',    icon: 'calendar', name: 'FOR ME, IT WAS TUESDAY', desc: 'Play any quiz on a Tuesday.',           rarity: 'rare' },
+  // ── EPIC ──
+  { id: 'survival_25',   icon: 'onblock',  name: 'IRON BODY',      desc: 'Survive 25 questions in SURVIVAL mode.',      rarity: 'epic' },
+  { id: 'onblock_master',icon: 'onblock',  name: 'FRAME TRAP',     desc: 'Score 20/20 in ON BLOCK mode.',               rarity: 'epic' },
+  { id: 'fighter_main',  icon: 'medal',    name: 'MAIN CHARACTER', desc: 'Get 50 correct answers on one fighter.',      rarity: 'epic' },
+  { id: 'multi_wins_10', icon: 'duel',     name: 'RANKED WARRIOR', desc: 'Win 10 multiplayer matches.',                 rarity: 'epic' },
+  { id: 'streak_7',      icon: 'hardcore', name: 'TARGET COMBO ×7',desc: 'Reach a 7-day Daily streak.',                 rarity: 'epic' },
+  { id: 'veteran_500',   icon: 'globe',    name: 'WORLD TOUR',     desc: 'Answer 500 total questions.',                 rarity: 'epic' },
+  { id: 'hot_streak_20', icon: 'diamond',  name: '20-HIT COMBO',   desc: 'Hit a 20-hit combo in one session.',          rarity: 'epic' },
+  { id: 'frame_perfect', icon: 'classic',  name: 'FRAME PERFECT',  desc: 'Finish a 20-question session with 20/20.',    rarity: 'epic' },
+  // ── MASTER ──
+  { id: 'survival_50',        icon: 'damage',   name: 'BURNOUT IMMUNE',  desc: 'Survive 50 questions in SURVIVAL mode.',   rarity: 'master' },
+  { id: 'keyboard_warrior',   icon: 'input',    name: 'OPTION SELECT',   desc: 'Score 20/20 in INPUT mode.',               rarity: 'master' },
+  { id: 'lightning_reflexes', icon: 'flash',    name: 'DRIVE IMPACT',    desc: 'Score 20/20 in HARDCORE mode.',            rarity: 'master' },
+  { id: 'streak_30',          icon: 'hardcore', name: 'TARGET COMBO ×30',desc: 'Reach a 30-day Daily streak.',             rarity: 'master' },
+  { id: 'hot_streak_30',      icon: 'infinity', name: 'INFINITE COMBO',  desc: 'Hit a 30-hit combo in one session.',       rarity: 'master' },
+  { id: 'true_lab_monster',   icon: 'flask',    name: 'LAB MONSTER',     desc: 'Play all 10 quiz modes at least once.',    rarity: 'master' },
+  // ── FLASH MODE ──
+  { id: 'flash_debut', icon: 'flash',  name: 'QUICK RISE',     desc: 'Play your first Flash game.',                  rarity: 'common' },
+  { id: 'flash_5',     icon: 'flash',  name: 'SONIC BOOM ×5',  desc: 'Score 5 correct in a single Flash game.',      rarity: 'rare' },
+  { id: 'flash_10',    icon: 'flash',  name: 'LIGHTNING LEGS', desc: 'Score 10 correct in a single Flash game.',     rarity: 'epic' },
+  { id: 'flash_20',    icon: 'damage', name: 'RAGING DEMON',   desc: 'Score 20 correct in a single Flash game.',     rarity: 'master' },
+  // ── LEGENDARY ──
+  { id: 'grandmaster',     icon: 'crown',  name: 'MASTER RANK',       desc: 'Answer 1000 total questions.',                 rarity: 'legendary' },
+  { id: 'encyclopedia',    icon: 'globe',  name: 'THE WORLD WARRIOR', desc: 'Play all 30 fighters in FIGHTER mode.',        rarity: 'legendary' },
+  { id: 'daily_champion',  icon: 'trophy', name: "WORLD'S STRONGEST", desc: 'Reach #1 on the Daily leaderboard.',           rarity: 'legendary' },
+  { id: 'weekly_champion', icon: 'crown',  name: 'LEGENDARY RIVAL',   desc: 'Reach #1 on the Weekly leaderboard.',          rarity: 'legendary' },
 ]
 
 export const RARITIES: Rarity[] = ['common', 'rare', 'epic', 'master', 'legendary']
@@ -206,6 +209,10 @@ export function checkAndUnlock(ctx: CheckContext): Achievement[] {
   if (mode === 'recovery'  && score && score > 0) u('first_recovery')
   if (multiWon) u('first_multi_win')
   if (weeklyScore !== undefined) u('first_weekly')
+
+  // M. Bison: "For me, it was Tuesday." — any quiz played on a Tuesday (getDay() === 2)
+  const playedSomething = mode || dailyScore !== undefined || weeklyScore !== undefined || flashScore !== undefined || multiWon
+  if (playedSomething && new Date().getDay() === 2) u('bison_tuesday')
 
   // RARE — perfect scores
   if (mode === 'random'   && score === 10 && total === 10) u('perfect_random')

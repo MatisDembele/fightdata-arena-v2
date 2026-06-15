@@ -9,6 +9,7 @@ import { useLanguage, type DictKey } from '@/lib/i18n'
 import { MODE_COLORS } from '@/lib/constants'
 import { useAuth } from '@/components/AuthProvider'
 import DiscordIcon from '@/components/DiscordIcon'
+import Icon from '@/components/Icon'
 import { getDiscordAvatarUrl } from '@/lib/auth'
 import { getDiscordOAuthUrl } from '@/lib/auth'
 import type { QuizQuestion } from '@/types'
@@ -70,6 +71,16 @@ function useIsDesktop() {
     return () => window.removeEventListener('resize', check)
   }, [])
   return isDesktop
+}
+
+// Streak value with a flame icon (replaces the 🔥 emoji)
+function streakVal(n: number, size = 15): ReactNode {
+  if (n < 2) return String(n)
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+      {n}<Icon name="hardcore" size={size} color="#ff6a00" />
+    </span>
+  )
 }
 
 export default function ProfilePage() {
@@ -283,7 +294,7 @@ export default function ProfilePage() {
                     <div style={{ display: 'flex', gap: isDesktop ? '18px' : '10px', marginTop: '10px', flexWrap: 'wrap' }}>
                       {lifetime.questions > 0 && <MiniStat val={lifetime.questions.toLocaleString()} label={t('profile.questions_label')} color={color} />}
                       {lifetime.questions > 0 && <MiniStat val={`${lifetimeAcc}%`} label={t('stats.accuracy')} color={color} />}
-                      {streak > 0 && <MiniStat val={`${streak}${streak >= 2 ? '🔥' : ''}`} label={t('profile.streak_label')} color={color} />}
+                      {streak > 0 && <MiniStat val={streakVal(streak)} label={t('profile.streak_label')} color={color} />}
                       {globalRank && <MiniStat val={`#${globalRank}`} label="GLOBAL" color="#ffd700" />}
                       {percentileRank && percentileRank <= 25 && <MiniStat val={`TOP ${percentileRank}%`} label="PERCENTILE" color="#ffd700" />}
                     </div>
@@ -373,7 +384,7 @@ export default function ProfilePage() {
                   {[
                     { val: lifetime.questions.toLocaleString(), label: t('profile.questions_label') },
                     { val: `${lifetimeAcc}%`,                   label: t('stats.accuracy') },
-                    { val: streak > 0 ? `${streak}${streak >= 2 ? ' 🔥' : ''}` : '0', label: t('profile.streak_label') },
+                    { val: streak > 0 ? streakVal(streak, 22) : '0', label: t('profile.streak_label') },
                     { val: String(unlockedCount),                label: t('stats.achievements') },
                     { val: String(mistakesCount),                label: t('profile.mistakes_label') },
                   ].map((s, i) => (
@@ -466,7 +477,9 @@ export default function ProfilePage() {
                           const isUnlocked = !!achievements[a.id]
                           return (
                             <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: isDesktop ? '12px 14px' : '10px 12px', background: isUnlocked ? `${rc}0d` : 'rgba(255,255,255,0.02)', border: `1px solid ${isUnlocked ? rc + '33' : 'rgba(255,255,255,0.05)'}`, opacity: isUnlocked ? 1 : 0.4 }}>
-                              <div style={{ fontSize: isDesktop ? '1.3rem' : '1.1rem', lineHeight: 1, flexShrink: 0, filter: isUnlocked ? 'none' : 'grayscale(1)' }}>{a.icon}</div>
+                              <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: isDesktop ? '26px' : '22px' }}>
+                                <Icon name={a.icon} size={isDesktop ? 24 : 20} color={isUnlocked ? rc : 'rgba(255,255,255,0.28)'} />
+                              </div>
                               <div>
                                 <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '0.78rem' : '0.7rem', letterSpacing: '1px', color: isUnlocked ? rc : 'rgba(255,255,255,0.3)' }}>{a.name}</div>
                                 <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.28)', marginTop: '3px', lineHeight: 1.4 }}>{a.desc}</div>
@@ -655,7 +668,7 @@ export default function ProfilePage() {
   )
 }
 
-function MiniStat({ val, label, color }: { val: string; label: string; color: string }) {
+function MiniStat({ val, label, color }: { val: ReactNode; label: string; color: string }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
       <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.1rem', letterSpacing: '2px', color, lineHeight: 1 }}>{val}</div>

@@ -6,6 +6,9 @@ export type IconName =
   | 'startup' | 'onblock' | 'onhit' | 'recovery' | 'damage' | 'active'
   | 'classic' | 'survival' | 'hardcore' | 'input' | 'fighter' | 'custom'
   | 'flash' | 'punish' | 'random' | 'duel' | 'mistakes'
+  // achievements
+  | 'fist' | 'calendar' | 'crown' | 'trophy' | 'medal' | 'globe'
+  | 'book' | 'flask' | 'diamond' | 'infinity' | 'check' | 'cross'
 
 const PATHS: Record<IconName, ReactNode> = {
   // ── Stats ──
@@ -61,6 +64,42 @@ const PATHS: Record<IconName, ReactNode> = {
     <path d="M14 14l3 3M10 14l-3 3" />
   </>),
   mistakes: (<><path d="M21 12a9 9 0 1 1-2.6-6.4" /><path d="M21 4v4h-4" /></>),
+
+  // ── Achievements ──
+  fist: (<>
+    <path d="M7 10V7.5a1.5 1.5 0 0 1 3 0V10M10 10V6.5a1.5 1.5 0 0 1 3 0V10M13 10V7.5a1.5 1.5 0 0 1 3 0V13a5 5 0 0 1-5 5h-1a6 6 0 0 1-6-6 1.5 1.5 0 0 1 3 0" />
+  </>),
+  calendar: (<>
+    <rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 9.5h18" />
+    <path d="M8 3v4M16 3v4" /><path d="M12 14h.01" />
+  </>),
+  crown: (<>
+    <path d="M3 8l3.5 3.5L12 5l5.5 6.5L21 8l-1.8 11H4.8L3 8z" /><path d="M4.8 19h14.4" />
+  </>),
+  trophy: (<>
+    <path d="M7 4h10v5a5 5 0 0 1-10 0V4z" />
+    <path d="M7 6H4.5a2.5 2.5 0 0 0 2.7 4M17 6h2.5a2.5 2.5 0 0 1-2.7 4" />
+    <path d="M12 14v4M8.5 21h7M9.5 18h5" />
+  </>),
+  medal: (<>
+    <path d="M8.5 3l3.5 5.5L15.5 3" /><circle cx="12" cy="15" r="6" />
+    <path d="M12 12.5l1 2 2 .2-1.5 1.4.4 2-1.9-1-1.9 1 .4-2L9 14.7l2-.2z" fill="currentColor" stroke="none" />
+  </>),
+  globe: (<>
+    <circle cx="12" cy="12" r="9" /><path d="M3 12h18" />
+    <path d="M12 3c-3.5 3.5-3.5 14.5 0 18M12 3c3.5 3.5 3.5 14.5 0 18" />
+  </>),
+  book: (<>
+    <path d="M5 4h12a2 2 0 0 1 2 2v13H7a2 2 0 0 0-2 2V4z" /><path d="M5 19a2 2 0 0 1 2-2h12" />
+  </>),
+  flask: (<>
+    <path d="M9 3h6M10 3v6.5L5.2 18A1.6 1.6 0 0 0 6.6 20.4h10.8A1.6 1.6 0 0 0 18.8 18L14 9.5V3" />
+    <path d="M7.5 14h9" />
+  </>),
+  diamond: (<><path d="M12 3l9 7-9 11L3 10l9-7z" /><path d="M3 10h18M9 3l3 18M15 3l-3 18" /></>),
+  infinity: (<path d="M7 9a3 3 0 1 0 0 6c2.5 0 3.5-2 5-3s2.5-3 5-3a3 3 0 1 1 0 6c-2.5 0-3.5-2-5-3s-2.5-3-5-3z" />),
+  check: (<path d="M5 13l4 4L19 7" strokeWidth="2.4" />),
+  cross: (<path d="M6.5 6.5l11 11M17.5 6.5l-11 11" strokeWidth="2.4" />),
 }
 
 export default function Icon({

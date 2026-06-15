@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import type { Achievement } from '@/lib/achievements'
 import { RARITY_COLOR, RARITY_LABEL } from '@/lib/achievements'
+import Icon from '@/components/Icon'
 
 export default function AchievementToast({
   achievements,
@@ -53,7 +54,9 @@ export default function AchievementToast({
       <div style={{ height: '2px', background: `linear-gradient(90deg, ${color}, transparent)` }} />
 
       <div style={{ padding: '14px 16px', display: 'flex', gap: '14px', alignItems: 'center' }}>
-        <div style={{ fontSize: '2.2rem', lineHeight: 1, flexShrink: 0 }}>{current.icon}</div>
+        <div style={{ flexShrink: 0, width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${color}44`, background: `${color}12` }}>
+          <Icon name={current.icon} size={26} color={color} />
+        </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-4)', color, marginBottom: '5px' }}>
             ACHIEVEMENT UNLOCKED

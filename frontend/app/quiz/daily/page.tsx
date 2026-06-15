@@ -11,6 +11,7 @@ import QuestionCard, { makeChoiceStyle } from '@/components/QuestionCard'
 import { playCorrect, playWrong } from '@/lib/sounds'
 import { checkAndUnlock, updateLifetime, type Achievement } from '@/lib/achievements'
 import AchievementToast from '@/components/AchievementToast'
+import Icon from '@/components/Icon'
 
 const COLOR     = '#00ff88'
 const COLOR_ALT = '#00b894'
@@ -359,19 +360,18 @@ function DailyPage() {
                   <div key={ci} style={{
                     width: '36px', height: '36px',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '1.2rem',
                     background: correct ? 'rgba(74,222,128,0.15)' : 'rgba(255,45,120,0.12)',
                     border: `1px solid ${correct ? '#4ade80' : '#ff2d78'}`,
                   }}>
-                    {correct ? '✅' : '❌'}
+                    <Icon name={correct ? 'check' : 'cross'} size={18} color={correct ? '#4ade80' : '#ff2d78'} />
                   </div>
                 ))}
               </div>
             ))}
           </div>
           {streak >= 2 && (
-            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.2rem', letterSpacing: '3px', color: '#ffe000', textShadow: '0 0 12px #ffe000' }}>
-              🔥 {t('daily.streak', { n: streak })}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.2rem', letterSpacing: '3px', color: '#ffe000', textShadow: '0 0 12px #ffe000' }}>
+              <Icon name="hardcore" size={18} color="#ffe000" /> {t('daily.streak', { n: streak })}
             </div>
           )}
           <button onClick={copyResult} style={{
