@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { todayStr } from '@/lib/dates'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
-import { getDailyQuiz, submitDailyScore, getDailyLeaderboard, type LeaderboardEntry } from '@/lib/api'
+import { getDailyQuiz, submitDailyScore, getDailyLeaderboard, submitGlobalScore, type LeaderboardEntry } from '@/lib/api'
 import type { QuizQuestion } from '@/types'
 import { track } from '@vercel/analytics'
 import { useLanguage } from '@/lib/i18n'
@@ -240,6 +240,11 @@ function DailyPage() {
         setLbName(pseudo)
         setLbSubmitted(true)
         submitDailyScore(pseudo, finalScore, accuracy, elapsed).catch(() => {})
+        // Daily also feeds the global (mondial) leaderboard — once per day to avoid double-counting
+        if (localStorage.getItem('fda_daily_global_date') !== todayStr()) {
+          submitGlobalScore(pseudo, finalScore, finalAnswers.length).catch(() => {})
+          localStorage.setItem('fda_daily_global_date', todayStr())
+        }
       }
       setPhase('finished')
     } else {
@@ -256,6 +261,11 @@ function DailyPage() {
     try {
       const acc = answers.length ? Math.round(score / answers.length * 100) : 0
       await submitDailyScore(name, score, acc, elapsedRef.current ?? undefined)
+      // Daily also feeds the global (mondial) leaderboard — once per day to avoid double-counting
+      if (localStorage.getItem('fda_daily_global_date') !== todayStr()) {
+        submitGlobalScore(name, score, answers.length).catch(() => {})
+        localStorage.setItem('fda_daily_global_date', todayStr())
+      }
       localStorage.setItem('fda_pseudo', name)
       setLbSubmitted(true)
       fetchLeaderboard()
