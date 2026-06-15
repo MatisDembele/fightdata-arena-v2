@@ -101,7 +101,10 @@ export default function ProfilePage() {
     const p = localStorage.getItem('fda_pseudo') || ''
     setPseudo(p); setEditPseudo(p)
 
-    setLifetime(JSON.parse(localStorage.getItem('fda_lifetime') || '{"questions":0,"totalCorrect":0}'))
+    // Normalize: the cloud-merge can write fda_lifetime as {} (new accounts),
+    // leaving questions/totalCorrect undefined → .toLocaleString() crashes the render.
+    const ltRaw = JSON.parse(localStorage.getItem('fda_lifetime') || '{}') as Partial<LifetimeStats>
+    setLifetime({ ...ltRaw, questions: ltRaw.questions ?? 0, totalCorrect: ltRaw.totalCorrect ?? 0 })
 
     const st = localStorage.getItem('fda_daily_streak')
     setDailyStreak(st ? JSON.parse(st) : null)
