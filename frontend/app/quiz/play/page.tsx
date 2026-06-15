@@ -51,10 +51,12 @@ function QuizPlay() {
   const [inputVal, setInputVal] = useState('')
   const timerRef                = useRef<ReturnType<typeof setInterval> | null>(null)
   const inputRef                = useRef<HTMLInputElement>(null)
-  const nextQuestionRef  = useRef<QuizQuestion | null>(null)
-  const prefetchingRef   = useRef<boolean>(false)
-  const prefetchTokenRef = useRef<number>(0)
-  const seenMovesRef     = useRef<Set<string>>(new Set())
+  const nextQuestionRef       = useRef<QuizQuestion | null>(null)
+  const prefetchingRef        = useRef<boolean>(false)
+  const prefetchTokenRef      = useRef<number>(0)
+  const seenMovesRef          = useRef<Set<string>>(new Set())
+  const mistakeQuestionMode   = useRef<string>('random')
+  const mistakeOriginalKey    = useRef<string>('')
 
   const [sessionPhase, setSessionPhase]   = useState<'selector' | 'playing' | 'finished'>('selector')
   const [sessionLength, setSessionLength] = useState<number>(10)
@@ -91,12 +93,13 @@ function QuizPlay() {
   const [dataType, setDataType] = useState<'startup'|'active'|'recovery'|'onblock'|'onhit'|'damage'|'punish'>('startup')
 
   // Effective question type (data-type modes override via dataType state)
-  const effectivePunish   = isPunish   || (hasDataTypePicker && dataType === 'punish')
-  const effectiveOnBlock  = isOnBlock  || (hasDataTypePicker && dataType === 'onblock')
-  const effectiveOnHit    = isOnHit    || (hasDataTypePicker && dataType === 'onhit')
-  const effectiveDamage   = isDamage   || (hasDataTypePicker && dataType === 'damage')
-  const effectiveActive   = hasDataTypePicker && dataType === 'active'
-  const effectiveRecovery = isRecovery || (hasDataTypePicker && dataType === 'recovery')
+  const mqm = isMistakes ? mistakeQuestionMode.current : ''
+  const effectivePunish   = isPunish   || (hasDataTypePicker && dataType === 'punish')   || (isMistakes && mqm === 'punish')
+  const effectiveOnBlock  = isOnBlock  || (hasDataTypePicker && dataType === 'onblock')  || (isMistakes && mqm === 'onblock')
+  const effectiveOnHit    = isOnHit    || (hasDataTypePicker && dataType === 'onhit')    || (isMistakes && mqm === 'onhit')
+  const effectiveDamage   = isDamage   || (hasDataTypePicker && dataType === 'damage')   || (isMistakes && mqm === 'damage')
+  const effectiveActive   = (hasDataTypePicker && dataType === 'active')                 || (isMistakes && mqm === 'active')
+  const effectiveRecovery = isRecovery || (hasDataTypePicker && dataType === 'recovery') || (isMistakes && mqm === 'recovery')
 
   const [soundEnabled, setSoundEnabled] = useState(true)
   useEffect(() => { setSoundEnabled(getSoundEnabled()) }, [])
@@ -109,10 +112,13 @@ function QuizPlay() {
   const fetchOne = useCallback(async (): Promise<QuizQuestion> => {
     if (isMistakes) {
       const raw = localStorage.getItem('fda_mistakes')
-      const bank: Record<string, { question: QuizQuestion }> = raw ? JSON.parse(raw) : {}
-      const entries = Object.values(bank)
+      const bank: Record<string, { question: QuizQuestion; mode: string }> = raw ? JSON.parse(raw) : {}
+      const entries = Object.entries(bank)
       if (entries.length === 0) throw new Error('no_mistakes')
-      return entries[Math.floor(Math.random() * entries.length)].question
+      const [key, entry] = entries[Math.floor(Math.random() * entries.length)]
+      mistakeQuestionMode.current = entry.mode ?? 'random'
+      mistakeOriginalKey.current  = key
+      return entry.question
     }
     if (isAllRandom) {
       const fetchers = [getRandomQuiz, getRandomOnBlock, getRandomOnHit, getRandomRecovery, getRandomDamage]
@@ -233,14 +239,15 @@ function QuizPlay() {
       correct: state === 'correct',
     })
     // Update mistake bank: wrong → save (capped 100), correct → remove
-    const mistakeKey = `${question.fighter_slug}:${question.move_name}:${mode}`
+    const effectiveMode = isMistakes ? mistakeQuestionMode.current : mode
+    const mistakeKey = isMistakes ? mistakeOriginalKey.current : `${question.fighter_slug}:${question.move_name}:${mode}`
     const raw = localStorage.getItem('fda_mistakes')
     const bank: Record<string, { question: QuizQuestion; mode: string; count: number; lastSeen: string }> =
       raw ? JSON.parse(raw) : {}
     if (state === 'wrong') {
       bank[mistakeKey] = {
         question: { ...question },
-        mode,
+        mode: effectiveMode,
         count: (bank[mistakeKey]?.count ?? 0) + 1,
         lastSeen: new Date().toISOString(),
       }
@@ -1048,7 +1055,7 @@ function QuizPlay() {
                 </p>
               ) : (
                 <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1rem', fontWeight: 600, lineHeight: 1.4, color: 'rgba(255,255,255,0.9)' }}>
-                  {t('play.q_what_is')} <span style={{ color: modeColor }}>{isDamage ? t('play.q_damage') : isRecovery ? t('play.q_recovery') : 'startup'}</span> {t('play.q_of')}{' '}
+                  {t('play.q_what_is')} <span style={{ color: modeColor }}>{effectiveDamage ? t('play.q_damage') : effectiveRecovery ? t('play.q_recovery') : effectiveActive ? 'active' : 'startup'}</span> {t('play.q_of')}{' '}
                   <strong style={{ color: '#fff' }}>{question.move_name}</strong> ?
                 </p>
               )}
@@ -1068,7 +1075,7 @@ function QuizPlay() {
                         border: '1px solid rgba(255,255,255,0.18)', fontSize: '0.62rem',
                         fontFamily: "'Share Tech Mono', monospace",
                       }}>{String.fromCharCode(65 + i)}</span>
-                      {isOnBlock || isOnHit ? choice : isDamage ? choice : `${choice} frames`}
+                      {effectiveOnBlock || effectiveOnHit || effectiveDamage ? choice : `${choice} frames`}
                     </button>
                   ))}
                 </div>
