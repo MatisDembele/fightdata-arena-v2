@@ -1,8 +1,9 @@
 'use client'
 import { useState, useEffect } from 'react'
 import type { Achievement } from '@/lib/achievements'
-import { RARITY_COLOR, RARITY_LABEL } from '@/lib/achievements'
+import { RARITY_COLOR, RARITY_LABEL, achDesc } from '@/lib/achievements'
 import Icon from '@/components/Icon'
+import { useLanguage } from '@/lib/i18n'
 
 export default function AchievementToast({
   achievements,
@@ -11,6 +12,7 @@ export default function AchievementToast({
   achievements: Achievement[]
   onDismiss: (id: string) => void
 }) {
+  const { lang } = useLanguage()
   const [visible, setVisible] = useState(false)
   const current = achievements[0]
 
@@ -65,7 +67,7 @@ export default function AchievementToast({
             {current.name}
           </div>
           <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.4)', marginTop: '5px', lineHeight: 1.5 }}>
-            {current.desc}
+            {achDesc(current, lang)}
           </div>
         </div>
       </div>

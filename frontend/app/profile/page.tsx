@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, type ReactNode } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import { getGlobalLeaderboard, syncProfile, type GlobalLeaderboardEntry } from '@/lib/api'
-import { ACHIEVEMENTS, RARITY_COLOR, RARITY_LABEL, RARITIES, type Rarity } from '@/lib/achievements'
+import { ACHIEVEMENTS, RARITY_COLOR, RARITY_LABEL, RARITIES, achDesc, type Rarity } from '@/lib/achievements'
 import { useLanguage, type DictKey } from '@/lib/i18n'
 import { MODE_COLORS } from '@/lib/constants'
 import { useAuth } from '@/components/AuthProvider'
@@ -84,7 +84,7 @@ function streakVal(n: number, size = 15): ReactNode {
 }
 
 export default function ProfilePage() {
-  const { t } = useLanguage()
+  const { t, lang } = useLanguage()
   const isDesktop = useIsDesktop()
   const { user, token, isLoading: authLoading } = useAuth()
 
@@ -482,7 +482,7 @@ export default function ProfilePage() {
                               </div>
                               <div>
                                 <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '0.78rem' : '0.7rem', letterSpacing: '1px', color: isUnlocked ? rc : 'rgba(255,255,255,0.3)' }}>{a.name}</div>
-                                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.28)', marginTop: '3px', lineHeight: 1.4 }}>{a.desc}</div>
+                                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.28)', marginTop: '3px', lineHeight: 1.4 }}>{achDesc(a, lang)}</div>
                               </div>
                             </div>
                           )
