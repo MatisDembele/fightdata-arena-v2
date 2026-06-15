@@ -1054,7 +1054,7 @@ function QuizPlay() {
             <GifSection gifUrl={question.gif_url} gifPath={question.gif_path} moveName={question.move_name} color={modeColor} fallback={t('play.hitbox_preview')} />
 
             {/* Right column on desktop: question + choices + feedback */}
-            <div style={isDesktop ? { display: 'flex', flexDirection: 'column', borderLeft: '1px solid rgba(255,255,255,0.06)' } : undefined}>
+            <div style={isDesktop ? { display: 'flex', flexDirection: 'column', justifyContent: 'center', borderLeft: '1px solid rgba(255,255,255,0.06)' } : undefined}>
 
             {/* Question */}
             <div style={{ padding: '16px 18px 12px' }}>
