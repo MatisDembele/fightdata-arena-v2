@@ -53,6 +53,7 @@ export async function syncProfile(token: string): Promise<void> {
       lifetime:     JSON.parse(localStorage.getItem('fda_lifetime')     || '{}'),
       history:      JSON.parse(localStorage.getItem('fda_history')      || '[]'),
       mode_bests:   collectModeBests(),
+      mistakes:     JSON.parse(localStorage.getItem('fda_mistakes')     || '{}'),
     }),
   })
 }

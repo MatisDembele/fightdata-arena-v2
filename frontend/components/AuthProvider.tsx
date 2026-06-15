@@ -49,6 +49,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             lifetime: Record<string, unknown>
             history: Array<Record<string, unknown>>
             mode_bests: Record<string, unknown>
+            mistakes: Record<string, { question: unknown; mode: string; count: number; lastSeen: string }>
           }
         }
 
@@ -118,6 +119,25 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             localStorage.setItem(lsKey, JSON.stringify(merged))
           }
         }
+
+        // Mistakes: union — keep all entries, take highest count + most recent lastSeen on conflict
+        type MistakeEntry = { question: unknown; mode: string; count: number; lastSeen: string }
+        const localMistakes = JSON.parse(localStorage.getItem('fda_mistakes') || '{}') as Record<string, MistakeEntry>
+        const cloudMistakes = (profile.mistakes || {}) as Record<string, MistakeEntry>
+        const mergedMistakes: Record<string, MistakeEntry> = { ...cloudMistakes }
+        for (const [key, local] of Object.entries(localMistakes)) {
+          const cloud = mergedMistakes[key]
+          if (!cloud) {
+            mergedMistakes[key] = local
+          } else {
+            mergedMistakes[key] = {
+              ...cloud,
+              count: Math.max(local.count, cloud.count),
+              lastSeen: local.lastSeen > cloud.lastSeen ? local.lastSeen : cloud.lastSeen,
+            }
+          }
+        }
+        localStorage.setItem('fda_mistakes', JSON.stringify(mergedMistakes))
       }
     } catch { /* ignore fetch errors */ }
 
@@ -126,10 +146,11 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       const achievements = JSON.parse(localStorage.getItem('fda_achievements') || '{}')
       const lifetime     = JSON.parse(localStorage.getItem('fda_lifetime') || '{}')
       const history      = JSON.parse(localStorage.getItem('fda_history') || '[]')
+      const mistakes     = JSON.parse(localStorage.getItem('fda_mistakes')  || '{}')
       await fetch(`${API_URL}/api/auth/sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
-        body: JSON.stringify({ achievements, lifetime, history }),
+        body: JSON.stringify({ achievements, lifetime, history, mistakes }),
       })
     } catch { /* ignore sync errors */ }
   }, [])

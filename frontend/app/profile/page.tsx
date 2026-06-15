@@ -74,7 +74,7 @@ function useIsDesktop() {
 export default function ProfilePage() {
   const { t } = useLanguage()
   const isDesktop = useIsDesktop()
-  const { user, token } = useAuth()
+  const { user, token, isLoading: authLoading } = useAuth()
 
   const [pseudo,        setPseudo]        = useState('')
   const [editPseudo,    setEditPseudo]    = useState('')
@@ -95,6 +95,8 @@ export default function ProfilePage() {
   const [clearConfirm,  setClearConfirm]  = useState(false)
 
   useEffect(() => {
+    if (authLoading) return
+
     const p = localStorage.getItem('fda_pseudo') || ''
     setPseudo(p); setEditPseudo(p)
 
@@ -137,7 +139,8 @@ export default function ProfilePage() {
       setGlobalLb(lb)
       if (p) setGlobalRank(lb.find(e => e.player_name.toLowerCase() === p.toLowerCase())?.rank ?? null)
     }).catch(() => {})
-  }, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, authLoading])
 
   const savePseudo = () => {
     const v = editPseudo.trim().slice(0, 20)

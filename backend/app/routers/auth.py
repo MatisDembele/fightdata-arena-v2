@@ -19,6 +19,7 @@ class SyncPayload(BaseModel):
     lifetime: dict = {}
     history: list = []
     mode_bests: dict = {}
+    mistakes: dict = {}
 
 
 @router.get("/discord/callback")
@@ -97,6 +98,7 @@ def get_me(payload: dict = Depends(get_current_user), db: Session = Depends(get_
             "lifetime": profile.lifetime if profile else {},
             "history": profile.history if profile else [],
             "mode_bests": profile.mode_bests if profile else {},
+            "mistakes": profile.mistakes if profile else {},
         },
     }
 
@@ -118,6 +120,7 @@ def sync_profile(
     profile.lifetime = body.lifetime
     profile.history = body.history[:30]
     profile.mode_bests = body.mode_bests
+    profile.mistakes = body.mistakes
     db.commit()
     return {"ok": True}
 
