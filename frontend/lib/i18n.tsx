@@ -1191,7 +1191,7 @@ const ja: Record<DictKey, string> = {
   'play.mode_survival_label':     'サバイバルモード',
   'play.q_what_is':               '技の',
   'play.q_of':                    'の',
-  'play.q_is_it':                 'は',
+  'play.q_is_it_punishable':      'は',
   'play.q_punishable_on_block':   'ガード時確定反撃あり？',
   'play.q_damage':                'ダメージ',
   'play.punishable_label':        '確定反撃あり',
