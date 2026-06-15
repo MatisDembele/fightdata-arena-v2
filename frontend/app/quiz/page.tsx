@@ -4,42 +4,46 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
+import Icon, { type IconName } from '@/components/Icon'
 import { getFighters } from '@/lib/api'
 import { getFighterPortrait, getFighterColor } from '@/lib/portraits'
 import type { Fighter } from '@/types'
-import { useLanguage } from '@/lib/i18n'
+import { useLanguage, type DictKey } from '@/lib/i18n'
 
 type StatId = 'startup' | 'onblock' | 'onhit' | 'recovery' | 'damage' | 'active'
 type VariantId = 'classic' | 'survival' | 'hardcore' | 'input' | 'fighter' | 'custom'
 
+// id doubles as the Icon name and the i18n description key (quiz.stat_<id>_desc)
 const STATS: {
-  id: StatId; label: string; icon: string
+  id: StatId; label: string
   color: string; colorAlt: string
-  classicMode: string; desc: string
+  classicMode: string
 }[] = [
-  { id: 'startup',  label: 'STARTUP',  icon: '⏱️', color: '#c77dff', colorAlt: '#7b2fff', classicMode: 'random',   desc: 'Frames avant activation'  },
-  { id: 'onblock',  label: 'ON BLOCK', icon: '🛡️', color: '#00b4d8', colorAlt: '#0077b6', classicMode: 'onblock',  desc: 'Avantage au blocage'       },
-  { id: 'onhit',    label: 'ON HIT',   icon: '💥', color: '#f97316', colorAlt: '#ea580c', classicMode: 'onhit',    desc: 'Avantage au toucher'       },
-  { id: 'recovery', label: 'RECOVERY', icon: '⏳', color: '#3b82f6', colorAlt: '#1d4ed8', classicMode: 'recovery', desc: 'Frames de récupération'    },
-  { id: 'damage',   label: 'DAMAGE',   icon: '☠️', color: '#f59e0b', colorAlt: '#d97706', classicMode: 'damage',   desc: 'Dégâts infligés'           },
-  { id: 'active',   label: 'ACTIVE',   icon: '🟣', color: '#a855f7', colorAlt: '#7c3aed', classicMode: 'active',   desc: 'Frames de hitbox active'   },
+  { id: 'startup',  label: 'STARTUP',  color: '#c77dff', colorAlt: '#7b2fff', classicMode: 'random'   },
+  { id: 'onblock',  label: 'ON BLOCK', color: '#00b4d8', colorAlt: '#0077b6', classicMode: 'onblock'  },
+  { id: 'onhit',    label: 'ON HIT',   color: '#f97316', colorAlt: '#ea580c', classicMode: 'onhit'    },
+  { id: 'recovery', label: 'RECOVERY', color: '#3b82f6', colorAlt: '#1d4ed8', classicMode: 'recovery' },
+  { id: 'damage',   label: 'DAMAGE',   color: '#f59e0b', colorAlt: '#d97706', classicMode: 'damage'   },
+  { id: 'active',   label: 'ACTIVE',   color: '#a855f7', colorAlt: '#7c3aed', classicMode: 'active'   },
 ]
 
-const VARIANTS: { id: VariantId; label: string; sub: string; icon: string; color: string }[] = [
-  { id: 'classic',  label: 'CLASSIQUE', sub: '10Q • 4 choix',    icon: '🎯', color: '#e2e8f0' },
-  { id: 'survival', label: 'SURVIVAL',  sub: '3 vies • continu', icon: '❤️', color: '#4ade80' },
-  { id: 'hardcore', label: 'HARDCORE',  sub: '0 erreur toléré',  icon: '🔥', color: '#ff6a00' },
-  { id: 'input',    label: 'INPUT',     sub: 'frappe la valeur', icon: '⌨️', color: '#9b1fff' },
-  { id: 'fighter',  label: 'FIGHTER',   sub: 'focus un perso',   icon: '🥊', color: '#00f0ff' },
-  { id: 'custom',   label: 'CUSTOM',    sub: 'sélection libre',  icon: '🎨', color: '#22c55e' },
+// id doubles as the Icon name and the i18n sub key (quiz.var_<id>_sub)
+const VARIANTS: { id: VariantId; label: string; color: string }[] = [
+  { id: 'classic',  label: 'CLASSIC',  color: '#e2e8f0' },
+  { id: 'survival', label: 'SURVIVAL', color: '#4ade80' },
+  { id: 'hardcore', label: 'HARDCORE', color: '#ff6a00' },
+  { id: 'input',    label: 'INPUT',    color: '#9b1fff' },
+  { id: 'fighter',  label: 'FIGHTER',  color: '#00f0ff' },
+  { id: 'custom',   label: 'CUSTOM',   color: '#22c55e' },
 ]
 
-const SPECIAL = [
-  { label: 'FLASH',   sub: 'chrono',        icon: '⚡', color: '#e879f9', href: '/quiz/flash'               },
-  { label: 'PUNISH',  sub: 'punissabilité', icon: '🎯', color: '#ffe000', href: '/quiz/play?mode=punish'    },
-  { label: 'RANDOM',  sub: 'toutes stats',  icon: '🎲', color: '#ff2d78', href: '/quiz/play?mode=allrandom' },
-  { label: 'DUEL',    sub: 'vs un ami',     icon: '⚔️', color: '#14b8a6', href: '/quiz/duel'                },
-  { label: 'ERREURS', sub: 'mes fautes',    icon: '🔁', color: '#f43f5e', href: '/quiz/play?mode=mistakes'  },
+// id doubles as the Icon name and the i18n sub key (quiz.sp_<id>_sub)
+const SPECIAL: { id: IconName; label: string; color: string; href: string }[] = [
+  { id: 'flash',    label: 'FLASH',    color: '#e879f9', href: '/quiz/flash'               },
+  { id: 'punish',   label: 'PUNISH',   color: '#ffe000', href: '/quiz/play?mode=punish'    },
+  { id: 'random',   label: 'RANDOM',   color: '#ff2d78', href: '/quiz/play?mode=allrandom' },
+  { id: 'duel',     label: 'DUEL',     color: '#14b8a6', href: '/quiz/duel'                },
+  { id: 'mistakes', label: 'MISTAKES', color: '#f43f5e', href: '/quiz/play?mode=mistakes'  },
 ]
 
 export default function QuizSelectPage() {
@@ -76,7 +80,7 @@ export default function QuizSelectPage() {
 
   const backBtn: React.CSSProperties = {
     background: 'none', border: '1px solid rgba(255,255,255,0.15)',
-    color: 'rgba(255,255,255,0.5)', cursor: 'pointer',
+    color: 'rgba(255,255,255,0.6)', cursor: 'pointer',
     padding: '8px 16px', fontFamily: "'Bebas Neue', sans-serif",
     fontSize: '0.85rem', letterSpacing: '2px',
   }
@@ -157,17 +161,19 @@ export default function QuizSelectPage() {
                     const color    = getFighterColor(fighter.slug)
                     const isSel    = selectedFighters.includes(fighter.slug)
                     return (
-                      <div
+                      <button
                         key={fighter.slug}
+                        type="button"
+                        aria-pressed={isSel}
                         onClick={() => setSelectedFighters(prev => prev.includes(fighter.slug) ? prev.filter(s => s !== fighter.slug) : [...prev, fighter.slug])}
-                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: isSel ? `${color}20` : 'rgba(255,255,255,0.03)', border: `1px solid ${isSel ? color : 'rgba(255,255,255,0.07)'}`, boxShadow: isSel ? `0 0 12px ${color}44` : 'none', overflow: 'hidden', transition: 'all 0.15s', cursor: 'pointer' }}
+                        style={{ font: 'inherit', textAlign: 'inherit', padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', background: isSel ? `${color}20` : 'rgba(255,255,255,0.03)', border: `1px solid ${isSel ? color : 'rgba(255,255,255,0.07)'}`, boxShadow: isSel ? `0 0 12px ${color}44` : 'none', overflow: 'hidden', transition: 'all 0.15s', cursor: 'pointer' }}
                       >
                         <div style={{ width: '100%', height: '90px', background: `linear-gradient(180deg, ${color}28, ${color}0d)`, overflow: 'hidden', position: 'relative' }}>
                           {portrait && <img src={portrait} alt={fighter.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />}
                           {isSel && <div style={{ position: 'absolute', top: '4px', right: '4px', width: '18px', height: '18px', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', color: '#000', fontWeight: 700 }}>✓</div>}
                         </div>
                         <div style={{ padding: '6px 4px', fontFamily: "'Rajdhani', sans-serif", fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', color: isSel ? color : 'rgba(255,255,255,0.75)', textAlign: 'center' }}>{fighter.name}</div>
-                      </div>
+                      </button>
                     )
                   })}
                 </div>
@@ -212,8 +218,8 @@ export default function QuizSelectPage() {
             textShadow: `0 0 20px ${stat.color}`,
             transition: 'text-shadow 0.4s',
           }}>{t('quiz.choose_mode')}</h1>
-          <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-sm)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.25)', marginTop: '6px' }}>
-            choisir une stat, puis un format
+          <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-sm)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.4)', marginTop: '6px' }}>
+            {t('quiz.pick_stat_format')}
           </p>
         </div>
 
@@ -227,9 +233,10 @@ export default function QuizSelectPage() {
                 <button
                   key={s.id}
                   onClick={() => setActiveStat(s.id)}
+                  aria-pressed={isSel}
                   style={{
                     flexShrink: 0,
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px',
                     padding: '10px 16px',
                     background: isSel ? `${s.color}15` : 'rgba(255,255,255,0.03)',
                     border: `1px solid ${isSel ? s.color + '88' : 'rgba(255,255,255,0.07)'}`,
@@ -240,10 +247,10 @@ export default function QuizSelectPage() {
                     boxShadow: isSel ? `0 0 14px ${s.color}20` : 'none',
                   }}
                 >
-                  <span style={{ fontSize: '1rem' }}>{s.icon}</span>
+                  <Icon name={s.id} size={18} color={isSel ? s.color : 'rgba(255,255,255,0.4)'} />
                   <span style={{
                     fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.72rem', letterSpacing: '2px',
-                    color: isSel ? s.color : 'rgba(255,255,255,0.3)',
+                    color: isSel ? s.color : 'rgba(255,255,255,0.45)',
                     transition: 'color 0.2s', whiteSpace: 'nowrap',
                     textShadow: isSel ? `0 0 8px ${s.color}` : 'none',
                   }}>{s.label}</span>
@@ -254,8 +261,8 @@ export default function QuizSelectPage() {
 
           {/* ── Stat description ── */}
           <div style={{ padding: '12px 2px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)', marginBottom: '16px' }}>
-            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: stat.color, opacity: 0.75 }}>
-              {stat.desc}
+            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: stat.color, opacity: 0.85 }}>
+              {t(`quiz.stat_${stat.id}_desc` as DictKey)}
             </span>
           </div>
 
@@ -267,8 +274,9 @@ export default function QuizSelectPage() {
             marginBottom: '32px',
           }}>
             {VARIANTS.map(v => (
-              <div
+              <button
                 key={v.id}
+                type="button"
                 onClick={() => handleVariantClick(v.id)}
                 onMouseEnter={e => {
                   const el = e.currentTarget as HTMLElement
@@ -287,27 +295,28 @@ export default function QuizSelectPage() {
                   if (top) top.style.opacity = '0'
                 }}
                 style={{
+                  font: 'inherit', textAlign: 'left',
                   padding: '18px 16px',
                   background: 'rgba(255,255,255,0.03)',
                   border: '1px solid rgba(255,255,255,0.07)',
                   cursor: 'pointer',
                   transition: 'all 0.18s',
-                  display: 'flex', flexDirection: 'column', gap: '6px',
+                  display: 'flex', flexDirection: 'column', gap: '8px',
                   position: 'relative', overflow: 'hidden',
                 }}
               >
                 <div className="var-top" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: `linear-gradient(90deg, transparent, ${v.color}, transparent)`, opacity: 0, transition: 'opacity 0.18s' }} />
-                <div style={{ fontSize: '1.2rem' }}>{v.icon}</div>
-                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.65)' }}>{v.label}</div>
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.25)' }}>{v.sub}</div>
-              </div>
+                <Icon name={v.id} size={22} color={v.color} />
+                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.8)' }}>{v.label}</div>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.45)' }}>{t(`quiz.var_${v.id}_sub` as DictKey)}</div>
+              </button>
             ))}
           </div>
 
           {/* ── Special modes ── */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.3)', whiteSpace: 'nowrap' }}>
-              MODES SPÉCIAUX
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.4)', whiteSpace: 'nowrap' }}>
+              {t('quiz.special_modes')}
             </div>
             <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.06)' }} />
           </div>
@@ -315,10 +324,10 @@ export default function QuizSelectPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '6px' }}>
             {SPECIAL.map(s => (
               <Link
-                key={s.label}
+                key={s.id}
                 href={s.href}
                 style={{
-                  textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: '4px',
+                  textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: '6px',
                   padding: '14px 14px',
                   background: 'rgba(255,255,255,0.03)',
                   border: '1px solid rgba(255,255,255,0.07)',
@@ -337,9 +346,9 @@ export default function QuizSelectPage() {
                   el.style.boxShadow = 'none'
                 }}
               >
-                <div style={{ fontSize: '1rem' }}>{s.icon}</div>
+                <Icon name={s.id} size={20} color={s.color} />
                 <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '2px', color: s.color }}>{s.label}</div>
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.2)' }}>{s.sub}</div>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.45)' }}>{t(`quiz.sp_${s.id}_sub` as DictKey)}</div>
               </Link>
             ))}
           </div>
