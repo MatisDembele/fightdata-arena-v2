@@ -25,7 +25,8 @@ function ConnectInner() {
       return
     }
 
-    const redirectUri = `${window.location.origin}/connect`
+    const redirectUri = process.env.NEXT_PUBLIC_DISCORD_REDIRECT_URI
+      || `${window.location.origin}/connect`
 
     async function doAuth() {
       try {

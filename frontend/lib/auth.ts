@@ -37,10 +37,10 @@ export function clearAuth(): void {
 
 export function getDiscordOAuthUrl(): string {
   const clientId = process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID ?? ''
-  // Derive redirect URI from the current domain so it works in any environment
-  const redirectUri = typeof window !== 'undefined'
-    ? `${window.location.origin}/connect`
-    : (process.env.NEXT_PUBLIC_DISCORD_REDIRECT_URI ?? '')
+  // Prefer the explicit env var (set in Vercel to the canonical production URL).
+  // Fall back to window.location.origin only in dev (localhost).
+  const redirectUri = process.env.NEXT_PUBLIC_DISCORD_REDIRECT_URI
+    || (typeof window !== 'undefined' ? `${window.location.origin}/connect` : '')
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri,
