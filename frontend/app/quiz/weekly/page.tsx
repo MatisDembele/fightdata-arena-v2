@@ -10,6 +10,7 @@ import { track } from '@vercel/analytics'
 import { useLanguage } from '@/lib/i18n'
 import QuestionCard, { makeChoiceStyle } from '@/components/QuestionCard'
 import { playCorrect, playWrong } from '@/lib/sounds'
+import { primaryGifSrc } from '@/lib/gif'
 
 const COLOR     = '#ff6a00'
 const COLOR_ALT = '#d97706'
@@ -97,8 +98,7 @@ function WeeklyPage() {
 
   useEffect(() => {
     const next = questions[idx + 1]
-    const gifSrc = next?.gif_url
-      || (next?.gif_path ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/${next.gif_path}` : undefined)
+    const gifSrc = primaryGifSrc(next?.gif_url, next?.gif_path)
     if (gifSrc) {
       const img = new Image()
       img.src = gifSrc

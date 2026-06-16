@@ -1,6 +1,7 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import type { ReactNode, CSSProperties } from 'react'
+import { gifSources } from '@/lib/gif'
 
 export function makeChoiceStyle(
   choice: string,
@@ -24,8 +25,6 @@ export function makeChoiceStyle(
   return { ...base, opacity: 0.3 }
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-
 interface GifSectionProps {
   gifUrl?: string
   gifPath?: string
@@ -35,19 +34,20 @@ interface GifSectionProps {
 }
 
 export function GifSection({ gifUrl, gifPath, moveName, color, fallback = 'HITBOX PREVIEW' }: GifSectionProps) {
-  // gif_url (CDN/prod URL) takes priority; gif_path is the local API fallback
-  const src = gifUrl || (gifPath ? `${API_URL}/${gifPath}` : undefined)
+  // Optimized WebP (CDN) first, then original gif_url, then local API path.
+  const sources = useMemo(() => gifSources(gifUrl, gifPath), [gifUrl, gifPath])
   const imgRef = useRef<HTMLImageElement>(null)
+  const [srcIdx, setSrcIdx] = useState(0)
   const [loaded, setLoaded] = useState(false)
 
+  // Reset to the best source when the move changes
   useEffect(() => {
-    // Skip skeleton if image is already in browser cache
-    if (imgRef.current?.complete && imgRef.current.naturalWidth > 0) {
-      setLoaded(true)
-    } else {
-      setLoaded(false)
-    }
-  }, [src])
+    setSrcIdx(0)
+    if (imgRef.current?.complete && imgRef.current.naturalWidth > 0) setLoaded(true)
+    else setLoaded(false)
+  }, [gifUrl, gifPath])
+
+  const src = sources[srcIdx]
 
   const corners: CSSProperties[] = [
     { top: '7px', left: '7px', borderTop: `1px solid ${color}`, borderLeft: `1px solid ${color}` },
@@ -73,6 +73,7 @@ export function GifSection({ gifUrl, gifPath, moveName, color, fallback = 'HITBO
             alt={moveName}
             fetchPriority="high"
             onLoad={() => setLoaded(true)}
+            onError={() => { if (srcIdx < sources.length - 1) { setSrcIdx(srcIdx + 1); setLoaded(false) } }}
             style={{
               maxHeight: '100%', maxWidth: '100%', objectFit: 'contain',
               opacity: loaded ? 1 : 0,

@@ -8,6 +8,7 @@ import { playCorrect, playWrong, getSoundEnabled, toggleSound } from '@/lib/soun
 import { checkAndUnlock, updateLifetime, type Achievement, type LifetimeDelta } from '@/lib/achievements'
 import AchievementToast from '@/components/AchievementToast'
 import type { QuizQuestion } from '@/types'
+import { primaryGifSrc } from '@/lib/gif'
 import { track } from '@vercel/analytics'
 import { useLanguage, type DictKey } from '@/lib/i18n'
 import { GifSection, makeChoiceStyle } from '@/components/QuestionCard'
@@ -210,8 +211,7 @@ function QuizPlay() {
       const q = await fetchUnique()
       if (prefetchTokenRef.current === myToken) {
         nextQuestionRef.current = q
-        const gifSrc = q.gif_url
-          || (q.gif_path ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/${q.gif_path}` : undefined)
+        const gifSrc = primaryGifSrc(q.gif_url, q.gif_path)
         if (gifSrc) {
           const img = new Image()
           img.src = gifSrc

@@ -12,6 +12,7 @@ import { playCorrect, playWrong } from '@/lib/sounds'
 import { checkAndUnlock, updateLifetime, type Achievement } from '@/lib/achievements'
 import AchievementToast from '@/components/AchievementToast'
 import Icon from '@/components/Icon'
+import { primaryGifSrc } from '@/lib/gif'
 
 const COLOR     = '#00ff88'
 const COLOR_ALT = '#00b894'
@@ -134,8 +135,7 @@ function DailyPage() {
 
   useEffect(() => {
     const next = questions[idx + 1]
-    const gifSrc = next?.gif_url
-      || (next?.gif_path ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/${next.gif_path}` : undefined)
+    const gifSrc = primaryGifSrc(next?.gif_url, next?.gif_path)
     if (!gifSrc) return
     const img = new Image()
     img.onerror = () => {}
