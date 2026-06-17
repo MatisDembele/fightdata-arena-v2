@@ -107,6 +107,14 @@ function QuizPlay() {
   const [soundEnabled, setSoundEnabled] = useState(true)
   useEffect(() => { setSoundEnabled(getSoundEnabled()) }, [])
 
+  // Whether jumping moves appear in questions — off by default, remembered across sessions.
+  const [includeJumps, setIncludeJumps] = useState(false)
+  useEffect(() => { setIncludeJumps(localStorage.getItem('fda_include_jumps') === '1') }, [])
+  const toggleJumps = (val: boolean) => {
+    setIncludeJumps(val)
+    localStorage.setItem('fda_include_jumps', val ? '1' : '0')
+  }
+
   const accuracy = total > 0 ? Math.round((score / total) * 100) : 0
 
   const modeColor    = MODE_COLORS[mode]     ?? '#ff2d78'
@@ -174,13 +182,17 @@ function QuizPlay() {
   }, [mode, slug, dataType, isPunish, isDamage, isOnBlock, isOnHit, isRecovery, isActive, isCustom, isMistakes, isAllRandom, isHardcore, isSurvival, params])
 
   const fetchUnique = useCallback(async (): Promise<QuizQuestion> => {
-    for (let i = 0; i < 4; i++) {
+    // Jump attacks are excluded by default; the mistakes bank replays as-is.
+    const rejectJumps = !includeJumps && !isMistakes
+    for (let i = 0; i < 8; i++) {
       const q = await fetchOne()
       const key = `${q.fighter_slug}:${q.move_name}`
-      if (!seenMovesRef.current.has(key)) return q
+      const isDup  = seenMovesRef.current.has(key)
+      const isJump = rejectJumps && q.section === 'jump_attacks'
+      if (!isDup && !isJump) return q
     }
     return fetchOne()
-  }, [fetchOne])
+  }, [fetchOne, includeJumps, isMistakes])
 
   const loadQuestion = useCallback(async () => {
     nextQuestionRef.current = null
@@ -676,6 +688,38 @@ function QuizPlay() {
                       })}
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Jump-attacks toggle — off by default */}
+            {!isMistakes && (
+              <div>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.18)', marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '10px' }}>
+                  {t('play.jumps_label')}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  {[{ v: false, label: t('play.no') }, { v: true, label: t('play.yes') }].map(({ v, label }) => {
+                    const isSel = includeJumps === v
+                    return (
+                      <button key={String(v)} onClick={() => toggleJumps(v)} style={{
+                        padding: '5px 18px',
+                        background: isSel ? `${modeColor}20` : 'rgba(255,255,255,0.03)',
+                        border: `1px solid ${isSel ? modeColor : 'rgba(255,255,255,0.08)'}`,
+                        color: isSel ? modeColor : 'rgba(255,255,255,0.35)',
+                        cursor: 'pointer',
+                        fontFamily: "'Share Tech Mono', monospace",
+                        fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
+                        boxShadow: isSel ? `0 0 10px ${modeColor}22` : 'none',
+                        transition: 'all 0.15s',
+                      }}>
+                        {label}
+                      </button>
+                    )
+                  })}
+                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.22)' }}>
+                    {t('play.jumps_sub')}
+                  </span>
                 </div>
               </div>
             )}

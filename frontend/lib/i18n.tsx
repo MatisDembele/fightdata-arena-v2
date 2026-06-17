@@ -75,6 +75,10 @@ const en = {
 
   // quiz play
   'play.session_length':          'SESSION LENGTH',
+  'play.jumps_label':             'JUMP ATTACKS',
+  'play.jumps_sub':               'Include jumping moves in questions',
+  'play.yes':                     'YES',
+  'play.no':                      'NO',
   'play.questions_per_session':   'NUMBER OF QUESTIONS PER SESSION',
   'play.infinite_mode':           'INFINITE MODE — NO LIMIT',
   'play.n_questions':             '{n} QUESTIONS PER SESSION',
@@ -491,6 +495,10 @@ const fr: Record<DictKey, string> = {
 
   // quiz play
   'play.session_length':        'LONGUEUR DE SESSION',
+  'play.jumps_label':           'COUPS SAUTÉS',
+  'play.jumps_sub':             'Inclure les coups sautés dans les questions',
+  'play.yes':                   'OUI',
+  'play.no':                    'NON',
   'play.questions_per_session': 'NOMBRE DE QUESTIONS PAR PARTIE',
   'play.infinite_mode':         'MODE INFINI — AUCUNE LIMITE',
   'play.n_questions':           '{n} QUESTIONS PAR SESSION',
@@ -898,6 +906,10 @@ const es: Record<DictKey, string> = {
   'quiz.mode_damage_sub':      'Adivina el daño',
   'quiz.mode_damage_desc':     'Opción múltiple — adivina el valor exacto del daño de cada movimiento desde su hitbox GIF.',
   'play.session_length':          'DURACIÓN DE SESIÓN',
+  'play.jumps_label':             'ATAQUES SALTANDO',
+  'play.jumps_sub':               'Incluir ataques saltando en las preguntas',
+  'play.yes':                     'SÍ',
+  'play.no':                      'NO',
   'play.questions_per_session':   'NÚMERO DE PREGUNTAS POR SESIÓN',
   'play.infinite_mode':           'MODO INFINITO — SIN LÍMITE',
   'play.n_questions':             '{n} PREGUNTAS POR SESIÓN',
@@ -1275,6 +1287,10 @@ const ja: Record<DictKey, string> = {
   'quiz.mode_damage_sub':      'ダメージを当てよう',
   'quiz.mode_damage_desc':     '4択 — ヒットボックスGIFから技のダメージを当てよう。',
   'play.session_length':          'セッションの長さ',
+  'play.jumps_label':             'ジャンプ攻撃',
+  'play.jumps_sub':               '問題にジャンプ攻撃を含める',
+  'play.yes':                     'はい',
+  'play.no':                      'いいえ',
   'play.questions_per_session':   '1セッションの問題数',
   'play.infinite_mode':           'インフィニットモード — 無制限',
   'play.n_questions':             '{n}問/セッション',
