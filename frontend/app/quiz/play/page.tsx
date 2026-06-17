@@ -188,7 +188,8 @@ function QuizPlay() {
       const q = await fetchOne()
       const key = `${q.fighter_slug}:${q.move_name}`
       const isDup  = seenMovesRef.current.has(key)
-      const isJump = rejectJumps && q.section === 'jump_attacks'
+      // The API serves sections as "jump attacks" (spaces); JSON uses "jump_attacks". Match both.
+      const isJump = rejectJumps && q.section?.toLowerCase().replace(/_/g, ' ') === 'jump attacks'
       if (!isDup && !isJump) return q
     }
     return fetchOne()
