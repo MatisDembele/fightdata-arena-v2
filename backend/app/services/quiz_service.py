@@ -12,6 +12,16 @@ def _is_numeric(value: str | None) -> bool:
     return bool(re.match(r"^\d+$", value.strip()))
 
 
+def _move_candidates(db: Session, fighter_id: int, require_gif: bool = True) -> list[Move]:
+    """Moves for a fighter. When require_gif is False, moves without a hitbox
+    GIF (special moves, super arts, throws…) are included too — the frontend
+    falls back to the move's input notation for those."""
+    q = db.query(Move).filter(Move.fighter_id == fighter_id)
+    if require_gif:
+        q = q.filter(Move.gif_path.isnot(None))
+    return q.all()
+
+
 def _pick_distractors(correct: int, pool: set[int], rng: random.Random) -> list[int]:
     """Return 3 distractor startup values close to `correct` (±3 frames first)."""
     close = sorted(
@@ -76,15 +86,11 @@ def _pick_damage_distractors(correct: int, pool: set[int], rng: random.Random) -
     return chosen[:3]
 
 
-def generate_damage_question(db: Session, slug: str) -> QuizQuestion | None:
+def generate_damage_question(db: Session, slug: str, require_gif: bool = True) -> QuizQuestion | None:
     fighter = db.query(Fighter).filter(Fighter.slug == slug).first()
     if not fighter:
         return None
-    candidates = (
-        db.query(Move)
-        .filter(Move.fighter_id == fighter.id, Move.gif_path.isnot(None))
-        .all()
-    )
+    candidates = _move_candidates(db, fighter.id, require_gif)
     candidates = [m for m in candidates if _parse_damage(m.damage) is not None]
     if len(candidates) < 4:
         return None
@@ -100,6 +106,7 @@ def generate_damage_question(db: Session, slug: str) -> QuizQuestion | None:
         section=correct_move.section,
         gif_url=correct_move.gif_url,
         gif_path=correct_move.gif_path,
+        input=correct_move.input,
         question=f"Quel est le damage de {correct_move.move_name} ?",
         choices=choices,
         answer=str(correct_int),
@@ -107,13 +114,13 @@ def generate_damage_question(db: Session, slug: str) -> QuizQuestion | None:
     )
 
 
-def generate_random_damage_question(db: Session) -> QuizQuestion | None:
+def generate_random_damage_question(db: Session, require_gif: bool = True) -> QuizQuestion | None:
     fighters = db.query(Fighter).all()
     if not fighters:
         return None
     random.shuffle(fighters)
     for fighter in fighters:
-        q = generate_damage_question(db, fighter.slug)
+        q = generate_damage_question(db, fighter.slug, require_gif)
         if q:
             return q
     return None
@@ -128,16 +135,12 @@ def _parse_on_block(value: str | None) -> int | None:
     return int(match.group(1))
 
 
-def generate_startup_question(db: Session, slug: str) -> QuizQuestion | None:
+def generate_startup_question(db: Session, slug: str, require_gif: bool = True) -> QuizQuestion | None:
     fighter = db.query(Fighter).filter(Fighter.slug == slug).first()
     if not fighter:
         return None
 
-    candidates = (
-        db.query(Move)
-        .filter(Move.fighter_id == fighter.id, Move.gif_path.isnot(None))
-        .all()
-    )
+    candidates = _move_candidates(db, fighter.id, require_gif)
     candidates = [m for m in candidates if _is_numeric(m.startup)]
 
     if len(candidates) < 4:
@@ -157,6 +160,7 @@ def generate_startup_question(db: Session, slug: str) -> QuizQuestion | None:
         section=correct_move.section,
         gif_url=correct_move.gif_url,
         gif_path=correct_move.gif_path,
+        input=correct_move.input,
         question=f"Quel est le startup de {correct_move.move_name} ?",
         choices=choices,
         answer=correct_answer,
@@ -164,28 +168,24 @@ def generate_startup_question(db: Session, slug: str) -> QuizQuestion | None:
     )
 
 
-def generate_random_question(db: Session) -> QuizQuestion | None:
+def generate_random_question(db: Session, require_gif: bool = True) -> QuizQuestion | None:
     fighters = db.query(Fighter).all()
     if not fighters:
         return None
     random.shuffle(fighters)
     for fighter in fighters:
-        question = generate_startup_question(db, fighter.slug)
+        question = generate_startup_question(db, fighter.slug, require_gif)
         if question:
             return question
     return None
 
 
-def generate_punish_question(db: Session, slug: str) -> QuizQuestion | None:
+def generate_punish_question(db: Session, slug: str, require_gif: bool = True) -> QuizQuestion | None:
     fighter = db.query(Fighter).filter(Fighter.slug == slug).first()
     if not fighter:
         return None
 
-    candidates = (
-        db.query(Move)
-        .filter(Move.fighter_id == fighter.id, Move.gif_path.isnot(None))
-        .all()
-    )
+    candidates = _move_candidates(db, fighter.id, require_gif)
     candidates = [m for m in candidates if _parse_on_block(m.on_block) is not None]
 
     if not candidates:
@@ -201,6 +201,7 @@ def generate_punish_question(db: Session, slug: str) -> QuizQuestion | None:
         section=correct_move.section,
         gif_url=correct_move.gif_url,
         gif_path=correct_move.gif_path,
+        input=correct_move.input,
         question=f"{correct_move.move_name} est-il punissable on block ?",
         choices=[],
         answer=answer,
@@ -209,30 +210,26 @@ def generate_punish_question(db: Session, slug: str) -> QuizQuestion | None:
     )
 
 
-def generate_random_punish_question(db: Session) -> QuizQuestion | None:
+def generate_random_punish_question(db: Session, require_gif: bool = True) -> QuizQuestion | None:
     fighters = db.query(Fighter).all()
     if not fighters:
         return None
     random.shuffle(fighters)
     for fighter in fighters:
-        question = generate_punish_question(db, fighter.slug)
+        question = generate_punish_question(db, fighter.slug, require_gif)
         if question:
             return question
     return None
 
 
 def _generate_startup_question_rng(
-    db: Session, slug: str, rng: random.Random
+    db: Session, slug: str, rng: random.Random, require_gif: bool = True
 ) -> QuizQuestion | None:
     fighter = db.query(Fighter).filter(Fighter.slug == slug).first()
     if not fighter:
         return None
 
-    candidates = (
-        db.query(Move)
-        .filter(Move.fighter_id == fighter.id, Move.gif_path.isnot(None))
-        .all()
-    )
+    candidates = _move_candidates(db, fighter.id, require_gif)
     candidates = [m for m in candidates if _is_numeric(m.startup)]
 
     if len(candidates) < 4:
@@ -251,6 +248,7 @@ def _generate_startup_question_rng(
         section=correct_move.section,
         gif_url=correct_move.gif_url,
         gif_path=correct_move.gif_path,
+        input=correct_move.input,
         question=f"Quel est le startup de {correct_move.move_name} ?",
         choices=choices,
         answer=correct_answer,
@@ -304,15 +302,11 @@ def _fmt_ob(v: int) -> str:
     return f"+{v}" if v > 0 else str(v)
 
 
-def generate_onblock_question(db: Session, slug: str) -> QuizQuestion | None:
+def generate_onblock_question(db: Session, slug: str, require_gif: bool = True) -> QuizQuestion | None:
     fighter = db.query(Fighter).filter(Fighter.slug == slug).first()
     if not fighter:
         return None
-    candidates = (
-        db.query(Move)
-        .filter(Move.fighter_id == fighter.id, Move.gif_path.isnot(None))
-        .all()
-    )
+    candidates = _move_candidates(db, fighter.id, require_gif)
     candidates = [m for m in candidates if _parse_on_block(m.on_block) is not None]
     if len(candidates) < 4:
         return None
@@ -328,6 +322,7 @@ def generate_onblock_question(db: Session, slug: str) -> QuizQuestion | None:
         section=correct_move.section,
         gif_url=correct_move.gif_url,
         gif_path=correct_move.gif_path,
+        input=correct_move.input,
         question=f"Quelle est la valeur on block de {correct_move.move_name} ?",
         choices=choices,
         answer=_fmt_ob(correct_int),
@@ -336,27 +331,23 @@ def generate_onblock_question(db: Session, slug: str) -> QuizQuestion | None:
     )
 
 
-def generate_random_onblock_question(db: Session) -> QuizQuestion | None:
+def generate_random_onblock_question(db: Session, require_gif: bool = True) -> QuizQuestion | None:
     fighters = db.query(Fighter).all()
     if not fighters:
         return None
     random.shuffle(fighters)
     for fighter in fighters:
-        q = generate_onblock_question(db, fighter.slug)
+        q = generate_onblock_question(db, fighter.slug, require_gif)
         if q:
             return q
     return None
 
 
-def generate_onhit_question(db: Session, slug: str) -> QuizQuestion | None:
+def generate_onhit_question(db: Session, slug: str, require_gif: bool = True) -> QuizQuestion | None:
     fighter = db.query(Fighter).filter(Fighter.slug == slug).first()
     if not fighter:
         return None
-    candidates = (
-        db.query(Move)
-        .filter(Move.fighter_id == fighter.id, Move.gif_path.isnot(None))
-        .all()
-    )
+    candidates = _move_candidates(db, fighter.id, require_gif)
     candidates = [m for m in candidates if _parse_on_block(m.on_hit) is not None]
     if len(candidates) < 4:
         return None
@@ -372,6 +363,7 @@ def generate_onhit_question(db: Session, slug: str) -> QuizQuestion | None:
         section=correct_move.section,
         gif_url=correct_move.gif_url,
         gif_path=correct_move.gif_path,
+        input=correct_move.input,
         question=f"Quelle est la valeur on hit de {correct_move.move_name} ?",
         choices=choices,
         answer=_fmt_ob(correct_int),
@@ -379,27 +371,23 @@ def generate_onhit_question(db: Session, slug: str) -> QuizQuestion | None:
     )
 
 
-def generate_random_onhit_question(db: Session) -> QuizQuestion | None:
+def generate_random_onhit_question(db: Session, require_gif: bool = True) -> QuizQuestion | None:
     fighters = db.query(Fighter).all()
     if not fighters:
         return None
     random.shuffle(fighters)
     for fighter in fighters:
-        q = generate_onhit_question(db, fighter.slug)
+        q = generate_onhit_question(db, fighter.slug, require_gif)
         if q:
             return q
     return None
 
 
-def generate_recovery_question(db: Session, slug: str) -> QuizQuestion | None:
+def generate_recovery_question(db: Session, slug: str, require_gif: bool = True) -> QuizQuestion | None:
     fighter = db.query(Fighter).filter(Fighter.slug == slug).first()
     if not fighter:
         return None
-    candidates = (
-        db.query(Move)
-        .filter(Move.fighter_id == fighter.id, Move.gif_path.isnot(None))
-        .all()
-    )
+    candidates = _move_candidates(db, fighter.id, require_gif)
     candidates = [m for m in candidates if _is_numeric(m.recovery)]
     if len(candidates) < 4:
         return None
@@ -415,6 +403,7 @@ def generate_recovery_question(db: Session, slug: str) -> QuizQuestion | None:
         section=correct_move.section,
         gif_url=correct_move.gif_url,
         gif_path=correct_move.gif_path,
+        input=correct_move.input,
         question=f"Quelle est la recovery de {correct_move.move_name} ?",
         choices=choices,
         answer=correct_answer,
@@ -422,27 +411,23 @@ def generate_recovery_question(db: Session, slug: str) -> QuizQuestion | None:
     )
 
 
-def generate_random_recovery_question(db: Session) -> QuizQuestion | None:
+def generate_random_recovery_question(db: Session, require_gif: bool = True) -> QuizQuestion | None:
     fighters = db.query(Fighter).all()
     if not fighters:
         return None
     random.shuffle(fighters)
     for fighter in fighters:
-        q = generate_recovery_question(db, fighter.slug)
+        q = generate_recovery_question(db, fighter.slug, require_gif)
         if q:
             return q
     return None
 
 
-def generate_active_question(db: Session, slug: str) -> QuizQuestion | None:
+def generate_active_question(db: Session, slug: str, require_gif: bool = True) -> QuizQuestion | None:
     fighter = db.query(Fighter).filter(Fighter.slug == slug).first()
     if not fighter:
         return None
-    candidates = (
-        db.query(Move)
-        .filter(Move.fighter_id == fighter.id, Move.gif_path.isnot(None))
-        .all()
-    )
+    candidates = _move_candidates(db, fighter.id, require_gif)
     candidates = [m for m in candidates if _is_numeric(m.active)]
     if len(candidates) < 4:
         return None
@@ -458,6 +443,7 @@ def generate_active_question(db: Session, slug: str) -> QuizQuestion | None:
         section=correct_move.section,
         gif_url=correct_move.gif_url,
         gif_path=correct_move.gif_path,
+        input=correct_move.input,
         question=f"Combien de frames active pour {correct_move.move_name} ?",
         choices=choices,
         answer=correct_answer,
@@ -465,13 +451,13 @@ def generate_active_question(db: Session, slug: str) -> QuizQuestion | None:
     )
 
 
-def generate_random_active_question(db: Session) -> QuizQuestion | None:
+def generate_random_active_question(db: Session, require_gif: bool = True) -> QuizQuestion | None:
     fighters = db.query(Fighter).all()
     if not fighters:
         return None
     random.shuffle(fighters)
     for fighter in fighters:
-        q = generate_active_question(db, fighter.slug)
+        q = generate_active_question(db, fighter.slug, require_gif)
         if q:
             return q
     return None

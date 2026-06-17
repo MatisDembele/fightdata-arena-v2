@@ -31,9 +31,37 @@ interface GifSectionProps {
   moveName: string
   color: string
   fallback?: string
+  input?: string
+  section?: string
 }
 
-export function GifSection({ gifUrl, gifPath, moveName, color, fallback = 'HITBOX PREVIEW' }: GifSectionProps) {
+// Converts UFD's textual command (e.g. "Down, Down-Forward, Forward + Light Punch")
+// into compact arrow notation ("↓ ↘ →  +  LP"). Unknown tokens pass through.
+const DIR_MAP: Record<string, string> = {
+  'down-forward': '↘', 'down-back': '↙', 'up-forward': '↗', 'up-back': '↖',
+  'down': '↓', 'up': '↑', 'forward': '→', 'back': '←', 'neutral': 'N',
+}
+const BTN_MAP: Record<string, string> = {
+  'light punch': 'LP', 'medium punch': 'MP', 'heavy punch': 'HP',
+  'light kick': 'LK', 'medium kick': 'MK', 'heavy kick': 'HK',
+  'all punches': 'PPP', 'all kicks': 'KKK', 'punch': 'P', 'kick': 'K',
+}
+export function formatInput(input: string): string {
+  const plus = input.lastIndexOf('+')
+  const motionRaw = plus >= 0 ? input.slice(0, plus) : input
+  const buttonRaw = plus >= 0 ? input.slice(plus + 1).trim() : ''
+  const dirs = motionRaw.split(',').map(s => s.trim()).filter(Boolean)
+    .map(d => DIR_MAP[d.toLowerCase()] ?? d).join(' ')
+  const btn = BTN_MAP[buttonRaw.toLowerCase()] ?? buttonRaw
+  return [dirs, btn].filter(Boolean).join('   +   ')
+}
+
+function titleSection(s?: string): string {
+  if (!s) return 'NO PREVIEW'
+  return s.replace(/[_.]/g, ' ').trim().toUpperCase()
+}
+
+export function GifSection({ gifUrl, gifPath, moveName, color, fallback = 'HITBOX PREVIEW', input, section }: GifSectionProps) {
   // Optimized WebP (CDN) first, then original gif_url, then local API path.
   const sources = useMemo(() => gifSources(gifUrl, gifPath), [gifUrl, gifPath])
   const imgRef = useRef<HTMLImageElement>(null)
@@ -81,8 +109,26 @@ export function GifSection({ gifUrl, gifPath, moveName, color, fallback = 'HITBO
             }}
           />
         </>
+      ) : input ? (
+        // No hitbox GIF for this move (special/super/throw) — show the command instead.
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '20px' }}>
+          <span style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.28)', fontSize: '0.55rem', letterSpacing: '4px' }}>
+            {titleSection(section)}
+          </span>
+          <span style={{ fontFamily: "'Share Tech Mono', monospace", color, fontSize: 'clamp(1.4rem, 5vw, 2.2rem)', letterSpacing: '2px', textShadow: `0 0 16px ${color}66`, textAlign: 'center', lineHeight: 1.3 }}>
+            {formatInput(input)}
+          </span>
+          <span style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.2)', fontSize: '0.5rem', letterSpacing: '3px' }}>
+            INPUT
+          </span>
+        </div>
       ) : (
-        <span style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.15)', fontSize: '0.6rem', letterSpacing: '3px' }}>{fallback}</span>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', padding: '20px' }}>
+          <span style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem', letterSpacing: '3px', textAlign: 'center' }}>
+            {titleSection(section)}
+          </span>
+          <span style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.15)', fontSize: '0.55rem', letterSpacing: '3px' }}>{fallback}</span>
+        </div>
       )}
       {corners.map((s, i) => (
         <div key={i} style={{ position: 'absolute', width: '10px', height: '10px', ...s }} />

@@ -90,7 +90,7 @@ FIELD_MAP = {
     "onblock":      "on_block",
     "activeframes": "active",
     "recovery":     "recovery",
-    "moveinput":    "input",
+    "inputsequence": "input",   # UFD's class for the move's command (e.g. "Down, Down-Forward, Forward + LP")
 }
 
 OUTPUT_DIR = Path("data")

@@ -31,6 +31,7 @@ class MoveOut(BaseModel):
 class QuizQuestion(BaseModel):
     move_name:      str
     section:        str
+    input:          Optional[str] = None
     gif_url:        Optional[str] = None
     gif_path:       Optional[str] = None
     question:       str

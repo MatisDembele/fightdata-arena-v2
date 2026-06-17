@@ -9,58 +9,62 @@ from app.services import quiz_service
 
 router = APIRouter(prefix="/quiz", tags=["quiz"])
 
+# with_gif=True (default) keeps the historic behaviour: only moves that have a
+# hitbox GIF are quizzed. with_gif=False also includes moves without a GIF
+# (special moves, super arts, throws…); the frontend shows their input notation.
+
 
 @router.get("/random", response_model=QuizQuestion)
-def random_question(db: Session = Depends(get_db)):
-    question = quiz_service.generate_random_question(db)
+def random_question(with_gif: bool = True, db: Session = Depends(get_db)):
+    question = quiz_service.generate_random_question(db, require_gif=with_gif)
     if not question:
         raise HTTPException(status_code=404, detail="Pas assez de données pour générer un quiz")
     return question
 
 
 @router.get("/random/punish", response_model=QuizQuestion)
-def random_punish_question(db: Session = Depends(get_db)):
-    question = quiz_service.generate_random_punish_question(db)
+def random_punish_question(with_gif: bool = True, db: Session = Depends(get_db)):
+    question = quiz_service.generate_random_punish_question(db, require_gif=with_gif)
     if not question:
         raise HTTPException(status_code=404, detail="Pas assez de données pour générer un quiz punish")
     return question
 
 
 @router.get("/random/damage", response_model=QuizQuestion)
-def random_damage_question(db: Session = Depends(get_db)):
-    question = quiz_service.generate_random_damage_question(db)
+def random_damage_question(with_gif: bool = True, db: Session = Depends(get_db)):
+    question = quiz_service.generate_random_damage_question(db, require_gif=with_gif)
     if not question:
         raise HTTPException(status_code=404, detail="Pas assez de données pour générer un quiz damage")
     return question
 
 
 @router.get("/random/onblock", response_model=QuizQuestion)
-def random_onblock_question(db: Session = Depends(get_db)):
-    question = quiz_service.generate_random_onblock_question(db)
+def random_onblock_question(with_gif: bool = True, db: Session = Depends(get_db)):
+    question = quiz_service.generate_random_onblock_question(db, require_gif=with_gif)
     if not question:
         raise HTTPException(status_code=404, detail="Pas assez de données pour générer un quiz on block")
     return question
 
 
 @router.get("/random/onhit", response_model=QuizQuestion)
-def random_onhit_question(db: Session = Depends(get_db)):
-    question = quiz_service.generate_random_onhit_question(db)
+def random_onhit_question(with_gif: bool = True, db: Session = Depends(get_db)):
+    question = quiz_service.generate_random_onhit_question(db, require_gif=with_gif)
     if not question:
         raise HTTPException(status_code=404, detail="Pas assez de données pour générer un quiz on hit")
     return question
 
 
 @router.get("/random/recovery", response_model=QuizQuestion)
-def random_recovery_question(db: Session = Depends(get_db)):
-    question = quiz_service.generate_random_recovery_question(db)
+def random_recovery_question(with_gif: bool = True, db: Session = Depends(get_db)):
+    question = quiz_service.generate_random_recovery_question(db, require_gif=with_gif)
     if not question:
         raise HTTPException(status_code=404, detail="Pas assez de données pour générer un quiz recovery")
     return question
 
 
 @router.get("/random/active", response_model=QuizQuestion)
-def random_active_question(db: Session = Depends(get_db)):
-    question = quiz_service.generate_random_active_question(db)
+def random_active_question(with_gif: bool = True, db: Session = Depends(get_db)):
+    question = quiz_service.generate_random_active_question(db, require_gif=with_gif)
     if not question:
         raise HTTPException(status_code=404, detail="Pas assez de données pour générer un quiz active")
     return question
@@ -95,8 +99,8 @@ def seeded_questions(seed: str, n: int = 10, db: Session = Depends(get_db)):
 
 
 @router.get("/{slug}/startup", response_model=QuizQuestion)
-def startup_question(slug: str, db: Session = Depends(get_db)):
-    question = quiz_service.generate_startup_question(db, slug)
+def startup_question(slug: str, with_gif: bool = True, db: Session = Depends(get_db)):
+    question = quiz_service.generate_startup_question(db, slug, require_gif=with_gif)
     if not question:
         raise HTTPException(
             status_code=404,
@@ -106,48 +110,48 @@ def startup_question(slug: str, db: Session = Depends(get_db)):
 
 
 @router.get("/{slug}/active", response_model=QuizQuestion)
-def active_question(slug: str, db: Session = Depends(get_db)):
-    question = quiz_service.generate_active_question(db, slug)
+def active_question(slug: str, with_gif: bool = True, db: Session = Depends(get_db)):
+    question = quiz_service.generate_active_question(db, slug, require_gif=with_gif)
     if not question:
         raise HTTPException(status_code=404, detail=f"Pas assez de données active pour '{slug}'")
     return question
 
 
 @router.get("/{slug}/recovery", response_model=QuizQuestion)
-def recovery_question_by_fighter(slug: str, db: Session = Depends(get_db)):
-    question = quiz_service.generate_recovery_question(db, slug)
+def recovery_question_by_fighter(slug: str, with_gif: bool = True, db: Session = Depends(get_db)):
+    question = quiz_service.generate_recovery_question(db, slug, require_gif=with_gif)
     if not question:
         raise HTTPException(status_code=404, detail=f"Pas assez de données recovery pour '{slug}'")
     return question
 
 
 @router.get("/{slug}/onblock", response_model=QuizQuestion)
-def onblock_question_by_fighter(slug: str, db: Session = Depends(get_db)):
-    question = quiz_service.generate_onblock_question(db, slug)
+def onblock_question_by_fighter(slug: str, with_gif: bool = True, db: Session = Depends(get_db)):
+    question = quiz_service.generate_onblock_question(db, slug, require_gif=with_gif)
     if not question:
         raise HTTPException(status_code=404, detail=f"Pas assez de données on block pour '{slug}'")
     return question
 
 
 @router.get("/{slug}/onhit", response_model=QuizQuestion)
-def onhit_question_by_fighter(slug: str, db: Session = Depends(get_db)):
-    question = quiz_service.generate_onhit_question(db, slug)
+def onhit_question_by_fighter(slug: str, with_gif: bool = True, db: Session = Depends(get_db)):
+    question = quiz_service.generate_onhit_question(db, slug, require_gif=with_gif)
     if not question:
         raise HTTPException(status_code=404, detail=f"Pas assez de données on hit pour '{slug}'")
     return question
 
 
 @router.get("/{slug}/damage", response_model=QuizQuestion)
-def damage_question_by_fighter(slug: str, db: Session = Depends(get_db)):
-    question = quiz_service.generate_damage_question(db, slug)
+def damage_question_by_fighter(slug: str, with_gif: bool = True, db: Session = Depends(get_db)):
+    question = quiz_service.generate_damage_question(db, slug, require_gif=with_gif)
     if not question:
         raise HTTPException(status_code=404, detail=f"Pas assez de données damage pour '{slug}'")
     return question
 
 
 @router.get("/{slug}/punish", response_model=QuizQuestion)
-def punish_question(slug: str, db: Session = Depends(get_db)):
-    question = quiz_service.generate_punish_question(db, slug)
+def punish_question(slug: str, with_gif: bool = True, db: Session = Depends(get_db)):
+    question = quiz_service.generate_punish_question(db, slug, require_gif=with_gif)
     if not question:
         raise HTTPException(status_code=404, detail=f"Pas assez de données punish pour '{slug}'")
     return question

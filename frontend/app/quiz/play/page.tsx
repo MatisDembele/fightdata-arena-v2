@@ -115,6 +115,15 @@ function QuizPlay() {
     localStorage.setItem('fda_include_jumps', val ? '1' : '0')
   }
 
+  // Whether moves without a hitbox GIF (specials/supers/throws) can be quizzed
+  // — off by default; they show their input notation instead of a GIF.
+  const [includeNoGif, setIncludeNoGif] = useState(false)
+  useEffect(() => { setIncludeNoGif(localStorage.getItem('fda_include_nogif') === '1') }, [])
+  const toggleNoGif = (val: boolean) => {
+    setIncludeNoGif(val)
+    localStorage.setItem('fda_include_nogif', val ? '1' : '0')
+  }
+
   const accuracy = total > 0 ? Math.round((score / total) * 100) : 0
 
   const modeColor    = MODE_COLORS[mode]     ?? '#ff2d78'
@@ -131,55 +140,57 @@ function QuizPlay() {
       mistakeOriginalKey.current  = key
       return entry.question
     }
+    // wg=false also pulls moves without a hitbox GIF (specials/supers/throws).
+    const wg = !includeNoGif
     if (isAllRandom) {
       const fetchers = [getRandomQuiz, getRandomOnBlock, getRandomOnHit, getRandomRecovery, getRandomDamage]
-      return fetchers[Math.floor(Math.random() * fetchers.length)]()
+      return fetchers[Math.floor(Math.random() * fetchers.length)](wg)
     }
     // Modes with data-type picker: route to the right endpoint per dataType
     if (mode === 'fighter' && slug) {
       switch (dataType) {
-        case 'active':   return getFighterActive(slug)
-        case 'recovery': return getFighterRecovery(slug)
-        case 'onblock':  return getFighterOnBlock(slug)
-        case 'onhit':    return getFighterOnHit(slug)
-        case 'damage':   return getFighterDamage(slug)
-        case 'punish':   return getFighterPunish(slug)
-        default:         return getFighterQuiz(slug)
+        case 'active':   return getFighterActive(slug, wg)
+        case 'recovery': return getFighterRecovery(slug, wg)
+        case 'onblock':  return getFighterOnBlock(slug, wg)
+        case 'onhit':    return getFighterOnHit(slug, wg)
+        case 'damage':   return getFighterDamage(slug, wg)
+        case 'punish':   return getFighterPunish(slug, wg)
+        default:         return getFighterQuiz(slug, wg)
       }
     }
     if (isCustom) {
       const customFighters = params.get('fighters')?.split(',').filter(Boolean) ?? []
       const f = customFighters.length > 0 ? customFighters[Math.floor(Math.random() * customFighters.length)] : null
       switch (dataType) {
-        case 'active':   return f ? getFighterActive(f)   : getRandomActive()
-        case 'recovery': return f ? getFighterRecovery(f) : getRandomRecovery()
-        case 'onblock':  return f ? getFighterOnBlock(f)  : getRandomOnBlock()
-        case 'onhit':    return f ? getFighterOnHit(f)    : getRandomOnHit()
-        case 'damage':   return f ? getFighterDamage(f)   : getRandomDamage()
-        case 'punish':   return f ? getFighterPunish(f)   : getRandomPunish()
-        default:         return f ? getFighterQuiz(f)     : getRandomQuiz()
+        case 'active':   return f ? getFighterActive(f, wg)   : getRandomActive(wg)
+        case 'recovery': return f ? getFighterRecovery(f, wg) : getRandomRecovery(wg)
+        case 'onblock':  return f ? getFighterOnBlock(f, wg)  : getRandomOnBlock(wg)
+        case 'onhit':    return f ? getFighterOnHit(f, wg)    : getRandomOnHit(wg)
+        case 'damage':   return f ? getFighterDamage(f, wg)   : getRandomDamage(wg)
+        case 'punish':   return f ? getFighterPunish(f, wg)   : getRandomPunish(wg)
+        default:         return f ? getFighterQuiz(f, wg)     : getRandomQuiz(wg)
       }
     }
     if (isHardcore || isSurvival || isInput) {
       switch (dataType) {
-        case 'active':   return getRandomActive()
-        case 'recovery': return getRandomRecovery()
-        case 'onblock':  return getRandomOnBlock()
-        case 'onhit':    return getRandomOnHit()
-        case 'damage':   return getRandomDamage()
-        case 'punish':   return getRandomPunish()
-        default:         return getRandomQuiz()
+        case 'active':   return getRandomActive(wg)
+        case 'recovery': return getRandomRecovery(wg)
+        case 'onblock':  return getRandomOnBlock(wg)
+        case 'onhit':    return getRandomOnHit(wg)
+        case 'damage':   return getRandomDamage(wg)
+        case 'punish':   return getRandomPunish(wg)
+        default:         return getRandomQuiz(wg)
       }
     }
     // Single-type modes
-    if (isOnBlock)  return getRandomOnBlock()
-    if (isOnHit)    return getRandomOnHit()
-    if (isRecovery) return getRandomRecovery()
-    if (isPunish)   return getRandomPunish()
-    if (isDamage)   return getRandomDamage()
-    if (isActive)   return getRandomActive()
-    return getRandomQuiz()
-  }, [mode, slug, dataType, isPunish, isDamage, isOnBlock, isOnHit, isRecovery, isActive, isCustom, isMistakes, isAllRandom, isHardcore, isSurvival, params])
+    if (isOnBlock)  return getRandomOnBlock(wg)
+    if (isOnHit)    return getRandomOnHit(wg)
+    if (isRecovery) return getRandomRecovery(wg)
+    if (isPunish)   return getRandomPunish(wg)
+    if (isDamage)   return getRandomDamage(wg)
+    if (isActive)   return getRandomActive(wg)
+    return getRandomQuiz(wg)
+  }, [mode, slug, dataType, isPunish, isDamage, isOnBlock, isOnHit, isRecovery, isActive, isCustom, isMistakes, isAllRandom, isHardcore, isSurvival, params, includeNoGif])
 
   const fetchUnique = useCallback(async (): Promise<QuizQuestion> => {
     // Jump attacks are excluded by default; the mistakes bank replays as-is.
@@ -725,6 +736,38 @@ function QuizPlay() {
               </div>
             )}
 
+            {/* No-GIF moves toggle — off by default */}
+            {!isMistakes && (
+              <div>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.18)', marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '10px' }}>
+                  {t('play.nogif_label')}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  {[{ v: false, label: t('play.no') }, { v: true, label: t('play.yes') }].map(({ v, label }) => {
+                    const isSel = includeNoGif === v
+                    return (
+                      <button key={String(v)} onClick={() => toggleNoGif(v)} style={{
+                        padding: '5px 18px',
+                        background: isSel ? `${modeColor}20` : 'rgba(255,255,255,0.03)',
+                        border: `1px solid ${isSel ? modeColor : 'rgba(255,255,255,0.08)'}`,
+                        color: isSel ? modeColor : 'rgba(255,255,255,0.35)',
+                        cursor: 'pointer',
+                        fontFamily: "'Share Tech Mono', monospace",
+                        fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
+                        boxShadow: isSel ? `0 0 10px ${modeColor}22` : 'none',
+                        transition: 'all 0.15s',
+                      }}>
+                        {label}
+                      </button>
+                    )
+                  })}
+                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.22)' }}>
+                    {t('play.nogif_sub')}
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Question count picker */}
             <div>
               <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.18)', marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '10px' }}>
@@ -1100,7 +1143,7 @@ function QuizPlay() {
             )}
 
             {/* GIF */}
-            <GifSection gifUrl={question.gif_url} gifPath={question.gif_path} moveName={question.move_name} color={modeColor} fallback={t('play.hitbox_preview')} />
+            <GifSection gifUrl={question.gif_url} gifPath={question.gif_path} moveName={question.move_name} color={modeColor} fallback={t('play.hitbox_preview')} input={question.input} section={question.section} />
 
             {/* Right column on desktop: question + choices + feedback */}
             <div style={isDesktop ? { display: 'flex', flexDirection: 'column', justifyContent: 'center', borderLeft: '1px solid rgba(255,255,255,0.06)' } : undefined}>

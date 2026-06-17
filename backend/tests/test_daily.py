@@ -21,6 +21,7 @@ def _make_move(fighter_id, move_name, startup, gif_path="fake.gif"):
     m.gif_url = f"http://example.com/{move_name}.gif"
     m.section = "normals"
     m.on_block = None
+    m.input = None
     return m
 
 

@@ -29,6 +29,7 @@ export interface Move {
 export interface QuizQuestion {
   move_name: string
   section: string
+  input?: string
   gif_url?: string
   gif_path?: string
   question: string

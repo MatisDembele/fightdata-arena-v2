@@ -2,6 +2,12 @@ import type { QuizQuestion } from '@/types'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
+// Quiz endpoints accept ?with_gif=false to also include moves without a hitbox
+// GIF (special moves, super arts, throws…). Default keeps GIF-only behaviour.
+function quizUrl(path: string, withGif: boolean): string {
+  return withGif ? `${API_URL}${path}` : `${API_URL}${path}?with_gif=false`
+}
+
 // Simple in-memory TTL cache for leaderboard endpoints (5 min)
 const LB_TTL = 5 * 60 * 1000
 const _lbCache: Record<string, { data: unknown; ts: number }> = {}
@@ -79,68 +85,68 @@ export async function getFighterMoves(slug: string, section?: string) {
   return res.json()
 }
 
-export async function getRandomQuiz() {
-  const res = await fetch(`${API_URL}/api/quiz/random`)
+export async function getRandomQuiz(withGif = true) {
+  const res = await fetch(quizUrl('/api/quiz/random', withGif))
   if (!res.ok) throw new Error('Erreur quiz')
   return res.json()
 }
 
-export async function getFighterQuiz(slug: string) {
-  const res = await fetch(`${API_URL}/api/quiz/${slug}/startup`)
+export async function getFighterQuiz(slug: string, withGif = true) {
+  const res = await fetch(quizUrl(`/api/quiz/${slug}/startup`, withGif))
   if (!res.ok) throw new Error('Erreur quiz fighter')
   return res.json()
 }
 
-export async function getRandomPunish() {
-  const res = await fetch(`${API_URL}/api/quiz/random/punish`)
+export async function getRandomPunish(withGif = true) {
+  const res = await fetch(quizUrl('/api/quiz/random/punish', withGif))
   if (!res.ok) throw new Error('Erreur quiz punish')
   return res.json()
 }
 
-export async function getFighterPunish(slug: string) {
-  const res = await fetch(`${API_URL}/api/quiz/${slug}/punish`)
+export async function getFighterPunish(slug: string, withGif = true) {
+  const res = await fetch(quizUrl(`/api/quiz/${slug}/punish`, withGif))
   if (!res.ok) throw new Error('Erreur quiz punish fighter')
   return res.json()
 }
 
-export async function getRandomDamage() {
-  const res = await fetch(`${API_URL}/api/quiz/random/damage`)
+export async function getRandomDamage(withGif = true) {
+  const res = await fetch(quizUrl('/api/quiz/random/damage', withGif))
   if (!res.ok) throw new Error('Erreur quiz damage')
   return res.json()
 }
 
-export async function getRandomActive() {
-  const res = await fetch(`${API_URL}/api/quiz/random/active`)
+export async function getRandomActive(withGif = true) {
+  const res = await fetch(quizUrl('/api/quiz/random/active', withGif))
   if (!res.ok) throw new Error('Erreur quiz active')
   return res.json()
 }
 
-export async function getFighterActive(slug: string) {
-  const res = await fetch(`${API_URL}/api/quiz/${slug}/active`)
+export async function getFighterActive(slug: string, withGif = true) {
+  const res = await fetch(quizUrl(`/api/quiz/${slug}/active`, withGif))
   if (!res.ok) throw new Error('Erreur quiz active fighter')
   return res.json()
 }
 
-export async function getFighterRecovery(slug: string) {
-  const res = await fetch(`${API_URL}/api/quiz/${slug}/recovery`)
+export async function getFighterRecovery(slug: string, withGif = true) {
+  const res = await fetch(quizUrl(`/api/quiz/${slug}/recovery`, withGif))
   if (!res.ok) throw new Error('Erreur quiz recovery fighter')
   return res.json()
 }
 
-export async function getFighterOnBlock(slug: string) {
-  const res = await fetch(`${API_URL}/api/quiz/${slug}/onblock`)
+export async function getFighterOnBlock(slug: string, withGif = true) {
+  const res = await fetch(quizUrl(`/api/quiz/${slug}/onblock`, withGif))
   if (!res.ok) throw new Error('Erreur quiz onblock fighter')
   return res.json()
 }
 
-export async function getFighterOnHit(slug: string) {
-  const res = await fetch(`${API_URL}/api/quiz/${slug}/onhit`)
+export async function getFighterOnHit(slug: string, withGif = true) {
+  const res = await fetch(quizUrl(`/api/quiz/${slug}/onhit`, withGif))
   if (!res.ok) throw new Error('Erreur quiz onhit fighter')
   return res.json()
 }
 
-export async function getFighterDamage(slug: string) {
-  const res = await fetch(`${API_URL}/api/quiz/${slug}/damage`)
+export async function getFighterDamage(slug: string, withGif = true) {
+  const res = await fetch(quizUrl(`/api/quiz/${slug}/damage`, withGif))
   if (!res.ok) throw new Error('Erreur quiz damage fighter')
   return res.json()
 }
@@ -173,20 +179,20 @@ export async function getDailyLeaderboard(): Promise<LeaderboardEntry[]> {
   return cachedGet<LeaderboardEntry[]>('daily_lb', `${API_URL}/api/daily/leaderboard`)
 }
 
-export async function getRandomOnBlock() {
-  const res = await fetch(`${API_URL}/api/quiz/random/onblock`)
+export async function getRandomOnBlock(withGif = true) {
+  const res = await fetch(quizUrl('/api/quiz/random/onblock', withGif))
   if (!res.ok) throw new Error('Erreur quiz on block')
   return res.json()
 }
 
-export async function getRandomOnHit() {
-  const res = await fetch(`${API_URL}/api/quiz/random/onhit`)
+export async function getRandomOnHit(withGif = true) {
+  const res = await fetch(quizUrl('/api/quiz/random/onhit', withGif))
   if (!res.ok) throw new Error('Erreur quiz on hit')
   return res.json()
 }
 
-export async function getRandomRecovery() {
-  const res = await fetch(`${API_URL}/api/quiz/random/recovery`)
+export async function getRandomRecovery(withGif = true) {
+  const res = await fetch(quizUrl('/api/quiz/random/recovery', withGif))
   if (!res.ok) throw new Error('Erreur quiz recovery')
   return res.json()
 }
