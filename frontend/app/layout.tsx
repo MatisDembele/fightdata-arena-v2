@@ -49,7 +49,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_API_URL} />
           </>
         )}
-        {/* Hitbox GIFs are hotlinked from ultimateframedata.com — warm DNS/TLS early */}
+        {/* Optimized WebP hitboxes live on the Blob CDN — warm DNS/TLS early when configured. */}
+        {process.env.NEXT_PUBLIC_GIF_CDN && (
+          <>
+            <link rel="preconnect" href={process.env.NEXT_PUBLIC_GIF_CDN} crossOrigin="anonymous" />
+            <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_GIF_CDN} />
+          </>
+        )}
+        {/* Original GIFs are hotlinked from ultimateframedata.com (fallback) — warm DNS/TLS early */}
         <link rel="preconnect" href="https://ultimateframedata.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://ultimateframedata.com" />
       </head>
