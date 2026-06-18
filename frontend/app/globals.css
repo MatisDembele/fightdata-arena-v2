@@ -228,21 +228,25 @@ body {
 }
 .home-arrow-btn {
   flex-shrink: 0;
-  width: 56px;
+  width: 64px;
   background: none;
   border: none;
   cursor: pointer;
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.4rem;
-  color: rgba(255,255,255,0.35);
-  transition: color 0.2s;
+  font-size: 2.8rem;
+  line-height: 1;
+  color: rgba(255,255,255,0.45);
+  transition: color 0.2s, transform 0.15s;
 }
+.home-arrow-btn:hover { transform: scale(1.15); }
 .home-arrow-btn:first-child { margin-left: 40px; }
 .home-arrow-btn:last-child  { margin-right: 40px; }
 .home-modes-inner {
   flex: 1;
   display: flex;
   justify-content: center;
+  align-items: center;            /* cards share the same vertical axis */
+  min-height: clamp(130px, 22vw, 175px);  /* lock height so arrows don't jump */
   gap: 0;
 }
 .home-mode-card {
@@ -327,9 +331,9 @@ body {
 
   .score-bar { gap: 16px; padding: 10px 50px 10px 16px; }
 
-  .home-arrow-btn { width: 48px; font-size: 2rem; }
-  .home-arrow-btn:first-child { margin-left: 4px; }
-  .home-arrow-btn:last-child  { margin-right: 4px; }
+  .home-arrow-btn { width: 44px; font-size: 2.5rem; }
+  .home-arrow-btn:first-child { margin-left: 2px; }
+  .home-arrow-btn:last-child  { margin-right: 2px; }
 
   .home-modes-inner { overflow: hidden; }
   .home-mode-active   { flex: 1 1 0; padding: 20px 16px 24px; }

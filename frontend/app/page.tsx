@@ -276,11 +276,11 @@ export default function Home() {
                   <div style={{ position: 'relative', zIndex: 1 }}>
                     <div style={{
                       fontFamily: "'Bebas Neue', sans-serif",
-                      fontSize: isActive ? 'clamp(2rem, 4vw, 3rem)' : 'clamp(1.2rem, 2.5vw, 1.8rem)',
-                      letterSpacing: isActive ? '6px' : '4px',
+                      fontSize: isActive ? 'clamp(1.8rem, 3.6vw, 2.6rem)' : 'clamp(1.2rem, 2.5vw, 1.8rem)',
+                      letterSpacing: isActive ? '5px' : '4px',
                       color: isActive ? '#fff' : 'rgba(255,255,255,0.3)',
                       textShadow: isActive ? `0 0 20px ${mode.color}, 0 0 40px ${mode.color}55` : 'none',
-                      transition: 'all 0.3s', lineHeight: 1,
+                      transition: 'all 0.3s', lineHeight: 1, whiteSpace: 'nowrap',
                     }}>{mode.label}</div>
                     <div style={{
                       fontFamily: "'Share Tech Mono', monospace",
