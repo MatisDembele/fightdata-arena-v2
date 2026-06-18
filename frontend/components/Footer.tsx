@@ -4,6 +4,7 @@ import { useLanguage } from '@/lib/i18n'
 import Icon, { type IconName } from '@/components/Icon'
 
 const CREATOR_EMAIL = 'dembelematis@gmail.com'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 const CATEGORIES = [
   { key: 'mode',    icon: 'gamepad', labelEn: 'New Mode',    labelFr: 'Idée de mode' },
@@ -19,21 +20,30 @@ export default function Footer() {
 
   const [category, setCategory] = useState<Category>('mode')
   const [message,  setMessage]  = useState('')
-  const [sent,     setSent]     = useState(false)
+  const [status,   setStatus]   = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
 
   const catLabel = (key: Category) => {
     const c = CATEGORIES.find(x => x.key === key)!
     return lang === 'fr' ? c.labelFr : c.labelEn
   }
 
-  function handleSend() {
-    if (!message.trim()) return
-    const sub = encodeURIComponent(`[FDA — ${catLabel(category)}]`)
-    const bod = encodeURIComponent(message.trim())
-    window.open(`mailto:${CREATOR_EMAIL}?subject=${sub}&body=${bod}`, '_blank')
-    setSent(true)
-    setMessage('')
-    setTimeout(() => setSent(false), 3000)
+  async function handleSend() {
+    const msg = message.trim()
+    if (!msg || status === 'sending') return
+    setStatus('sending')
+    try {
+      const res = await fetch(`${API_URL}/api/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category, message: msg, lang }),
+      })
+      if (!res.ok) throw new Error(String(res.status))
+      setMessage('')
+      setStatus('sent')
+      setTimeout(() => setStatus('idle'), 3500)
+    } catch {
+      setStatus('error')
+    }
   }
 
   return (
@@ -112,27 +122,38 @@ export default function Footer() {
             )}
           </div>
 
-          <button
-            onClick={handleSend}
-            disabled={!message.trim()}
-            style={{
-              alignSelf: 'flex-start', padding: '10px 24px',
-              background: message.trim()
-                ? sent
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+            <button
+              onClick={handleSend}
+              disabled={!message.trim() || status === 'sending'}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                alignSelf: 'flex-start', padding: '10px 24px',
+                background: status === 'sent'
                   ? 'rgba(74,222,128,0.15)'
-                  : 'linear-gradient(90deg, #9b1fff, #ff2d78)'
-                : 'rgba(255,255,255,0.04)',
-              border: sent ? '1px solid #4ade80' : 'none',
-              cursor: message.trim() ? 'pointer' : 'default',
-              fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: '0.85rem', letterSpacing: '4px',
-              color: message.trim() ? (sent ? '#4ade80' : '#fff') : 'rgba(255,255,255,0.18)',
-              boxShadow: message.trim() && !sent ? '0 0 16px rgba(255,45,120,0.25)' : 'none',
-              transition: 'all 0.2s',
-            }}
-          >
-            {sent ? '✓ SENT' : t('contact.send')}
-          </button>
+                  : message.trim() && status !== 'sending'
+                    ? 'linear-gradient(90deg, #9b1fff, #ff2d78)'
+                    : 'rgba(255,255,255,0.04)',
+                border: status === 'sent' ? '1px solid #4ade80' : 'none',
+                cursor: message.trim() && status !== 'sending' ? 'pointer' : 'default',
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: '0.85rem', letterSpacing: '4px',
+                color: status === 'sent' ? '#4ade80' : message.trim() ? '#fff' : 'rgba(255,255,255,0.18)',
+                boxShadow: message.trim() && status === 'idle' ? '0 0 16px rgba(255,45,120,0.25)' : 'none',
+                transition: 'all 0.2s',
+              }}
+            >
+              {status === 'sent' && <Icon name="check" size={15} color="#4ade80" />}
+              {status === 'sending' ? t('contact.sending') : status === 'sent' ? t('contact.sent') : t('contact.send')}
+            </button>
+
+            {status === 'error' && (
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: '#ff2d78', lineHeight: 1.5 }}>
+                {t('contact.error')}{' '}
+                <a href={`mailto:${CREATOR_EMAIL}`} style={{ color: '#ff8fb4' }}>{CREATOR_EMAIL}</a>
+              </div>
+            )}
+          </div>
 
         </div>
       </div>

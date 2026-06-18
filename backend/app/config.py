@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     # JWT — generate with: python -c "import secrets; print(secrets.token_hex(32))"
     JWT_SECRET: str = "change-me-in-production"
 
+    # Optional: a Discord webhook URL to mirror site feedback into a channel.
+    # Leave empty and feedback is still stored in the database.
+    FEEDBACK_DISCORD_WEBHOOK: str = ""
+
     class Config:
         env_file = ".env"
 

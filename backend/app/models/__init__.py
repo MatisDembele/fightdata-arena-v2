@@ -7,3 +7,4 @@ from app.models.flash_score import FlashScore
 from app.models.survival_score import SurvivalScore
 from app.models.user import User
 from app.models.user_profile import UserProfile
+from app.models.feedback import Feedback
