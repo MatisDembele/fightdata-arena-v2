@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     # Leave empty and feedback is still stored in the database.
     FEEDBACK_DISCORD_WEBHOOK: str = ""
 
+    # Admin dashboard password (sent as "Authorization: Bearer <token>").
+    # Empty disables the admin endpoint entirely.
+    ADMIN_TOKEN: str = ""
+
     class Config:
         env_file = ".env"
 
