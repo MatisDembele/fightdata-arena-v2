@@ -1,8 +1,10 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react'
 import Navbar from '@/components/Navbar'
+import MoveInsight from '@/components/MoveInsight'
 import { getFighters, getFighterMoves } from '@/lib/api'
 import { getFighterPortrait, getFighterColor } from '@/lib/portraits'
+import { useLanguage } from '@/lib/i18n'
 import type { Fighter, Move } from '@/types'
 
 const COL_COLOR = '#00f0ff'
@@ -26,6 +28,7 @@ function onBlockColor(val: string | undefined): string {
 }
 
 export default function FightersPage() {
+  const { t } = useLanguage()
   const [fighters,       setFighters]       = useState<Fighter[]>([])
   const [selected,       setSelected]       = useState<Fighter | null>(null)
   const [moves,          setMoves]          = useState<Move[]>([])
@@ -34,6 +37,7 @@ export default function FightersPage() {
   const [search,         setSearch]         = useState('')
   const [moveSearch,     setMoveSearch]     = useState('')
   const [activeSection,  setActiveSection]  = useState('ALL')
+  const [expandedId,     setExpandedId]     = useState<number | null>(null)
 
   useEffect(() => {
     getFighters()
@@ -47,6 +51,7 @@ export default function FightersPage() {
     setMoves([])
     setMoveSearch('')
     setActiveSection('ALL')
+    setExpandedId(null)
     setLoadingMoves(true)
     try {
       const data = await getFighterMoves(f.slug)
@@ -127,6 +132,23 @@ export default function FightersPage() {
               </div>
             )}
 
+            {/* Pedagogy legend — always visible */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', marginBottom: '12px', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.45)' }}>{t('move.frame_def')}</span>
+              <span style={{ width: '1px', height: '12px', background: 'rgba(255,255,255,0.12)' }} />
+              {[
+                { c: '#4ade80', label: t('move.legend_safe') },
+                { c: '#ffe000', label: t('move.legend_neutral') },
+                { c: '#ff2d78', label: t('move.legend_punish') },
+              ].map(({ c, label }) => (
+                <span key={label} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.4)' }}>
+                  <span style={{ width: '9px', height: '9px', background: `${c}33`, border: `1px solid ${c}` }} />{label}
+                </span>
+              ))}
+              <span style={{ flex: 1 }} />
+              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0.5px', color: `${color}99` }}>{t('move.tap_hint')}</span>
+            </div>
+
             {/* Table */}
             {loadingMoves ? (
               <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.3)', letterSpacing: '4px', padding: '40px 0', textAlign: 'center' }}>LOADING...</div>
@@ -143,20 +165,34 @@ export default function FightersPage() {
 
                 {/* Data rows */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-                  {filtered.map((move, i) => (
-                    <div key={i} style={{ display: 'grid', gridTemplateColumns: COLS.map(c => c.width).join(' '), gap: '1px', padding: '8px 12px', background: i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                      <div style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '0.8rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {move.move_name}
+                  {filtered.map((move, i) => {
+                    const open = expandedId === move.id
+                    return (
+                      <div key={move.id ?? i}>
+                        <div
+                          onClick={() => setExpandedId(open ? null : move.id)}
+                          style={{ display: 'grid', gridTemplateColumns: COLS.map(c => c.width).join(' '), gap: '1px', padding: '8px 12px', background: open ? `${color}14` : i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent', borderBottom: `1px solid ${open ? `${color}44` : 'rgba(255,255,255,0.03)'}`, cursor: 'pointer', transition: 'background 0.12s' }}
+                          onMouseEnter={e => { if (!open) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+                          onMouseLeave={e => { if (!open) e.currentTarget.style.background = i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent' }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
+                            <span style={{ color: open ? color : 'rgba(255,255,255,0.25)', fontSize: '0.6rem', flexShrink: 0, transition: 'transform 0.15s', transform: open ? 'rotate(90deg)' : 'none' }}>▸</span>
+                            <span style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '0.8rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {move.move_name}
+                            </span>
+                          </div>
+                          <Cell val={move.startup} />
+                          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '1px', color: onBlockColor(move.on_block), textAlign: 'center' }}>
+                            {move.on_block ?? '—'}
+                          </div>
+                          <Cell val={move.on_hit} />
+                          <Cell val={move.damage} />
+                          <Cell val={move.guard} small />
+                        </div>
+                        {open && <MoveInsight move={move} color={color} />}
                       </div>
-                      <Cell val={move.startup} />
-                      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '1px', color: onBlockColor(move.on_block), textAlign: 'center' }}>
-                        {move.on_block ?? '—'}
-                      </div>
-                      <Cell val={move.on_hit} />
-                      <Cell val={move.damage} />
-                      <Cell val={move.guard} small />
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
 
                 {filtered.length === 0 && (
