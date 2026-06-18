@@ -1108,11 +1108,13 @@ function QuizPlay() {
             onClick={() => { setSoundEnabled(toggleSound()) }}
             style={{
               position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
-              background: 'none', border: '1px solid rgba(255,255,255,0.1)',
-              color: soundEnabled ? modeColor : 'rgba(255,255,255,0.2)',
-              fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)',
-              letterSpacing: 'var(--ls-2)', padding: '3px 7px', cursor: 'pointer',
-              transition: 'all 0.2s',
+              width: '32px', height: '32px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: soundEnabled ? `${modeColor}22` : 'rgba(255,255,255,0.06)',
+              border: `1px solid ${soundEnabled ? modeColor : 'rgba(255,255,255,0.3)'}`,
+              boxShadow: soundEnabled ? `0 0 10px ${modeColor}44` : 'none',
+              color: '#fff', fontSize: '1.05rem', lineHeight: 1,
+              cursor: 'pointer', transition: 'all 0.2s',
             }}
             title={soundEnabled ? 'Mute SFX' : 'Enable SFX'}
           >
@@ -1147,11 +1149,25 @@ function QuizPlay() {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               gridColumn: isDesktop ? '1 / -1' : undefined,
             }}>
-              <span style={{
-                fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '4px',
-                background: `linear-gradient(90deg, ${modeColor}, ${modeColorAlt})`,
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-              }}>{modeLabel}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{
+                  fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '4px',
+                  background: `linear-gradient(90deg, ${modeColor}, ${modeColorAlt})`,
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                }}>{modeLabel}</span>
+                {sessionStat && (
+                  <button
+                    onClick={() => setInfoOpen(true)}
+                    title={t('statx.heading')}
+                    style={{
+                      width: '20px', height: '20px', flexShrink: 0, lineHeight: 1,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: `${modeColor}1a`, border: `1px solid ${modeColor}66`, color: modeColor,
+                      fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', cursor: 'pointer',
+                    }}
+                  >?</button>
+                )}
+              </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 {isHardcore && state === 'idle' && (
                   <span style={{
@@ -1164,18 +1180,6 @@ function QuizPlay() {
                   fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem',
                   letterSpacing: '2px', color: modeColor, textTransform: 'uppercase',
                 }}>{question.fighter_slug}</span>
-                {sessionStat && (
-                  <button
-                    onClick={() => setInfoOpen(true)}
-                    title={t('statx.heading')}
-                    style={{
-                      width: '20px', height: '20px', flexShrink: 0, lineHeight: 1,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      background: 'none', border: `1px solid ${modeColor}55`, color: modeColor,
-                      fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', cursor: 'pointer',
-                    }}
-                  >?</button>
-                )}
               </div>
             </div>
 
