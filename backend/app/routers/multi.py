@@ -52,6 +52,7 @@ class Room:
         self.lock = asyncio.Lock()
         self.disconnected: dict[str, float] = {}          # name → time disconnected (in grace)
         self.created_at: float = time.time()
+        self.public: bool = False                          # listed in the public browser / quick match
 
     def is_full(self) -> bool:
         return len(self.players) >= MAX_PLAYERS
@@ -206,14 +207,58 @@ async def _next_question(room: Room, db: Session):
     room.timeout_task = asyncio.ensure_future(_timeout_question(room, room.question_number))
 
 
-@router.post("/rooms")
-def create_room():
+def _new_room(public: bool = False):
     for _ in range(10):
         code = _make_code()
         if code not in rooms:
-            rooms[code] = Room(code)
-            return {"room_code": code}
-    return {"error": "Impossible de créer une room"}, 500
+            room = Room(code)
+            room.public = public
+            rooms[code] = room
+            return code
+    return None
+
+
+@router.post("/rooms")
+def create_room(public: bool = False):
+    code = _new_room(public=public)
+    if code is None:
+        return {"error": "Impossible de créer une room"}, 500
+    return {"room_code": code}
+
+
+@router.post("/quick")
+def quick_match():
+    """Drop the player into the most-filled open public room, or open a new one."""
+    candidates = [
+        r for r in rooms.values()
+        if r.public and not r.game_started and r.players and len(r.players) < MAX_PLAYERS
+    ]
+    if candidates:
+        candidates.sort(key=lambda r: len(r.players), reverse=True)  # fill rooms up
+        return {"room_code": candidates[0].code}
+    code = _new_room(public=True)
+    if code is None:
+        return {"error": "Impossible de créer une room"}, 500
+    return {"room_code": code}
+
+
+@router.get("/public")
+def public_rooms():
+    """Open public rooms a newcomer can join right now."""
+    out = []
+    for r in rooms.values():
+        if r.public and not r.game_started and r.players and len(r.players) < MAX_PLAYERS:
+            out.append({
+                "code": r.code,
+                "host": r.host,
+                "players": list(r.players.keys()),
+                "avatars": dict(r.player_avatars),
+                "count": len(r.players),
+                "max": MAX_PLAYERS,
+                "game_mode": r.game_mode,
+            })
+    out.sort(key=lambda x: x["count"], reverse=True)
+    return {"rooms": out}
 
 
 @router.get("/rooms/{room_code}")

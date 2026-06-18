@@ -18,6 +18,16 @@ const FIGHTERS = [
   'mai','elena','sagat','cviper','alex','ingrid',
 ]
 
+interface PublicRoom {
+  code: string
+  host: string
+  players: string[]
+  avatars: Record<string, string>
+  count: number
+  max: number
+  game_mode: string
+}
+
 function MultiLobbyContent() {
   const router       = useRouter()
   const searchParams = useSearchParams()
@@ -28,6 +38,8 @@ function MultiLobbyContent() {
   const [loading, setLoading]   = useState(false)
   const [slowLoad, setSlowLoad] = useState(false)
   const [error, setError]       = useState('')
+  const [publicRooms, setPublicRooms] = useState<PublicRoom[]>([])
+  const [searching, setSearching]     = useState(false)
   const { t } = useLanguage()
   const { user } = useAuth()
 
@@ -47,10 +59,52 @@ function MultiLobbyContent() {
     if (roomParam) { setCode(roomParam.toUpperCase()); setJoining(true) }
   }, [searchParams, user])
 
+  // Live list of open public rooms
+  useEffect(() => {
+    let alive = true
+    const load = async () => {
+      try {
+        const res  = await fetch(`${API_URL}/api/multi/public`, { cache: 'no-store' })
+        const data = await res.json()
+        if (alive) setPublicRooms(data.rooms ?? [])
+      } catch { /* ignore transient errors */ }
+    }
+    load()
+    const id = setInterval(load, 4000)
+    return () => { alive = false; clearInterval(id) }
+  }, [])
+
   function persistPlayer(n: string, av: string) {
     localStorage.setItem('fda_pseudo', n)
     localStorage.setItem('fda_avatar', av)
   }
+
+  const goToRoom = (roomCode: string) => {
+    router.push(`/multi/${roomCode}?name=${encodeURIComponent(name.trim())}&avatar=${encodeURIComponent(avatar)}`)
+  }
+
+  async function handleQuick() {
+    if (!name.trim()) return setError(t('multi.err_name'))
+    persistPlayer(name.trim(), avatar)
+    setSearching(true); setError('')
+    try {
+      const res  = await fetch(`${API_URL}/api/multi/quick`, { method: 'POST' })
+      const data = await res.json()
+      track('multi_quick_match')
+      goToRoom(data.room_code)
+    } catch {
+      setError(t('multi.err_network')); setSearching(false)
+    }
+  }
+
+  function joinPublic(roomCode: string) {
+    if (!name.trim()) return setError(t('multi.err_name'))
+    persistPlayer(name.trim(), avatar)
+    track('multi_public_join')
+    goToRoom(roomCode)
+  }
+
+  const avatarSrc = (av?: string) => (av && av.startsWith('http')) ? av : (getFighterPortrait(av || 'ryu') ?? undefined)
 
   async function handleCreate() {
     if (!name.trim()) return setError(t('multi.err_name'))
@@ -182,38 +236,84 @@ function MultiLobbyContent() {
             </div>
           )}
 
-          {/* Join code input */}
-          {joining && (
-            <input style={inputStyle} placeholder={t('multi.room_code')} value={code}
-              onChange={e => setCode(e.target.value.toUpperCase())} maxLength={4} autoFocus />
-          )}
-
           {error && (
             <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '2px', color: '#ff2d78', textAlign: 'center' }}>{error}</div>
           )}
 
-          {/* Action buttons */}
-          <div style={{ display: 'flex', gap: '12px' }}>
-            {!joining ? (
-              <>
-                <button style={btnPrimary('#ffe000')} onClick={handleCreate} disabled={loading}>
-                  {loading ? (slowLoad ? t('multi.waking_server') : t('multi.creating')) : t('multi.create')}
-                </button>
-                <button style={btnSecondary('#00f0ff')} onClick={() => { setJoining(true); setError('') }}>
-                  {t('multi.join')}
-                </button>
-              </>
+          {/* Quick match — primary */}
+          <button
+            onClick={handleQuick}
+            disabled={searching}
+            style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
+              background: 'linear-gradient(90deg, #ff6a00, #ffe000)', border: 'none',
+              padding: '14px 0', cursor: searching ? 'default' : 'pointer', opacity: searching ? 0.6 : 1,
+              boxShadow: '0 0 22px rgba(255,224,0,0.25)', transition: 'all 0.2s',
+            }}
+          >
+            <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.3rem', letterSpacing: '4px', color: '#1a0a00' }}>
+              {searching ? t('multi.searching') : `⚡ ${t('multi.quick_match')}`}
+            </span>
+            {!searching && <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color: 'rgba(0,0,0,0.55)' }}>{t('multi.quick_match_sub')}</span>}
+          </button>
+
+          {/* Public rooms browser */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.3)', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '8px' }}>
+              {t('multi.public_rooms')}{publicRooms.length > 0 ? ` · ${publicRooms.length}` : ''}
+            </div>
+            {publicRooms.length === 0 ? (
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.62rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.25)', lineHeight: 1.6, padding: '6px 0' }}>
+                {t('multi.no_public')}
+              </div>
             ) : (
-              <>
-                <button style={btnPrimary('#00f0ff')} onClick={handleJoin}>
-                  {t('multi.join')}
-                </button>
-                <button style={btnSecondary('#ffe000')} onClick={() => { setJoining(false); setError(''); setCode('') }}>
-                  {t('multi.back')}
-                </button>
-              </>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '230px', overflowY: 'auto' }}>
+                {publicRooms.map(r => (
+                  <button
+                    key={r.code}
+                    onClick={() => joinPublic(r.code)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.09)', cursor: 'pointer', transition: 'all 0.15s', textAlign: 'left' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#00f0ff'; e.currentTarget.style.background = 'rgba(0,240,255,0.08)' }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
+                  >
+                    <div style={{ display: 'flex', flexShrink: 0 }}>
+                      {r.players.slice(0, 6).map((p, i) => (
+                        <div key={p} style={{ width: '24px', height: '24px', borderRadius: '50%', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.2)', marginLeft: i ? '-6px' : 0, background: '#1a0a2a' }}>
+                          {avatarSrc(r.avatars[p]) && <img src={avatarSrc(r.avatars[p])} alt={p} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '2px', color: '#fff' }}>{r.code} <span style={{ color: '#00f0ff', fontSize: '0.8rem' }}>{r.count}/{r.max}</span></div>
+                      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.game_mode}</div>
+                    </div>
+                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '2px', color: '#00f0ff', flexShrink: 0 }}>{t('multi.join')} →</span>
+                  </button>
+                ))}
+              </div>
             )}
           </div>
+
+          {/* Private room / join by code */}
+          {!joining ? (
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button style={btnSecondary('#ffe000')} onClick={handleCreate} disabled={loading}>
+                {loading ? (slowLoad ? t('multi.waking_server') : t('multi.creating')) : t('multi.private_room')}
+              </button>
+              <button style={btnSecondary('#00f0ff')} onClick={() => { setJoining(true); setError('') }}>
+                {t('multi.join')} ⌨
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <input style={inputStyle} placeholder={t('multi.room_code')} value={code}
+                onChange={e => setCode(e.target.value.toUpperCase())} maxLength={4} autoFocus />
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button style={btnPrimary('#00f0ff')} onClick={handleJoin}>{t('multi.join')}</button>
+                <button style={btnSecondary('#ffe000')} onClick={() => { setJoining(false); setError(''); setCode('') }}>{t('multi.back')}</button>
+              </div>
+            </div>
+          )}
 
         </div>
       </main>
