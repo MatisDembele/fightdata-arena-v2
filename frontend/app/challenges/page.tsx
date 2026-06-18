@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import { useLanguage } from '@/lib/i18n'
+import Icon, { type IconName } from '@/components/Icon'
+import { ACCENT } from '@/lib/colors'
 import { getDailyLeaderboard, getWeeklyLeaderboard, type LeaderboardEntry } from '@/lib/api'
 import { getRank, type Rank } from '@/lib/constants'
 
@@ -209,10 +211,10 @@ export default function ChallengesPage() {
               total={10}
               accuracy={dailyAcc}
               answers={dailyResult?.answers ?? null}
-              streakLabel={streak >= 2 ? `🔥 ${t('daily.streak', { n: streak })}` : null}
+              streakLabel={streak >= 2 ? t('daily.streak', { n: streak }) : null}
               resetLabel={t('challenge.resets_in', { time: formatCountdown(dailyMs) })}
               href="/quiz/daily"
-              icon="📅"
+              icon="calendar"
               leaderboard={dailyLb}
               rank={dailyRank}
               pseudo={pseudo}
@@ -231,7 +233,7 @@ export default function ChallengesPage() {
               streakLabel={null}
               resetLabel={t('challenge.resets_in', { time: formatCountdown(weeklyMs) })}
               href="/quiz/weekly"
-              icon="📆"
+              icon="calendar"
               leaderboard={weeklyLb}
               rank={weeklyRank}
               pseudo={pseudo}
@@ -257,7 +259,7 @@ interface CardProps {
   streakLabel: string | null
   resetLabel: string
   href: string
-  icon: string
+  icon: IconName
   leaderboard: LeaderboardEntry[]
   rank: Rank | null
   pseudo: string
@@ -288,7 +290,7 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
           {/* Left */}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-              <span style={{ fontSize: '1.4rem', lineHeight: 1 }}>{icon}</span>
+              <Icon name={icon} size={26} color={played ? color : '#fff'} />
               <div>
                 <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.6rem', letterSpacing: '4px', color: played ? color : '#fff', textShadow: played ? `0 0 14px ${color}66` : 'none', lineHeight: 1 }}>
                   {title}
@@ -302,8 +304,8 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
             {played && answers && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', marginTop: '12px', marginBottom: '8px' }}>
                 {answers.map((ok, i) => (
-                  <div key={i} style={{ width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', background: ok ? 'rgba(74,222,128,0.15)' : 'rgba(255,45,120,0.12)', border: `1px solid ${ok ? '#4ade8055' : '#ff2d7855'}` }}>
-                    {ok ? '✅' : '❌'}
+                  <div key={i} style={{ width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: ok ? 'rgba(74,222,128,0.15)' : 'rgba(255,45,120,0.12)', border: `1px solid ${ok ? '#4ade8055' : '#ff2d7855'}` }}>
+                    <Icon name={ok ? 'check' : 'cross'} size={12} color={ok ? '#4ade80' : '#ff2d78'} />
                   </div>
                 ))}
               </div>
@@ -311,8 +313,8 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
 
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: played ? '4px' : '12px' }}>
               {streakLabel && (
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: '#ffe000' }}>
-                  {streakLabel}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: '#ffe000' }}>
+                  <Icon name="flame" size={13} color={ACCENT.combo} />{streakLabel}
                 </div>
               )}
               <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.2)' }}>

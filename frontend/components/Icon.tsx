@@ -9,6 +9,9 @@ export type IconName =
   // achievements
   | 'fist' | 'calendar' | 'crown' | 'trophy' | 'medal' | 'globe'
   | 'book' | 'flask' | 'diamond' | 'infinity' | 'check' | 'cross'
+  // expressive / ui
+  | 'flame' | 'soundOn' | 'soundOff' | 'skull' | 'gamepad'
+  | 'sparkle' | 'bug' | 'chat'
 
 const PATHS: Record<IconName, ReactNode> = {
   // ── Stats ──
@@ -100,6 +103,40 @@ const PATHS: Record<IconName, ReactNode> = {
   infinity: (<path d="M7 9a3 3 0 1 0 0 6c2.5 0 3.5-2 5-3s2.5-3 5-3a3 3 0 1 1 0 6c-2.5 0-3.5-2-5-3s-2.5-3-5-3z" />),
   check: (<path d="M5 13l4 4L19 7" strokeWidth="2.4" />),
   cross: (<path d="M6.5 6.5l11 11M17.5 6.5l-11 11" strokeWidth="2.4" />),
+
+  // ── Expressive / UI ──
+  flame: (<path fill="currentColor" stroke="none" d="M12 2.5c2.6 3 4.6 5.4 4.6 8.7a4.6 4.6 0 0 1-9.2 0c0-1.4.5-2.6 1.4-3.5-.1 1 .3 1.8 1.1 2.2.5-2.2-.4-4 .2-5.4.4-1 1.1-1.8 1.9-2z" />),
+  soundOn: (<>
+    <path d="M4 9v6h3.5l5 4V5l-5 4H4z" />
+    <path d="M16 8.5a5 5 0 0 1 0 7M18.8 6a8 8 0 0 1 0 12" />
+  </>),
+  soundOff: (<>
+    <path d="M4 9v6h3.5l5 4V5l-5 4H4z" />
+    <path d="M16.5 9.5l5 5M21.5 9.5l-5 5" />
+  </>),
+  skull: (<>
+    <path d="M12 3a8 8 0 0 0-5 14.3V20a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-2.7A8 8 0 0 0 12 3z" />
+    <circle cx="9" cy="11.5" r="1.7" fill="currentColor" stroke="none" />
+    <circle cx="15" cy="11.5" r="1.7" fill="currentColor" stroke="none" />
+    <path d="M12 15l-1 2.2h2L12 15z" fill="currentColor" stroke="none" />
+    <path d="M10.5 21v-2.2M13.5 21v-2.2" />
+  </>),
+  gamepad: (<>
+    <rect x="2.5" y="7.5" width="19" height="9.5" rx="4.75" />
+    <path d="M7 11v3M5.5 12.5h3" />
+    <circle cx="15.6" cy="11.4" r="1" fill="currentColor" stroke="none" />
+    <circle cx="18.2" cy="13.4" r="1" fill="currentColor" stroke="none" />
+  </>),
+  sparkle: (<>
+    <path fill="currentColor" stroke="none" d="M12 3l1.5 5L19 9.5l-5.5 1.5L12 16l-1.5-5L5 9.5 10.5 8 12 3z" />
+    <path fill="currentColor" stroke="none" d="M18.5 14l.7 2.1 2.1.7-2.1.7-.7 2.1-.7-2.1-2.1-.7 2.1-.7.7-2.1z" />
+  </>),
+  bug: (<>
+    <path d="M9 7.5a3 3 0 0 1 6 0" /><path d="M9.5 6L8 4.5M14.5 6L16 4.5" />
+    <rect x="7.5" y="7.5" width="9" height="11" rx="4.5" /><path d="M12 8.5v9" />
+    <path d="M7.5 10.5l-3.5-1M16.5 10.5l3.5-1M7.5 14H4M16.5 14H20M7.5 17.5l-3 1.5M16.5 17.5l3 1.5" />
+  </>),
+  chat: (<path d="M4 5h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H9.5L5 20.5V16H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" />),
 }
 
 export default function Icon({

@@ -9,6 +9,7 @@ import type { QuizQuestion } from '@/types'
 import { track } from '@vercel/analytics'
 import { useLanguage } from '@/lib/i18n'
 import QuestionCard, { makeChoiceStyle } from '@/components/QuestionCard'
+import Icon from '@/components/Icon'
 import { playCorrect, playWrong } from '@/lib/sounds'
 import { primaryGifSrc } from '@/lib/gif'
 
@@ -246,8 +247,8 @@ function WeeklyPage() {
       <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', minHeight: 'calc(100vh - 60px)' }}>
         <div style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '28px', alignItems: 'center', textAlign: 'center' }}>
           <div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '4px', color: COLOR, marginBottom: '10px' }}>
-              📆 {t('weekly.day_label', { n: weekNumber() })}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '4px', color: COLOR, marginBottom: '10px' }}>
+              <Icon name="calendar" size={14} color={COLOR} />{t('weekly.day_label', { n: weekNumber() })}
             </div>
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2.5rem, 8vw, 4rem)', letterSpacing: '8px', color: '#fff', textShadow: `0 0 20px ${COLOR}, 0 0 50px ${COLOR}55`, lineHeight: 1 }}>
               {t('weekly.title')}
@@ -306,11 +307,10 @@ function WeeklyPage() {
                   <div key={ci} style={{
                     width: '28px', height: '28px',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '0.9rem',
                     background: correct ? 'rgba(74,222,128,0.15)' : 'rgba(255,45,120,0.12)',
                     border: `1px solid ${correct ? '#4ade80' : '#ff2d78'}`,
                   }}>
-                    {correct ? '✅' : '❌'}
+                    <Icon name={correct ? 'check' : 'cross'} size={15} color={correct ? '#4ade80' : '#ff2d78'} />
                   </div>
                 ))}
               </div>

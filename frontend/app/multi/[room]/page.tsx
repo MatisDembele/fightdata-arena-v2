@@ -5,6 +5,8 @@ import Navbar from '@/components/Navbar'
 import { useLanguage } from '@/lib/i18n'
 import { getFighterPortrait } from '@/lib/portraits'
 import { GifSection, makeChoiceStyle } from '@/components/QuestionCard'
+import Icon from '@/components/Icon'
+import { ACCENT, PODIUM } from '@/lib/colors'
 import { checkAndUnlock, updateLifetime, type Achievement } from '@/lib/achievements'
 import AchievementToast from '@/components/AchievementToast'
 
@@ -622,11 +624,11 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
           {isPunish && (
             <div style={{ display: 'flex', gap: '10px' }}>
               <button onClick={() => sendAnswer('punissable')} disabled={!!selected} style={punishBtnStyle('punissable')}>
-                💀 {t('room.punishable_label')}
+                <Icon name="skull" size={18} color={ACCENT.skull} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />{t('room.punishable_label')}
                 <div style={{ fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', marginTop: '4px', opacity: 0.6 }}>{'≤ -4 ON BLOCK'}</div>
               </button>
               <button onClick={() => sendAnswer('safe')} disabled={!!selected} style={punishBtnStyle('safe')}>
-                ✓ {t('room.safe_label')}
+                <Icon name="check" size={16} color="#4ade80" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />{t('room.safe_label')}
                 <div style={{ fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', marginTop: '4px', opacity: 0.6 }}>{'-3 À +∞ ON BLOCK'}</div>
               </button>
             </div>
@@ -768,7 +770,6 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
       const myRank    = sorted.findIndex(([n]) => n === playerName)
       const isWin     = winner === playerName
       const isDraw    = winner === 'draw'
-      const MEDALS    = ['🥇', '🥈', '🥉']
       const avatarSize = isDesktop ? '42px' : '34px'
 
       const rankingList = (
@@ -780,7 +781,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
             const portrait  = getAvatarSrc(slug)
             const correct   = correctCounts[name] ?? 0
             const acc       = Math.round((correct / totalQuestions) * 100)
-            const medal     = MEDALS[rank] ?? `#${rank + 1}`
+            const medalText = rank > 2 ? `#${rank + 1}` : null
             const isDiscord = slug.startsWith('http')
             return (
               <div key={name} style={{
@@ -788,7 +789,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
                 background: isMe ? `${COLOR}0a` : isFirst ? `${COLOR_WIN}06` : 'rgba(255,255,255,0.02)',
                 border: `1px solid ${isMe ? `${COLOR}30` : isFirst ? `${COLOR_WIN}20` : 'rgba(255,255,255,0.06)'}`,
               }}>
-                <span style={{ fontSize: isDesktop ? '1.1rem' : '1rem', width: '28px', textAlign: 'center', flexShrink: 0 }}>{medal}</span>
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '0.95rem' : '0.85rem', color: 'rgba(255,255,255,0.4)', width: '28px', flexShrink: 0 }}>{rank <= 2 ? <Icon name="medal" size={isDesktop ? 22 : 19} color={PODIUM[rank]} /> : medalText}</span>
                 <div style={{ width: avatarSize, height: avatarSize, overflow: 'hidden', border: `2px solid ${isMe ? COLOR : 'rgba(255,255,255,0.12)'}`, flexShrink: 0, borderRadius: isDiscord ? '50%' : '0' }}>
                   {portrait ? <img src={portrait} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
                 </div>

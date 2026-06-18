@@ -10,6 +10,7 @@ import { MODE_COLORS } from '@/lib/constants'
 import { useAuth } from '@/components/AuthProvider'
 import DiscordIcon from '@/components/DiscordIcon'
 import Icon from '@/components/Icon'
+import { ACCENT } from '@/lib/colors'
 import { getDiscordAvatarUrl } from '@/lib/auth'
 import { getDiscordOAuthUrl } from '@/lib/auth'
 import type { QuizQuestion } from '@/types'
@@ -73,12 +74,12 @@ function useIsDesktop() {
   return isDesktop
 }
 
-// Streak value with a flame icon (replaces the 🔥 emoji)
+// Streak value rendered with the flame icon
 function streakVal(n: number, size = 15): ReactNode {
   if (n < 2) return String(n)
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-      {n}<Icon name="hardcore" size={size} color="#ff6a00" />
+      {n}<Icon name="flame" size={size} color={ACCENT.combo} />
     </span>
   )
 }
@@ -519,7 +520,7 @@ export default function ProfilePage() {
                         </div>
                         <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.62rem' : '0.55rem', color: 'rgba(255,255,255,0.7)' }}>{rec.score}/{rec.total}</div>
                         <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.62rem' : '0.55rem', color: 'rgba(255,255,255,0.5)' }}>{rec.accuracy}%</div>
-                        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.56rem' : '0.5rem', color: 'rgba(255,255,255,0.3)' }}>{rec.maxCombo > 0 ? `${rec.maxCombo}🔥` : '—'}</div>
+                        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.56rem' : '0.5rem', color: 'rgba(255,255,255,0.3)' }}>{rec.maxCombo > 0 ? streakVal(rec.maxCombo, 11) : '—'}</div>
                       </div>
                     )
                   })}

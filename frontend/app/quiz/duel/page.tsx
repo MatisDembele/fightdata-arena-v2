@@ -7,6 +7,7 @@ import { getSeededQuiz } from '@/lib/api'
 import { playCorrect, playWrong } from '@/lib/sounds'
 import { GifSection, makeChoiceStyle } from '@/components/QuestionCard'
 import { useLanguage } from '@/lib/i18n'
+import Icon from '@/components/Icon'
 import { getRank } from '@/lib/constants'
 import type { QuizQuestion } from '@/types'
 
@@ -187,7 +188,7 @@ function DuelQuiz() {
                   </div>
                 )}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ fontSize: '1.1rem' }}>⚔️</div>
+                  <Icon name="duel" size={20} color={COLOR} />
                   <div>
                     <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.3)', marginBottom: '3px' }}>
                       {t('play.duel_challenger')}

@@ -1,15 +1,16 @@
 'use client'
 import { useState } from 'react'
 import { useLanguage } from '@/lib/i18n'
+import Icon, { type IconName } from '@/components/Icon'
 
 const CREATOR_EMAIL = 'dembelematis@gmail.com'
 
 const CATEGORIES = [
-  { key: 'mode',    icon: '🎮', labelEn: 'New Mode',    labelFr: 'Idée de mode' },
-  { key: 'feature', icon: '✨', labelEn: 'Feature',     labelFr: 'Fonctionnalité' },
-  { key: 'bug',     icon: '🐛', labelEn: 'Bug',         labelFr: 'Bug' },
-  { key: 'other',   icon: '💬', labelEn: 'Other',       labelFr: 'Autre' },
-] as const
+  { key: 'mode',    icon: 'gamepad', labelEn: 'New Mode',    labelFr: 'Idée de mode' },
+  { key: 'feature', icon: 'sparkle', labelEn: 'Feature',     labelFr: 'Fonctionnalité' },
+  { key: 'bug',     icon: 'bug',     labelEn: 'Bug',         labelFr: 'Bug' },
+  { key: 'other',   icon: 'chat',    labelEn: 'Other',       labelFr: 'Autre' },
+] as const satisfies readonly { key: string; icon: IconName; labelEn: string; labelFr: string }[]
 
 type Category = typeof CATEGORIES[number]['key']
 
@@ -69,7 +70,7 @@ export default function Footer() {
                     transition: 'all 0.15s',
                   }}
                 >
-                  <span style={{ fontSize: '0.75rem' }}>{icon}</span>
+                  <Icon name={icon} size={15} color={isSel ? '#fff' : 'rgba(255,255,255,0.4)'} />
                   <span style={{
                     fontFamily: "'Rajdhani', sans-serif",
                     fontSize: '0.78rem', fontWeight: 600,

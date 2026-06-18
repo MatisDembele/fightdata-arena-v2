@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import { getRandomQuiz, submitFlashScore, getFlashLeaderboard, invalidateLeaderboardCache, syncProfile, type FlashLeaderboardEntry } from '@/lib/api'
 import { playCorrect, playWrong } from '@/lib/sounds'
 import { GifSection, makeChoiceStyle } from '@/components/QuestionCard'
+import Icon, { type IconName } from '@/components/Icon'
 import { useLanguage } from '@/lib/i18n'
 import { checkAndUnlock, updateLifetime, type Achievement } from '@/lib/achievements'
 import AchievementToast from '@/components/AchievementToast'
@@ -275,13 +276,13 @@ export default function FlashPage() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {[
-                { icon: '❤️', label: `${LIVES} lives — wrong answer or timeout costs 1` },
-                { icon: '⚡', label: 'Timer shrinks every round — 4s start, 1.2s floor' },
-                { icon: '🎯', label: 'Auto-advance after each answer' },
-              ].map(r => (
+              {([
+                { icon: 'survival', label: `${LIVES} lives — wrong answer or timeout costs 1` },
+                { icon: 'flash',    label: 'Timer shrinks every round — 4s start, 1.2s floor' },
+                { icon: 'punish',   label: 'Auto-advance after each answer' },
+              ] as { icon: IconName; label: string }[]).map(r => (
                 <div key={r.icon} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', padding: '10px 14px', background: `${COLOR}08`, border: `1px solid ${COLOR}22` }}>
-                  <span style={{ fontSize: '1rem', flexShrink: 0 }}>{r.icon}</span>
+                  <Icon name={r.icon} size={17} color={COLOR} style={{ flexShrink: 0, marginTop: '1px' }} />
                   <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>{r.label}</span>
                 </div>
               ))}

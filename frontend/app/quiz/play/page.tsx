@@ -11,6 +11,8 @@ import type { QuizQuestion } from '@/types'
 import { primaryGifSrc } from '@/lib/gif'
 import { track } from '@vercel/analytics'
 import { useLanguage, type DictKey } from '@/lib/i18n'
+import Icon from '@/components/Icon'
+import { ACCENT, PODIUM } from '@/lib/colors'
 import { GifSection, makeChoiceStyle } from '@/components/QuestionCard'
 import { MODE_COLORS, MODE_COLORS_ALT, getRank, type Rank } from '@/lib/constants'
 import { useAuth } from '@/components/AuthProvider'
@@ -975,8 +977,8 @@ function QuizPlay() {
                         background: isMe ? `${modeColor}12` : 'transparent',
                         borderBottom: '1px solid rgba(255,255,255,0.03)',
                       }}>
-                        <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '2px', color: entry.rank <= 3 ? modeColor : 'rgba(255,255,255,0.2)', minWidth: '20px' }}>
-                          {entry.rank <= 3 ? ['🥇','🥈','🥉'][entry.rank - 1] : `#${entry.rank}`}
+                        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '2px', color: entry.rank <= 3 ? modeColor : 'rgba(255,255,255,0.2)', minWidth: '20px' }}>
+                          {entry.rank <= 3 ? <Icon name="medal" size={18} color={PODIUM[entry.rank - 1]} /> : `#${entry.rank}`}
                         </span>
                         <span style={{ flex: 1, fontFamily: "'Rajdhani', sans-serif", fontSize: '0.85rem', fontWeight: isMe ? 700 : 500, color: isMe ? '#fff' : 'rgba(255,255,255,0.5)', textAlign: 'left' }}>
                           {entry.player_name}
@@ -1032,7 +1034,7 @@ function QuizPlay() {
               {[
                 { val: sessionLength !== Infinity ? `${score}/${sessionLength}` : String(score), label: t('play.score_label') },
                 { val: `${accuracy}%`, label: t('play.precision') },
-                { val: `${maxCombo}🔥`, label: t('play.combo_max') },
+                { val: <>{maxCombo}<Icon name="flame" size={18} color={ACCENT.combo} style={{ display: 'inline-block', verticalAlign: 'middle', marginLeft: '3px' }} /></>, label: t('play.combo_max') },
               ].map((stat, i) => (
                 <div key={i} style={{ padding: '20px 12px', background: 'rgba(0,0,0,0.3)', borderRight: i < 2 ? '1px solid rgba(255,255,255,0.08)' : 'none', textAlign: 'center' }}>
                   <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(1.6rem, 5vw, 2.4rem)', letterSpacing: '2px', color: rank.color, textShadow: `0 0 12px ${rank.color}88` }}>
@@ -1088,7 +1090,7 @@ function QuizPlay() {
           )}
           {[
             { val: score,           label: t('play.score_label') },
-            { val: `${combo}🔥`,   label: t('play.score_combo') },
+            { val: <>{combo}<Icon name="flame" size={15} color={ACCENT.combo} style={{ display: 'inline-block', verticalAlign: 'middle', marginLeft: '2px' }} /></>, label: t('play.score_combo') },
             { val: `${accuracy}%`, label: t('play.precision') },
             { val: sessionLength !== Infinity ? `${total}/${sessionLength}` : total, label: t('play.score_played') },
           ].map(stat => (
@@ -1118,7 +1120,7 @@ function QuizPlay() {
             }}
             title={soundEnabled ? 'Mute SFX' : 'Enable SFX'}
           >
-            {soundEnabled ? '🔊' : '🔇'}
+            <Icon name={soundEnabled ? 'soundOn' : 'soundOff'} size={17} />
           </button>
         </div>
 
@@ -1309,7 +1311,7 @@ function QuizPlay() {
                         boxShadow: state === 'idle' ? '0 0 12px rgba(255,45,120,0.1)' : isPunishable ? '0 0 20px rgba(255,45,120,0.3)' : 'none',
                       }}
                     >
-                      💀 {t('play.punishable_label')}
+                      <Icon name="skull" size={20} color={ACCENT.skull} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />{t('play.punishable_label')}
                       <div style={{ fontSize: '0.6rem', letterSpacing: '2px', marginTop: '4px', opacity: 0.6 }}>{'≤ -4 ON BLOCK'}</div>
                     </button>
                     <button
@@ -1327,7 +1329,7 @@ function QuizPlay() {
                         boxShadow: state === 'idle' ? '0 0 12px rgba(74,222,128,0.1)' : !isPunishable ? '0 0 20px rgba(74,222,128,0.3)' : 'none',
                       }}
                     >
-                      ✓ {t('play.safe_label')}
+                      <Icon name="check" size={18} color="#4ade80" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />{t('play.safe_label')}
                       <div style={{ fontSize: '0.6rem', letterSpacing: '2px', marginTop: '4px', opacity: 0.6 }}>{'-3 à +∞ ON BLOCK'}</div>
                     </button>
                   </div>
@@ -1391,14 +1393,6 @@ function QuizPlay() {
                       {question.move_name} — {question.answer}f startup · {question.on_block_value} on block
                     </div>
                   )}
-                  {state === 'wrong' && (() => {
-                    const fact = getFunFact(question, mode)
-                    return fact ? (
-                      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: '#f59e0b', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(245,158,11,0.2)' }}>
-                        💡 {fact}
-                      </div>
-                    ) : null
-                  })()}
                 </div>
               )}
               {state !== 'idle' && (
@@ -1449,56 +1443,6 @@ function QuizPlay() {
 
 export default function QuizPlayPage() {
   return <Suspense><QuizPlay /></Suspense>
-}
-
-function getFunFact(q: { answer: string; on_block_value?: string | null; move_name: string }, mode: string): string | null {
-  if (mode === 'damage') {
-    const dmg = parseInt(q.answer)
-    if (!isNaN(dmg)) {
-      if (dmg >= 2000) return `${q.move_name} deals ${dmg} pts — one of the hardest-hitting moves`
-      if (dmg <= 400)  return `${q.move_name} is a weak poke at only ${dmg} pts damage`
-    }
-    return null
-  }
-  if (mode === 'onblock') {
-    const v = parseInt(q.answer.replace('+', ''))
-    if (!isNaN(v)) {
-      if (v <= -10) return `${q.move_name} is ${q.answer} on block — severely punishable`
-      if (v >= 4)   return `${q.move_name} is ${q.answer} on block — leaves you at advantage`
-    }
-    return null
-  }
-  if (mode === 'onhit') {
-    const v = parseInt(q.answer.replace('+', ''))
-    if (!isNaN(v)) {
-      if (v >= 20)  return `${q.move_name} is ${q.answer} on hit — massive advantage`
-      if (v <= -4)  return `${q.move_name} is ${q.answer} on hit — even unsafe on hit`
-    }
-    return null
-  }
-  if (mode === 'recovery') {
-    const r = parseInt(q.answer)
-    if (!isNaN(r)) {
-      if (r <= 10) return `${q.move_name} has only ${r}f recovery — lightning fast`
-      if (r >= 40) return `${q.move_name} has ${r}f recovery — lots of vulnerability after this move`
-    }
-    return null
-  }
-  if (mode === 'punish') return null
-  // Startup modes
-  const startup = parseInt(q.answer)
-  if (!isNaN(startup)) {
-    if (startup <= 4)  return `${q.move_name} is ${startup}f — among the fastest moves in SF6`
-    if (startup >= 25) return `${q.move_name} is ${startup}f — a slow, committal move`
-  }
-  if (q.on_block_value) {
-    const ob = parseInt(q.on_block_value.replace('+', ''))
-    if (!isNaN(ob)) {
-      if (ob <= -10) return `${q.move_name} is ${q.on_block_value} on block — very punishable`
-      if (ob >= 4)   return `${q.move_name} is ${q.on_block_value} on block — leaves you at advantage`
-    }
-  }
-  return null
 }
 
 type StatKey = 'startup' | 'onblock' | 'onhit' | 'recovery' | 'damage' | 'active' | 'punish'
