@@ -1,12 +1,18 @@
 'use client'
 import { useState } from 'react'
+import Link from 'next/link'
 import { useLanguage } from '@/lib/i18n'
 
-const STARTUP  = 8
-const ACTIVE   = 3
-const RECOVERY = 14
+const TOTAL = 4
 
-function Frames({ count, color, bg }: { count: number; color: string; bg: string }) {
+const GREEN = '#4ade80'
+const RED   = '#f87171'
+const GREY  = 'rgba(255,255,255,0.25)'
+
+// Example move used across the lesson: 8F startup / 3F active / 14F recovery
+const STARTUP = 8, ACTIVE = 3, RECOVERY = 14
+
+function Cells({ count, color, bg }: { count: number; color: string; bg: string }) {
   return (
     <div style={{ display: 'flex', gap: '3px', flexWrap: 'wrap' }}>
       {Array.from({ length: count }).map((_, i) => (
@@ -16,28 +22,137 @@ function Frames({ count, color, bg }: { count: number; color: string; bg: string
   )
 }
 
-function Row({ label, frames, color, bg, desc }: { label: string; frames: number; color: string; bg: string; desc: string }) {
+function PhaseRow({ label, frames, color, bg, desc }: { label: string; frames: number; color: string; bg: string; desc: string }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
         <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color }}>{label}</span>
         <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.25)' }}>· {frames}F</span>
       </div>
-      <Frames count={frames} color={color} bg={bg} />
+      <Cells count={frames} color={color} bg={bg} />
       <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.3)', lineHeight: 1.4 }}>{desc}</div>
     </div>
   )
 }
 
+function GlossRow({ term, color, desc }: { term: string; color: string; desc: string }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '92px 1fr', gap: '12px', padding: '9px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', alignItems: 'start' }}>
+      <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', letterSpacing: '1px', color }}>{term}</div>
+      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.35)', lineHeight: 1.5 }}>{desc}</div>
+    </div>
+  )
+}
+
+function CardTitle({ children }: { children: string }) {
+  return <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.15rem', letterSpacing: '3px', color: '#fff', lineHeight: 1.1 }}>{children}</div>
+}
+
+function Body({ children }: { children: string }) {
+  return <div style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '0.92rem', fontWeight: 500, color: 'rgba(255,255,255,0.7)', lineHeight: 1.55 }}>{children}</div>
+}
+
+const panelStyle: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', padding: '16px 16px' }
+
 export default function FrameGuide() {
   const [open, setOpen] = useState(false)
+  const [step, setStep] = useState(0)
   const { t } = useLanguage()
+
+  const launch = () => { setStep(0); setOpen(true) }
+
+  function renderStep() {
+    switch (step) {
+      // 1 — What is a frame
+      case 0:
+        return (
+          <>
+            <CardTitle>{t('guide.c1_title')}</CardTitle>
+            <Body>{t('guide.c1_body')}</Body>
+            <div style={{ ...panelStyle, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '22px 16px' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '2.4rem', letterSpacing: '2px', color: '#00f0ff', lineHeight: 1, textShadow: '0 0 16px #00f0ff66' }}>60</div>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.35)', marginTop: '4px' }}>FRAMES / SEC</div>
+              </div>
+              <div style={{ width: '1px', height: '44px', background: 'rgba(255,255,255,0.12)' }} />
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '2.4rem', letterSpacing: '1px', color: '#fff', lineHeight: 1 }}>17<span style={{ fontSize: '1.1rem', color: 'rgba(255,255,255,0.5)' }}>ms</span></div>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.35)', marginTop: '4px' }}>1 FRAME = 1/60 S</div>
+              </div>
+            </div>
+          </>
+        )
+      // 2 — The life of a move
+      case 1:
+        return (
+          <>
+            <CardTitle>{t('guide.c2_title')}</CardTitle>
+            <Body>{t('guide.c2_intro')}</Body>
+            {/* Proportional timeline */}
+            <div style={{ display: 'flex', width: '100%', height: '20px', border: '1px solid rgba(255,255,255,0.08)' }}>
+              {[{ f: STARTUP, c: GREEN, bg: 'rgba(74,222,128,0.22)' }, { f: ACTIVE, c: RED, bg: 'rgba(248,113,113,0.22)' }, { f: RECOVERY, c: GREY, bg: 'rgba(255,255,255,0.06)' }].map((s, i) => (
+                <div key={i} style={{ flexGrow: s.f, flexBasis: 0, background: s.bg, borderRight: i < 2 ? '1px solid rgba(0,0,0,0.3)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', color: s.c }}>{s.f}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ ...panelStyle, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <PhaseRow label="STARTUP"  frames={STARTUP}  color={GREEN} bg="rgba(74,222,128,0.25)"  desc={t('guide.startup_desc')} />
+              <PhaseRow label="ACTIVE"   frames={ACTIVE}   color={RED}   bg="rgba(248,113,113,0.25)" desc={t('guide.active_desc')} />
+              <PhaseRow label="RECOVERY" frames={RECOVERY} color={GREY}  bg="rgba(255,255,255,0.07)" desc={t('guide.recovery_desc')} />
+            </div>
+          </>
+        )
+      // 3 — Advantage: who moves first
+      case 2:
+        return (
+          <>
+            <CardTitle>{t('guide.c3_title')}</CardTitle>
+            <Body>{t('guide.c3_intro')}</Body>
+            <div style={{ ...panelStyle, display: 'flex', flexDirection: 'column', gap: '1px' }}>
+              <GlossRow term={t('guide.on_block')} color="#60a5fa" desc={t('guide.on_block_desc')} />
+              <GlossRow term={t('guide.on_hit')}   color="#4ade80" desc={t('guide.on_hit_desc')} />
+              <GlossRow term={t('guide.plus')}     color="#a3e635" desc={t('guide.plus_desc')} />
+              <GlossRow term={t('guide.minus')}    color="#f87171" desc={t('guide.minus_desc')} />
+            </div>
+          </>
+        )
+      // 4 — How a punish works
+      default:
+        return (
+          <>
+            <CardTitle>{t('guide.c4_title')}</CardTitle>
+            <Body>{t('guide.c4_body')}</Body>
+            <div style={{ ...panelStyle, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: '#f87171' }}>{t('guide.c4_you')}</span>
+                <Cells count={6} color="#f87171" bg="rgba(248,113,113,0.25)" />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: '#a3e635' }}>{t('guide.c4_opp')}</span>
+                <Cells count={6} color="#a3e635" bg="rgba(163,230,53,0.22)" />
+              </div>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-1)', color: '#f87171', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '10px' }}>
+                {t('guide.punishable')}
+              </div>
+            </div>
+            <Link
+              href="/quiz"
+              onClick={() => setOpen(false)}
+              style={{ display: 'block', textAlign: 'center', padding: '11px', background: 'rgba(255,45,120,0.12)', border: '1px solid rgba(255,45,120,0.45)', color: '#ff2d78', textDecoration: 'none', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '2px' }}
+            >
+              {t('guide.cta_quiz')}
+            </Link>
+          </>
+        )
+    }
+  }
 
   return (
     <>
       {/* Floating button */}
       <button
-        onClick={() => setOpen(true)}
+        onClick={launch}
         title={t('guide.title')}
         style={{
           position: 'fixed', bottom: '24px', right: '24px', zIndex: 200,
@@ -87,15 +202,15 @@ export default function FrameGuide() {
               boxShadow: '0 0 60px rgba(0,0,0,0.8)',
               maxWidth: '480px', width: '100%',
               maxHeight: '90vh', overflowY: 'auto',
-              padding: '28px 24px',
-              display: 'flex', flexDirection: 'column', gap: '24px',
+              padding: '24px 22px',
+              display: 'flex', flexDirection: 'column', gap: '18px',
               position: 'relative',
             }}
           >
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
               <div>
-                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.4rem', letterSpacing: '5px', color: '#fff', lineHeight: 1 }}>{t('guide.title')}</div>
+                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.3rem', letterSpacing: '5px', color: '#fff', lineHeight: 1 }}>{t('guide.title')}</div>
                 <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.25)', marginTop: '5px' }}>{t('guide.subtitle')}</div>
               </div>
               <button
@@ -104,55 +219,50 @@ export default function FrameGuide() {
               >ESC</button>
             </div>
 
-            {/* Visual example */}
-            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.35)', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '10px' }}>
-                {t('guide.example')}
-              </div>
-
-              <Row
-                label="STARTUP"
-                frames={STARTUP}
-                color="#4ade80"
-                bg="rgba(74,222,128,0.25)"
-                desc={t('guide.startup_desc')}
-              />
-              <Row
-                label="ACTIVE"
-                frames={ACTIVE}
-                color="#f87171"
-                bg="rgba(248,113,113,0.25)"
-                desc={t('guide.active_desc')}
-              />
-              <Row
-                label="RECOVERY"
-                frames={RECOVERY}
-                color="rgba(255,255,255,0.25)"
-                bg="rgba(255,255,255,0.07)"
-                desc={t('guide.recovery_desc')}
-              />
-
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-1)', color: '#f87171', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px' }}>
-                {t('guide.punishable')}
-              </div>
-            </div>
-
-            {/* Glossary */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-              {[
-                { term: 'ON BLOCK', color: '#60a5fa', label: t('guide.on_block'), desc: t('guide.on_block_desc') },
-                { term: 'ON HIT',   color: '#4ade80', label: t('guide.on_hit'),   desc: t('guide.on_hit_desc') },
-                { term: 'PUNISH',   color: '#fb923c', label: t('guide.punish'),   desc: t('guide.punish_desc') },
-                { term: 'PLUS',     color: '#a3e635', label: t('guide.plus'),     desc: t('guide.plus_desc') },
-                { term: 'MINUS',    color: '#f87171', label: t('guide.minus'),    desc: t('guide.minus_desc') },
-              ].map(({ term, color, label, desc }) => (
-                <div key={term} style={{ display: 'grid', gridTemplateColumns: '90px 1fr', gap: '12px', padding: '9px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', alignItems: 'start' }}>
-                  <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', letterSpacing: '1px', color }}>{label}</div>
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.35)', lineHeight: 1.5 }}>{desc}</div>
-                </div>
+            {/* Progress dots */}
+            <div style={{ display: 'flex', gap: '7px', alignItems: 'center' }}>
+              {Array.from({ length: TOTAL }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setStep(i)}
+                  aria-label={`step ${i + 1}`}
+                  style={{
+                    flex: 1, height: '3px', padding: 0, border: 'none', cursor: 'pointer',
+                    background: i === step ? '#00f0ff' : i < step ? 'rgba(0,240,255,0.4)' : 'rgba(255,255,255,0.12)',
+                    boxShadow: i === step ? '0 0 8px #00f0ff88' : 'none',
+                    transition: 'background 0.2s',
+                  }}
+                />
               ))}
             </div>
 
+            {/* Step content */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', minHeight: '240px' }}>
+              {renderStep()}
+            </div>
+
+            {/* Footer nav */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '14px' }}>
+              <button
+                onClick={() => setStep(s => Math.max(0, s - 1))}
+                disabled={step === 0}
+                style={{ background: 'none', border: '1px solid rgba(255,255,255,0.12)', color: step === 0 ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.55)', cursor: step === 0 ? 'default' : 'pointer', padding: '8px 16px', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '2px' }}
+              >{t('guide.nav_prev')}</button>
+
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.3)' }}>{step + 1} / {TOTAL}</div>
+
+              {step < TOTAL - 1 ? (
+                <button
+                  onClick={() => setStep(s => Math.min(TOTAL - 1, s + 1))}
+                  style={{ background: 'rgba(0,240,255,0.1)', border: '1px solid rgba(0,240,255,0.45)', color: '#00f0ff', cursor: 'pointer', padding: '8px 18px', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '2px' }}
+                >{t('guide.nav_next')}</button>
+              ) : (
+                <button
+                  onClick={() => setOpen(false)}
+                  style={{ background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.45)', color: '#4ade80', cursor: 'pointer', padding: '8px 18px', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '2px' }}
+                >{t('guide.nav_done')}</button>
+              )}
+            </div>
           </div>
         </div>
       )}
