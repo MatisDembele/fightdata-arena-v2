@@ -195,6 +195,7 @@ const en = {
   'multi.waiting_host':       'Waiting for host to start...',
   'multi.host_badge':         'HOST',
   'multi.player_left_msg':    '{name} LEFT THE GAME',
+  'multi.player_dropped_msg': '{name} LOST CONNECTION',
   'multi.answered_count':     '{n}/{total} ANSWERED',
   'multi.rematch_votes':      '{n}/{total} WANT A REMATCH',
   'multi.vote_mode':          'VOTE FOR THE NEXT MODE',
@@ -205,6 +206,7 @@ const en = {
 
   // multiplayer room
   'room.connecting':              'CONNECTING...',
+  'room.reconnecting':            'RECONNECTING…',
   'room.give_code':               'SHARE THIS CODE WITH YOUR FRIENDS',
   'room.waiting':                 'WAITING FOR AN OPPONENT...',
   'room.both_answered':           'BOTH ANSWERED — RESULT...',
@@ -663,6 +665,7 @@ const fr: Record<DictKey, string> = {
   'multi.waiting_host':      "En attente du lancement par l'hôte...",
   'multi.host_badge':        'HÔTE',
   'multi.player_left_msg':   '{name} A QUITTÉ LA PARTIE',
+  'multi.player_dropped_msg': "{name} S'EST DÉCONNECTÉ",
   'multi.answered_count':    '{n}/{total} ONT RÉPONDU',
   'multi.rematch_votes':     '{n}/{total} VEULENT UNE REVANCHE',
   'multi.vote_mode':         'VOTE POUR LE PROCHAIN MODE',
@@ -673,6 +676,7 @@ const fr: Record<DictKey, string> = {
 
   // multiplayer room
   'room.connecting':              'CONNEXION...',
+  'room.reconnecting':            'RECONNEXION…',
   'room.give_code':               'PARTAGE CE CODE AVEC TES AMIS',
   'room.waiting':                 "EN ATTENTE D'UN ADVERSAIRE...",
   'room.both_answered':           'LES DEUX ONT RÉPONDU — RÉSULTAT...',
@@ -1118,6 +1122,7 @@ const es: Record<DictKey, string> = {
   'multi.waiting_host':       'Esperando al anfitrión...',
   'multi.host_badge':         'ANFITRIÓN',
   'multi.player_left_msg':    '{name} ABANDONÓ LA PARTIDA',
+  'multi.player_dropped_msg': '{name} SE DESCONECTÓ',
   'multi.answered_count':     '{n}/{total} HAN RESPONDIDO',
   'multi.rematch_votes':      '{n}/{total} QUIEREN UNA REVANCHA',
   'multi.vote_mode':          'VOTA EL PRÓXIMO MODO',
@@ -1126,6 +1131,7 @@ const es: Record<DictKey, string> = {
   'multi.slot_empty':         'LIBRE',
   'multi.ready_count':        '{n}/{total} LISTOS',
   'room.connecting':              'CONECTANDO...',
+  'room.reconnecting':            'RECONECTANDO…',
   'room.give_code':               'COMPARTE ESTE CÓDIGO CON TUS AMIGOS',
   'room.waiting':                 'ESPERANDO UN OPONENTE...',
   'room.both_answered':           'AMBOS HAN RESPONDIDO — RESULTADO...',
@@ -1547,6 +1553,7 @@ const ja: Record<DictKey, string> = {
   'multi.waiting_host':       'ホストを待っています...',
   'multi.host_badge':         'ホスト',
   'multi.player_left_msg':    '{name}が退出しました',
+  'multi.player_dropped_msg': '{name}の接続が切れました',
   'multi.answered_count':     '{n}/{total}が回答済み',
   'multi.rematch_votes':      '{n}/{total}が再戦を希望',
   'multi.vote_mode':          '次のモードに投票',
@@ -1555,6 +1562,7 @@ const ja: Record<DictKey, string> = {
   'multi.slot_empty':         '空き',
   'multi.ready_count':        '{n}/{total}が準備完了',
   'room.connecting':              '接続中...',
+  'room.reconnecting':            '再接続中…',
   'room.give_code':               'このコードを友達に教えよう',
   'room.waiting':                 '相手を待っています...',
   'room.both_answered':           '両者回答済み — 結果...',

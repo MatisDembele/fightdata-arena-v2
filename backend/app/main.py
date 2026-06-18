@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse
 from sqlalchemy import inspect as _sa_inspect, text as _sa_text
 from app.database import Base, engine, SessionLocal
 from app.routers import fighters, quiz, multi, daily, weekly, global_lb, flash, survival, auth, feedback, admin, presence
-from app.routers.multi import rooms, _broadcast, _send, _next_question, _reset_room, GAME_MODES, VALID_QUESTIONS
+from app.routers.multi import rooms, _broadcast, _send, _next_question, _reset_room, GAME_MODES, VALID_QUESTIONS, RECONNECT_GRACE
 
 
 async def _heartbeat(websocket: WebSocket):
@@ -19,6 +19,45 @@ async def _heartbeat(websocket: WebSocket):
             await _send(websocket, {"type": "ping"})
     except asyncio.CancelledError:
         pass
+
+
+async def _room_sweeper():
+    """Background loop: drop players who never reconnected within the grace window,
+    and clean up abandoned empty rooms. Runs independently of any connection."""
+    while True:
+        await asyncio.sleep(5)
+        now = time.time()
+        for code, room in list(rooms.items()):
+            expired = [
+                n for n, ts in list(room.disconnected.items())
+                if n not in room.players and now - ts > RECONNECT_GRACE
+            ]
+            for name in expired:
+                async with room.lock:
+                    room.scores.pop(name, None)
+                    room.player_avatars.pop(name, None)
+                    room.ready_players.discard(name)
+                    room.correct_counts.pop(name, None)
+                    room.answers.pop(name, None)
+                    room.disconnected.pop(name, None)
+                    if room.host == name and room.players:
+                        room.host = next(iter(room.players))
+                    members = set(room.scores.keys())
+                if not room.players and not members:
+                    rooms.pop(code, None)
+                    continue
+                await _broadcast(room, {
+                    "type": "player_left",
+                    "player": name,
+                    "players": list(room.players.keys()),
+                    "avatars": dict(room.player_avatars),
+                    "host": room.host,
+                    "ready_players": list(room.ready_players),
+                    "disconnected": list(room.disconnected.keys()),
+                })
+            # Reap rooms that were created but abandoned (nobody ever stayed)
+            if not room.players and not room.scores and now - room.created_at > 600:
+                rooms.pop(code, None)
 
 Base.metadata.create_all(bind=engine)
 
@@ -43,6 +82,11 @@ app = FastAPI(
     description="API de frame data Street Fighter 6",
     version="1.0.0",
 )
+
+
+@app.on_event("startup")
+async def _start_sweeper():
+    asyncio.create_task(_room_sweeper())
 
 app.add_middleware(
     CORSMiddleware,
@@ -111,47 +155,66 @@ async def websocket_endpoint(
         return
 
     room = rooms[room_code]
+    returning = player_name in room.scores   # already a member (possibly mid-grace)
 
-    if room.is_full() and player_name not in room.players:
+    if room.is_full() and player_name not in room.scores:
         await _send(websocket, {"type": "error", "message": "Room pleine."})
         await websocket.close()
         db.close()
         return
 
-    if room.game_started and player_name not in room.players:
+    if room.game_started and not returning:
         await _send(websocket, {"type": "error", "message": "Partie déjà en cours."})
         await websocket.close()
         db.close()
         return
 
     async with room.lock:
-        is_first = len(room.players) == 0
+        is_first = len(room.scores) == 0
         room.players[player_name] = websocket
         room.scores.setdefault(player_name, 0)
         room.player_avatars[player_name] = avatar
-        if is_first:
+        room.disconnected.pop(player_name, None)
+        if is_first or not room.host:
             room.host = player_name
 
     player_list = list(room.players.keys())
     avatars = dict(room.player_avatars)
 
-    await _send(websocket, {
-        "type": "room_joined",
-        "room_code": room_code,
-        "players": player_list,
-        "avatars": avatars,
-        "game_mode": room.game_mode,
-        "max_questions": room.max_questions,
-        "host": room.host,
-        "ready_players": list(room.ready_players),
-    })
+    # Message to the (re)joining client
+    if room.game_started and returning:
+        # Reconnecting mid-game: resync state; answers resume from the next question
+        await _send(websocket, {
+            "type": "resync",
+            "room_code": room_code,
+            "players": player_list,
+            "avatars": avatars,
+            "scores": dict(room.scores),
+            "game_mode": room.game_mode,
+            "max_questions": room.max_questions,
+            "host": room.host,
+        })
+    else:
+        await _send(websocket, {
+            "type": "room_joined",
+            "room_code": room_code,
+            "players": player_list,
+            "avatars": avatars,
+            "game_mode": room.game_mode,
+            "max_questions": room.max_questions,
+            "host": room.host,
+            "ready_players": list(room.ready_players),
+        })
 
+    # Notify the others
     await _broadcast(room, {
-        "type": "player_joined",
+        "type": "player_reconnected" if returning else "player_joined",
+        "player": player_name,
         "players": player_list,
         "avatars": avatars,
         "host": room.host,
         "ready_players": list(room.ready_players),
+        "disconnected": list(room.disconnected.keys()),
     })
 
     try:
@@ -295,39 +358,54 @@ async def websocket_endpoint(
 
     except WebSocketDisconnect:
         async with room.lock:
-            room.players.pop(player_name, None)
-            room.ready_players.discard(player_name)
+            # Only treat this as a drop if the active socket is still ours
+            # (a reconnection may have already replaced room.players[name]).
+            if room.players.get(player_name) is websocket:
+                room.players.pop(player_name, None)
+                room.ready_players.discard(player_name)
+                room.disconnected[player_name] = time.time()
+                still_ours = True
+            else:
+                still_ours = False
+            was_host = room.host == player_name
+            connected = list(room.players.keys())
+            if was_host and connected:
+                room.host = connected[0]
 
-        if room.players:
-            if player_name == room.host:
-                room.host = next(iter(room.players))
+        if not still_ours:
+            heartbeat_task.cancel()
+            db.close()
+            return
 
+        # Keep the slot/score; show the player as disconnected (greyed) to others.
+        await _broadcast(room, {
+            "type": "player_disconnected",
+            "player": player_name,
+            "players": connected,
+            "avatars": dict(room.player_avatars),
+            "host": room.host,
+            "ready_players": list(room.ready_players),
+            "disconnected": list(room.disconnected.keys()),
+        })
+
+        # If a round was only waiting on this player, advance it.
+        if room.players and room.game_started and room.current_question and room.answers and room.all_answered():
+            if room.timeout_task and not room.timeout_task.done():
+                room.timeout_task.cancel()
             await _broadcast(room, {
-                "type": "player_left",
-                "player": player_name,
-                "players": list(room.players.keys()),
-                "avatars": dict(room.player_avatars),
-                "host": room.host,
-                "ready_players": list(room.ready_players),
+                "type": "answer_result",
+                "correct_answer": room.current_question["answer"],
+                "player_answers": dict(room.answers),
+                "scores": dict(room.scores),
+                "points_earned": dict(room.points_this_round),
+                "on_block_value": room.current_question.get("on_block_value"),
+                "game_mode": room.game_mode,
             })
+            await asyncio.sleep(3.5)
+            await _next_question(room, db)
 
-            # If game is active and the leaving player was the last one needed
-            if room.game_started and room.current_question and room.answers and room.all_answered():
-                if room.timeout_task and not room.timeout_task.done():
-                    room.timeout_task.cancel()
-                await _broadcast(room, {
-                    "type": "answer_result",
-                    "correct_answer": room.current_question["answer"],
-                    "player_answers": dict(room.answers),
-                    "scores": dict(room.scores),
-                    "points_earned": dict(room.points_this_round),
-                    "on_block_value": room.current_question.get("on_block_value"),
-                    "game_mode": room.game_mode,
-                })
-                await asyncio.sleep(3.5)
-                await _next_question(room, db)
-        else:
-            rooms.pop(room_code, None)
+        # The player keeps their slot/score; the background sweeper removes them
+        # if they don't reconnect within RECONNECT_GRACE.
     finally:
         heartbeat_task.cancel()
         db.close()

@@ -92,6 +92,10 @@ body {
   75%, 100% { transform: scale(2.4); opacity: 0; }
 }
 
+@keyframes fda-spin {
+  to { transform: rotate(360deg); }
+}
+
 @keyframes scanline {
   0%   { transform: translateY(-100%); }
   100% { transform: translateY(100vh); }

@@ -21,6 +21,7 @@ from app.services.quiz_service import (
 router = APIRouter()
 
 MAX_PLAYERS = 6
+RECONNECT_GRACE = 45.0  # seconds a dropped player keeps their slot/score
 VALID_QUESTIONS = (5, 10, 15, 20)
 GAME_MODES = ("startup", "punish", "damage", "onblock", "onhit", "recovery")
 
@@ -49,6 +50,8 @@ class Room:
         self.mode_votes: dict[str, str] = {}   # player → chosen mode
         self.timeout_task: Optional[asyncio.Task] = None
         self.lock = asyncio.Lock()
+        self.disconnected: dict[str, float] = {}          # name → time disconnected (in grace)
+        self.created_at: float = time.time()
 
     def is_full(self) -> bool:
         return len(self.players) >= MAX_PLAYERS

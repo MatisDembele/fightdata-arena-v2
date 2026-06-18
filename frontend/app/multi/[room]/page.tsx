@@ -111,12 +111,17 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
   function dismissAchievement(id: string) { setNewAchievements(prev => prev.filter(a => a.id !== id)) }
   const [leftNote, setLeftNote]               = useState('')
   const [countdown, setCountdown]             = useState(0)
+  const [reconnecting, setReconnecting]       = useState(false)
+  const [, setDisconnectedPlayers]            = useState<string[]>([])
+  const terminalRef = useRef(false)
 
   useEffect(() => {
-    const ws = new WebSocket(`${WS_URL}/api/multi/ws/${room}/${encodeURIComponent(playerName)}?avatar=${encodeURIComponent(playerAvatar)}`)
-    wsRef.current = ws
+    let intentional = false
+    let attempts = 0
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+    terminalRef.current = false
 
-    ws.onmessage = (e) => {
+    const handleMessage = (e: MessageEvent) => {
       const msg = JSON.parse(e.data)
 
       if (msg.type === 'room_joined') {
@@ -231,18 +236,62 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         if (msg.avatars) setAvatars(msg.avatars)
         if (msg.host) setHost(msg.host)
         if (msg.ready_players) setReadyPlayers(msg.ready_players)
+        setDisconnectedPlayers(msg.disconnected ?? [])
         const note = t('multi.player_left_msg', { name: (msg.player ?? '').toUpperCase().slice(0, 10) })
         setLeftNote(note)
         setTimeout(() => setLeftNote(''), 3500)
       }
 
-      if (msg.type === 'error') { setError(msg.message); setPhase('error') }
+      if (msg.type === 'player_disconnected') {
+        if (msg.players) setPlayers(msg.players)
+        if (msg.host) setHost(msg.host)
+        setDisconnectedPlayers(msg.disconnected ?? [])
+        const note = t('multi.player_dropped_msg', { name: (msg.player ?? '').toUpperCase().slice(0, 10) })
+        setLeftNote(note)
+        setTimeout(() => setLeftNote(''), 3000)
+      }
+
+      if (msg.type === 'player_reconnected') {
+        if (msg.players) setPlayers(msg.players)
+        if (msg.host) setHost(msg.host)
+        setDisconnectedPlayers(msg.disconnected ?? [])
+      }
+
+      if (msg.type === 'resync') {
+        if (msg.players) setPlayers(msg.players)
+        if (msg.avatars) setAvatars(msg.avatars)
+        if (msg.scores) setScores(msg.scores)
+        if (msg.game_mode) setGameMode(msg.game_mode)
+        if (msg.max_questions) setTotalQuestions(msg.max_questions)
+        if (msg.host) setHost(msg.host)
+        setReconnecting(false)
+        setPhase('leaderboard')
+      }
+
+      if (msg.type === 'error') { terminalRef.current = true; setError(msg.message); setPhase('error') }
     }
 
-    ws.onerror  = () => { setError(t('room.ws_failed')); setPhase('error') }
-    ws.onopen   = () => {}
+    const connect = () => {
+      const ws = new WebSocket(`${WS_URL}/api/multi/ws/${room}/${encodeURIComponent(playerName)}?avatar=${encodeURIComponent(playerAvatar)}`)
+      wsRef.current = ws
+      ws.onmessage = handleMessage
+      ws.onopen  = () => { attempts = 0; setReconnecting(false) }
+      ws.onerror = () => { /* the close handler drives reconnection */ }
+      ws.onclose = () => {
+        if (intentional || terminalRef.current) return
+        attempts += 1
+        if (attempts > 8) { setReconnecting(false); setError(t('room.ws_failed')); setPhase('error'); return }
+        setReconnecting(true)
+        const delay = Math.min(1000 * 2 ** (attempts - 1), 8000)
+        reconnectTimer = setTimeout(connect, delay)
+      }
+    }
+    connect()
+
     return () => {
-      ws.close()
+      intentional = true
+      if (reconnectTimer) clearTimeout(reconnectTimer)
+      wsRef.current?.close()
       if (leaderboardTimer.current) clearTimeout(leaderboardTimer.current)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -928,6 +977,17 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
           boxShadow: `0 0 16px ${COLOR_LOS}22`,
         }}>
           {leftNote}
+        </div>
+      )}
+
+      {reconnecting && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 300,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px',
+          background: 'rgba(4,0,12,0.82)', backdropFilter: 'blur(4px)',
+        }}>
+          <div style={{ width: '42px', height: '42px', border: '3px solid rgba(255,255,255,0.15)', borderTopColor: '#ffe000', borderRadius: '50%', animation: 'fda-spin 0.8s linear infinite' }} />
+          <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.5rem', letterSpacing: '5px', color: '#ffe000', textShadow: '0 0 16px #ffe00088' }}>{t('room.reconnecting')}</div>
         </div>
       )}
 
