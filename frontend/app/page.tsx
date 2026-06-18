@@ -4,6 +4,11 @@ import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
 import { useLanguage } from '@/lib/i18n'
 import Footer from '@/components/Footer'
+import { useAuth } from '@/components/AuthProvider'
+import { getDiscordOAuthUrl, getDiscordAvatarUrl } from '@/lib/auth'
+import DiscordIcon from '@/components/DiscordIcon'
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 const LANGS = [
   { code: 'en' as const, cc: 'gb', name: 'English' },
@@ -23,6 +28,22 @@ export default function Home() {
   })
   const langRef = useRef<HTMLDivElement>(null)
   const { t, lang, setLang } = useLanguage()
+  const { user, logout, isLoading } = useAuth()
+  const [showConsent, setShowConsent] = useState(false)
+  const [warming, setWarming] = useState(false)
+  const consentRef = useRef<HTMLDivElement>(null)
+
+  async function handleConnect() {
+    setWarming(true)
+    const controller = new AbortController()
+    const tid = setTimeout(() => controller.abort(), 25000)
+    try {
+      await fetch(`${API_URL}/`, { cache: 'no-store', signal: controller.signal })
+    } catch { /* backend may be cold-starting — proceed anyway */ } finally {
+      clearTimeout(tid)
+    }
+    window.location.href = getDiscordOAuthUrl()
+  }
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
@@ -42,6 +63,17 @@ export default function Home() {
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [langOpen])
+
+  useEffect(() => {
+    if (!showConsent) return
+    function handleClick(e: MouseEvent) {
+      if (consentRef.current && !consentRef.current.contains(e.target as Node)) {
+        setShowConsent(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [showConsent])
 
   const currentLang = LANGS.find(l => l.code === lang) ?? LANGS[0]
 
@@ -106,6 +138,50 @@ export default function Home() {
       </div>
     )}
     <div style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
+
+      {/* Discord auth (top-left) */}
+      {!isLoading && (
+        <div ref={consentRef} style={{ position: 'fixed', top: '16px', left: '20px', zIndex: 100 }}>
+          {user ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '5px 8px 5px 6px', background: 'rgba(4,0,12,0.85)', border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)' }}>
+              {getDiscordAvatarUrl(user, 32)
+                ? <img src={getDiscordAvatarUrl(user, 32)!} alt={user.username} style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                : <DiscordIcon size={14} />}
+              {!isMobile && (
+                <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.8)', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.username}</span>
+              )}
+              <button onClick={logout} title="Déconnexion" style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: '2px 7px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '1px', flexShrink: 0 }}>✕</button>
+            </div>
+          ) : (
+            <>
+              <button
+                onClick={() => setShowConsent(v => !v)}
+                style={{ display: 'flex', alignItems: 'center', gap: '7px', background: '#5865F2', color: '#fff', border: 'none', cursor: 'pointer', padding: '7px 12px', backdropFilter: 'blur(8px)', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', letterSpacing: '2px', transition: 'opacity 0.15s', opacity: showConsent ? 0.85 : 1 }}
+              >
+                <DiscordIcon size={14} />
+                {isMobile ? 'CONNECT' : t('nav.connect')}
+              </button>
+              {showConsent && (
+                <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, width: '262px', background: 'rgba(10,0,20,0.97)', border: '1px solid rgba(88,101,242,0.4)', padding: '14px', zIndex: 101, boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-3)', color: '#5865F2', marginBottom: '8px' }}>{t('nav.consent_title')}</div>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, marginBottom: '12px' }}>
+                    {t('nav.consent_body')}{' '}
+                    <Link href="/privacy" style={{ color: '#5865F2' }} onClick={() => setShowConsent(false)}>{t('nav.privacy_link')}</Link>
+                  </div>
+                  <button
+                    onClick={handleConnect}
+                    disabled={warming}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', background: warming ? '#3a4299' : '#5865F2', color: '#fff', padding: '8px', border: 'none', cursor: warming ? 'wait' : 'pointer', width: '100%', opacity: warming ? 0.8 : 1, fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', transition: 'all 0.2s' }}
+                  >
+                    <DiscordIcon size={12} />
+                    {warming ? t('nav.connect_warming') : t('nav.connect_continue')}
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       {/* Lang dropdown */}
       <div ref={langRef} style={{ position: 'fixed', top: '16px', right: '20px', zIndex: 100 }}>
