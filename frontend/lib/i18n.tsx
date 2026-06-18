@@ -5,6 +5,7 @@ import { createContext, useContext, useState, useCallback, useEffect, type React
 const en = {
   // nav
   'nav.home': 'HOME',
+  'nav.framedata': 'FRAME DATA',
 
   // home
   'home.subtitle':   'STREET FIGHTER 6 // FRAME DATA ENCYCLOPEDIA',
@@ -458,6 +459,7 @@ type DictKey = keyof typeof en
 const fr: Record<DictKey, string> = {
   // nav
   'nav.home': 'ACCUEIL',
+  'nav.framedata': 'FRAME DATA',
 
   // home
   'home.subtitle':   'STREET FIGHTER 6 // FRAME DATA ENCYCLOPEDIA',
@@ -908,6 +910,7 @@ const fr: Record<DictKey, string> = {
 
 const es: Record<DictKey, string> = {
   'nav.home': 'INICIO',
+  'nav.framedata': 'FRAME DATA',
   'home.subtitle':   'STREET FIGHTER 6 // FRAME DATA ENCYCLOPEDIA',
   'home.patch':      'PARCHE JUNIO 2026',
   'home.quiz_sub':   'Pon a prueba tus conocimientos',
@@ -1322,6 +1325,7 @@ const es: Record<DictKey, string> = {
 
 const ja: Record<DictKey, string> = {
   'nav.home': 'ホーム',
+  'nav.framedata': 'フレームデータ',
   'home.subtitle':   'ストリートファイター6 // フレームデータ事典',
   'home.patch':      '2026年6月パッチ',
   'home.quiz_sub':   '知識を試そう',

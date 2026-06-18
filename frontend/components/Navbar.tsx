@@ -108,11 +108,12 @@ export default function Navbar() {
   }, [])
 
   const links: { href: string; label: string; color: string; colorAlt: string }[] = [
-    { href: '/',           label: t('nav.home'),    color: '#ffe000', colorAlt: '#ff6a00' },
-    { href: '/quiz',       label: 'QUIZ',           color: '#ff2d78', colorAlt: '#9b1fff' },
-    { href: '/challenges', label: 'CHALLENGE',      color: '#00ff88', colorAlt: '#00b894' },
-    { href: '/multi',      label: 'MULTI',          color: '#ffe000', colorAlt: '#ff6a00' },
-    { href: '/profile',    label: t('nav.profile'), color: '#c084fc', colorAlt: '#7c3aed' },
+    { href: '/',           label: t('nav.home'),       color: '#ffe000', colorAlt: '#ff6a00' },
+    { href: '/fighters',   label: t('nav.framedata'),  color: '#00f0ff', colorAlt: '#0050ff' },
+    { href: '/quiz',       label: 'QUIZ',              color: '#ff2d78', colorAlt: '#9b1fff' },
+    { href: '/challenges', label: 'CHALLENGE',         color: '#00ff88', colorAlt: '#00b894' },
+    { href: '/multi',      label: 'MULTI',             color: '#ffe000', colorAlt: '#ff6a00' },
+    { href: '/profile',    label: t('nav.profile'),    color: '#c084fc', colorAlt: '#7c3aed' },
   ]
 
   const activeLink = links.find(link =>
