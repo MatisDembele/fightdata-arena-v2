@@ -200,8 +200,8 @@ body {
 .score-bar {
   display: flex;
   gap: 36px;
-  margin-bottom: 24px;
-  padding: 12px 36px;
+  margin-bottom: 12px;
+  padding: 8px 36px;
   background: rgba(0,0,0,0.45);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255,255,255,0.07);

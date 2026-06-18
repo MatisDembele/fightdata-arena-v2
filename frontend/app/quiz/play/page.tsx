@@ -61,6 +61,7 @@ function QuizPlay() {
 
   const [sessionPhase, setSessionPhase]   = useState<'selector' | 'playing' | 'finished'>('selector')
   const [explainerOpen, setExplainerOpen] = useState(false)
+  const [infoOpen, setInfoOpen]           = useState(false)
   const [sessionLength, setSessionLength] = useState<number>(10)
   const [maxCombo, setMaxCombo]           = useState(0)
   const [copied, setCopied]               = useState(false)
@@ -610,6 +611,16 @@ function QuizPlay() {
 
   const isPunishable = question?.answer === 'punissable'
 
+  // The single stat this session tests (null for mixed-stat modes) — drives the explainer
+  const sessionStat: StatKey | null =
+    isAllRandom       ? null :
+    effectiveOnBlock  ? 'onblock'  :
+    effectiveOnHit    ? 'onhit'    :
+    effectiveRecovery ? 'recovery' :
+    effectivePunish   ? 'punish'   :
+    effectiveDamage   ? 'damage'   :
+    effectiveActive   ? 'active'   : 'startup'
+
   // ── SELECTOR ────────────────────────────────────────────────────────────────
   if (sessionPhase === 'selector') {
     const STD_LENGTHS = [10, 20, 30, 40, 50]
@@ -669,19 +680,9 @@ function QuizPlay() {
             </div>
 
             {/* Per-stat detailed explainer — only when the session targets one known stat */}
-            {(() => {
-              const stat: StatKey | null =
-                isAllRandom       ? null :
-                effectiveOnBlock  ? 'onblock'  :
-                effectiveOnHit    ? 'onhit'    :
-                effectiveRecovery ? 'recovery' :
-                effectivePunish   ? 'punish'   :
-                effectiveDamage   ? 'damage'   :
-                effectiveActive   ? 'active'   : 'startup'
-              return stat ? (
-                <StatExplainer stat={stat} color={modeColor} open={explainerOpen} onToggle={toggleExplainer} t={t} />
-              ) : null
-            })()}
+            {sessionStat && (
+              <StatExplainer stat={sessionStat} color={modeColor} open={explainerOpen} onToggle={toggleExplainer} t={t} />
+            )}
 
             {/* Data type picker — FIGHTER / CUSTOM / HARDCORE / SURVIVAL */}
             {hasDataTypePicker && (
@@ -1065,7 +1066,8 @@ function QuizPlay() {
       <Navbar />
       <main style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        padding: '28px 20px', minHeight: 'calc(100vh - 60px)',
+        padding: '10px 16px', height: 'calc(100dvh - 60px)',
+        overflow: 'hidden', boxSizing: 'border-box',
       }}>
 
         {/* Score bar */}
@@ -1118,6 +1120,8 @@ function QuizPlay() {
           </button>
         </div>
 
+        {/* Centering region — fills remaining height so the card fits without scrolling */}
+        <div style={{ flex: '1 1 auto', minHeight: 0, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {loading ? (
           <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.3)', letterSpacing: '4px' }}>
             {t('play.loading')}
@@ -1125,9 +1129,13 @@ function QuizPlay() {
         ) : question && (
           <div style={{
             width: '100%', maxWidth: isDesktop ? '900px' : '500px',
+            maxHeight: '100%', height: isDesktop ? undefined : '100%',
+            boxSizing: 'border-box',
             background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(16px)',
             border: '1px solid rgba(255,255,255,0.08)',
-            display: isDesktop ? 'grid' : undefined,
+            display: isDesktop ? 'grid' : 'flex',
+            flexDirection: isDesktop ? undefined : 'column',
+            overflowX: 'hidden', overflowY: 'auto',
             gridTemplateColumns: isDesktop ? '45% 55%' : undefined,
           }}>
 
@@ -1156,6 +1164,18 @@ function QuizPlay() {
                   fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem',
                   letterSpacing: '2px', color: modeColor, textTransform: 'uppercase',
                 }}>{question.fighter_slug}</span>
+                {sessionStat && (
+                  <button
+                    onClick={() => setInfoOpen(true)}
+                    title={t('statx.heading')}
+                    style={{
+                      width: '20px', height: '20px', flexShrink: 0, lineHeight: 1,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'none', border: `1px solid ${modeColor}55`, color: modeColor,
+                      fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', cursor: 'pointer',
+                    }}
+                  >?</button>
+                )}
               </div>
             </div>
 
@@ -1172,13 +1192,13 @@ function QuizPlay() {
             )}
 
             {/* GIF */}
-            <GifSection gifUrl={question.gif_url} gifPath={question.gif_path} moveName={question.move_name} color={modeColor} fallback={t('play.hitbox_preview')} input={question.input} section={question.section} />
+            <GifSection gifUrl={question.gif_url} gifPath={question.gif_path} moveName={question.move_name} color={modeColor} fallback={t('play.hitbox_preview')} input={question.input} section={question.section} flexible={!isDesktop} />
 
             {/* Right column on desktop: question + choices + feedback */}
-            <div style={isDesktop ? { display: 'flex', flexDirection: 'column', justifyContent: 'center', borderLeft: '1px solid rgba(255,255,255,0.06)' } : undefined}>
+            <div style={isDesktop ? { display: 'flex', flexDirection: 'column', justifyContent: 'center', borderLeft: '1px solid rgba(255,255,255,0.06)' } : { flexShrink: 0 }}>
 
             {/* Question */}
-            <div style={{ padding: '16px 18px 12px' }}>
+            <div style={{ padding: '12px 18px 8px' }}>
               {effectivePunish ? (
                 <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1rem', fontWeight: 600, lineHeight: 1.4, color: 'rgba(255,255,255,0.9)' }}>
                   <strong style={{ color: '#fff' }}>{question.move_name}</strong>{' '}
@@ -1317,10 +1337,10 @@ function QuizPlay() {
             </div>
 
             {/* Feedback + next button */}
-            <div style={{ padding: '12px 18px 18px' }}>
+            <div style={{ padding: '10px 18px 12px' }}>
               {state !== 'idle' && (
                 <div style={{
-                  padding: '9px 14px', marginBottom: '10px',
+                  padding: '9px 14px', marginBottom: '8px',
                   background: state === 'correct' ? 'rgba(74,222,128,0.1)' : 'rgba(255,45,120,0.1)',
                   border: `1px solid ${state === 'correct' ? '#4ade80' : '#ff2d78'}`,
                   fontFamily: "'Rajdhani', sans-serif",
@@ -1398,15 +1418,27 @@ function QuizPlay() {
 
           </div>
         )}
+        </div>{/* end centering region */}
 
         <Link href="/quiz" style={{
-          marginTop: '16px',
+          flexShrink: 0, marginTop: '10px',
           fontFamily: "'Share Tech Mono', monospace",
           fontSize: '0.6rem', letterSpacing: '3px',
           color: 'rgba(255,255,255,0.2)', textDecoration: 'none',
         }}>{t('play.change_mode')}</Link>
-
       </main>
+
+      {/* In-quiz stat explainer modal */}
+      {infoOpen && sessionStat && (
+        <div
+          onClick={() => setInfoOpen(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+        >
+          <div onClick={e => e.stopPropagation()} style={{ background: '#0d0015', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 0 60px rgba(0,0,0,0.8)', maxWidth: '460px', width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
+            <StatExplainer stat={sessionStat} color={modeColor} open onToggle={() => setInfoOpen(false)} t={t} />
+          </div>
+        </div>
+      )}
     </>
   )
 }

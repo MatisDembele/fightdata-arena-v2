@@ -10,7 +10,7 @@ export function makeChoiceStyle(
   isIdle: boolean
 ): CSSProperties {
   const base: CSSProperties = {
-    padding: '11px 14px', width: '100%', textAlign: 'left',
+    padding: '9px 14px', width: '100%', textAlign: 'left',
     display: 'flex', alignItems: 'center', gap: '10px',
     border: '1px solid rgba(255,255,255,0.09)',
     background: 'rgba(255,255,255,0.04)',
@@ -33,6 +33,8 @@ interface GifSectionProps {
   fallback?: string
   input?: string
   section?: string
+  /** When true, the GIF area shrinks to share available height (no-scroll quiz layout). */
+  flexible?: boolean
 }
 
 // Converts UFD's textual command (e.g. "Down, Down-Forward, Forward + Light Punch")
@@ -61,7 +63,7 @@ function titleSection(s?: string): string {
   return s.replace(/[_.]/g, ' ').trim().toUpperCase()
 }
 
-export function GifSection({ gifUrl, gifPath, moveName, color, fallback = 'HITBOX PREVIEW', input, section }: GifSectionProps) {
+export function GifSection({ gifUrl, gifPath, moveName, color, fallback = 'HITBOX PREVIEW', input, section, flexible }: GifSectionProps) {
   // Optimized WebP (CDN) first, then original gif_url, then local API path.
   const sources = useMemo(() => gifSources(gifUrl, gifPath), [gifUrl, gifPath])
   const imgRef = useRef<HTMLImageElement>(null)
@@ -83,8 +85,11 @@ export function GifSection({ gifUrl, gifPath, moveName, color, fallback = 'HITBO
     { bottom: '7px', left: '7px', borderBottom: `1px solid ${color}`, borderLeft: `1px solid ${color}` },
     { bottom: '7px', right: '7px', borderBottom: `1px solid ${color}`, borderRight: `1px solid ${color}` },
   ]
+  const containerStyle: CSSProperties = flexible
+    ? { flex: '1 1 0', minHeight: 0, background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }
+    : { minHeight: '180px', height: '100%', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }
   return (
-    <div style={{ minHeight: '180px', height: '100%', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
+    <div style={containerStyle}>
       {src ? (
         <>
           {!loaded && (
