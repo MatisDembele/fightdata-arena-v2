@@ -6,6 +6,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 const TOKEN_KEY = 'fda_admin_token'
 
 interface Stats {
+  online_now: number
   users: { count: number; first: string | null; latest: string | null; recent: { username: string; created_at: string | null }[] }
   plays: { global: number; global_distinct_players: number; daily: number; weekly: number; survival: number; flash: number }
   feedback: { count: number; recent: { category: string; message: string; contact: string | null; lang: string | null; created_at: string | null }[] }
@@ -43,13 +44,14 @@ export default function AdminDashboard() {
   const [phase, setPhase] = useState<'locked' | 'loading' | 'ready'>('locked')
   const [pw, setPw]       = useState('')
   const [err, setErr]     = useState('')
+  const [online, setOnline] = useState<number | null>(null)
 
   const attempt = useCallback(async (token: string) => {
     setPhase('loading'); setErr('')
     try {
       const d = await load(token)
       sessionStorage.setItem(TOKEN_KEY, token)
-      setData(d); setPhase('ready')
+      setData(d); setOnline(d.online_now); setPhase('ready')
     } catch (e) {
       sessionStorage.removeItem(TOKEN_KEY)
       setPhase('locked')
@@ -66,6 +68,21 @@ export default function AdminDashboard() {
     const t = sessionStorage.getItem(TOKEN_KEY)
     if (t) attempt(t)
   }, [attempt])
+
+  // Live "online now" — poll a light endpoint every 8s while the dashboard is open
+  useEffect(() => {
+    if (phase !== 'ready') return
+    const tick = async () => {
+      const token = sessionStorage.getItem(TOKEN_KEY)
+      if (!token) return
+      try {
+        const res = await fetch(`${API_URL}/api/admin/online`, { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' })
+        if (res.ok) { const j = await res.json(); setOnline(j.online) }
+      } catch { /* ignore transient errors */ }
+    }
+    const id = setInterval(tick, 8000)
+    return () => clearInterval(id)
+  }, [phase])
 
   const lock = () => { sessionStorage.removeItem(TOKEN_KEY); setData(null); setPw(''); setPhase('locked') }
 
@@ -108,6 +125,20 @@ export default function AdminDashboard() {
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
           <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '2rem', letterSpacing: '6px', color: '#fff', textShadow: '0 0 18px #00f0ff55' }}>FDA ADMIN</div>
           <button onClick={lock} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.45)', cursor: 'pointer', padding: '6px 14px', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)' }}>VERROUILLER</button>
+        </div>
+
+        {/* Live online now */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', background: 'rgba(74,222,128,0.06)', border: '1px solid rgba(74,222,128,0.3)', padding: '16px 20px' }}>
+          <span style={{ position: 'relative', display: 'inline-flex', width: '12px', height: '12px', flexShrink: 0 }}>
+            <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#4ade80', animation: 'fda-ping 1.6s cubic-bezier(0,0,0.2,1) infinite' }} />
+            <span style={{ position: 'relative', display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 10px #4ade80' }} />
+          </span>
+          <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '2.6rem', letterSpacing: '2px', color: '#4ade80', textShadow: '0 0 16px #4ade8066', lineHeight: 1 }}>
+            {online ?? '—'}
+          </div>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.45)', lineHeight: 1.4 }}>
+            EN LIGNE<br /><span style={{ fontSize: 'var(--fs-2xs)', color: 'rgba(255,255,255,0.25)' }}>maj. ~8s · fenêtre 60s</span>
+          </div>
         </div>
 
         {/* Users */}

@@ -3,6 +3,7 @@ import Script from 'next/script'
 import { Analytics } from '@vercel/analytics/react'
 import Providers from '@/components/Providers'
 import FrameGuide from '@/components/FrameGuide'
+import Presence from '@/components/Presence'
 import PageBackground from '@/components/PageBackground'
 import './globals.css'
 
@@ -69,6 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
           </div>
           <FrameGuide />
+          <Presence />
         </Providers>
         <Analytics />
         {GA_ID && (

@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse
 
 from sqlalchemy import inspect as _sa_inspect, text as _sa_text
 from app.database import Base, engine, SessionLocal
-from app.routers import fighters, quiz, multi, daily, weekly, global_lb, flash, survival, auth, feedback, admin
+from app.routers import fighters, quiz, multi, daily, weekly, global_lb, flash, survival, auth, feedback, admin, presence
 from app.routers.multi import rooms, _broadcast, _send, _next_question, _reset_room, GAME_MODES, VALID_QUESTIONS
 
 
@@ -87,6 +87,7 @@ app.include_router(flash.router, prefix="/api")
 app.include_router(survival.router, prefix="/api")
 app.include_router(feedback.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
+app.include_router(presence.router, prefix="/api")
 app.include_router(multi.router, prefix="/api/multi")
 
 

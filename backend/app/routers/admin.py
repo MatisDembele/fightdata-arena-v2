@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.config import settings
+from app import presence
 from app.models.user import User
 from app.models.feedback import Feedback
 from app.models.global_score import GlobalScore
@@ -33,6 +34,12 @@ def _iso(dt):
     return dt.isoformat() if dt else None
 
 
+@router.get("/online")
+def online(authorization: Optional[str] = Header(None)):
+    _require_admin(authorization)
+    return {"online": presence.count_online()}
+
+
 @router.get("/stats")
 def stats(authorization: Optional[str] = Header(None), db: Session = Depends(get_db)):
     _require_admin(authorization)
@@ -57,6 +64,7 @@ def stats(authorization: Optional[str] = Header(None), db: Session = Depends(get
     ]
 
     return {
+        "online_now": presence.count_online(),
         "users": {
             "count": count(User),
             "first": _iso(first),
