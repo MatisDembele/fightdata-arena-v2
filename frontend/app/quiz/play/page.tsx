@@ -60,6 +60,7 @@ function QuizPlay() {
   const mistakeOriginalKey    = useRef<string>('')
 
   const [sessionPhase, setSessionPhase]   = useState<'selector' | 'playing' | 'finished'>('selector')
+  const [explainerOpen, setExplainerOpen] = useState(false)
   const [sessionLength, setSessionLength] = useState<number>(10)
   const [maxCombo, setMaxCombo]           = useState(0)
   const [copied, setCopied]               = useState(false)
@@ -554,6 +555,19 @@ function QuizPlay() {
     }
   }, [isSurvival, sessionPhase])
 
+  // Remember whether the player keeps the stat explainer open (collapsed by default)
+  useEffect(() => {
+    setExplainerOpen(localStorage.getItem('fda_statx_open') === '1')
+  }, [])
+
+  const toggleExplainer = useCallback(() => {
+    setExplainerOpen(o => {
+      const next = !o
+      localStorage.setItem('fda_statx_open', next ? '1' : '0')
+      return next
+    })
+  }, [])
+
   const [mistakesCount, setMistakesCount] = useState(0)
 
   useEffect(() => {
@@ -653,6 +667,21 @@ function QuizPlay() {
                 </div>
               )}
             </div>
+
+            {/* Per-stat detailed explainer — only when the session targets one known stat */}
+            {(() => {
+              const stat: StatKey | null =
+                isAllRandom       ? null :
+                effectiveOnBlock  ? 'onblock'  :
+                effectiveOnHit    ? 'onhit'    :
+                effectiveRecovery ? 'recovery' :
+                effectivePunish   ? 'punish'   :
+                effectiveDamage   ? 'damage'   :
+                effectiveActive   ? 'active'   : 'startup'
+              return stat ? (
+                <StatExplainer stat={stat} color={modeColor} open={explainerOpen} onToggle={toggleExplainer} t={t} />
+              ) : null
+            })()}
 
             {/* Data type picker — FIGHTER / CUSTOM / HARDCORE / SURVIVAL */}
             {hasDataTypePicker && (
@@ -1434,6 +1463,52 @@ function getFunFact(q: { answer: string; on_block_value?: string | null; move_na
     }
   }
   return null
+}
+
+type StatKey = 'startup' | 'onblock' | 'onhit' | 'recovery' | 'damage' | 'active' | 'punish'
+
+const STAT_LABEL: Record<StatKey, string> = {
+  startup: 'STARTUP', onblock: 'ON BLOCK', onhit: 'ON HIT', recovery: 'RECOVERY',
+  damage: 'DAMAGE', active: 'ACTIVE', punish: 'PUNISH',
+}
+
+/** Detailed, plain-language explanation of the stat a mono-stat quiz is testing. */
+function StatExplainer({ stat, color, open, onToggle, t }: {
+  stat: StatKey
+  color: string
+  open: boolean
+  onToggle: () => void
+  t: (k: DictKey, v?: Record<string, string | number>) => string
+}) {
+  const rows: { lbl: DictKey; body: DictKey }[] = [
+    { lbl: 'statx.lbl_def',   body: `statx.${stat}_def`   as DictKey },
+    { lbl: 'statx.lbl_scale', body: `statx.${stat}_scale` as DictKey },
+    { lbl: 'statx.lbl_use',   body: `statx.${stat}_use`   as DictKey },
+  ]
+  return (
+    <div style={{ border: `1px solid ${color}30`, background: `${color}08` }}>
+      <button
+        onClick={onToggle}
+        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', padding: '11px 14px', background: 'none', border: 'none', cursor: 'pointer' }}
+      >
+        <span style={{ display: 'flex', alignItems: 'center', gap: '9px', minWidth: 0 }}>
+          <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color }}>{t('statx.heading')}</span>
+          <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '1.5px', color: '#fff' }}>{STAT_LABEL[stat]}</span>
+        </span>
+        <span style={{ color, fontSize: '0.55rem', flexShrink: 0, transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'none' }}>▼</span>
+      </button>
+      {open && (
+        <div style={{ padding: '0 14px 14px', display: 'flex', flexDirection: 'column', gap: '11px' }}>
+          {rows.map(r => (
+            <div key={r.lbl} style={{ display: 'grid', gridTemplateColumns: '88px 1fr', gap: '12px', alignItems: 'start' }}>
+              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.3)', paddingTop: '1px' }}>{t(r.lbl)}</span>
+              <span style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '0.84rem', fontWeight: 500, color: 'rgba(255,255,255,0.68)', lineHeight: 1.5 }}>{t(r.body)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 function ReviewSection({ history, show, onToggle, modeColor, mode, t }: {
