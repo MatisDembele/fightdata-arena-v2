@@ -121,10 +121,10 @@ export default function Home() {
       desc: t('home.challenges_desc'),
     },
     {
-      id: 'profile', label: t('nav.profile'), sub: t('home.profile_sub'),
-      href: '/profile', external: false,
+      id: 'framedata', label: t('home.mode_learn'), sub: t('home.learn_sub'),
+      href: '/frame-data', external: false,
       color: '#c084fc', colorAlt: '#7c3aed',
-      desc: t('home.profile_desc'),
+      desc: t('home.learn_desc'),
     },
   ]
 

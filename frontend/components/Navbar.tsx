@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef, useCallback, type CSSProperties } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useLanguage } from '@/lib/i18n'
@@ -107,12 +107,13 @@ export default function Navbar() {
     if (stored < CURRENT_V) localStorage.setItem('_fda_v', String(CURRENT_V))
   }, [])
 
-  const links: { href: string; label: string; color: string; colorAlt: string }[] = [
-    { href: '/',           label: t('nav.home'),    color: '#ffe000', colorAlt: '#ff6a00' },
-    { href: '/quiz',       label: 'QUIZ',           color: '#ff2d78', colorAlt: '#9b1fff' },
-    { href: '/challenges', label: 'CHALLENGE',      color: '#00ff88', colorAlt: '#00b894' },
-    { href: '/multi',      label: 'MULTI',          color: '#ffe000', colorAlt: '#ff6a00' },
-    { href: '/profile',    label: t('nav.profile'), color: '#c084fc', colorAlt: '#7c3aed' },
+  // Navbar mirrors the home carousel exactly: same destinations, same order.
+  const links: { href: string; label: string; color: string; colorAlt: string; external?: boolean }[] = [
+    { href: '/quiz',                             label: t('home.mode_quiz'),      color: '#ff2d78', colorAlt: '#9b1fff' },
+    { href: 'https://ultimateframedata.com/sf6', label: t('home.mode_db'),        color: '#00f0ff', colorAlt: '#0050ff', external: true },
+    { href: '/multi',                            label: t('home.mode_multi'),     color: '#ffe000', colorAlt: '#ff6a00' },
+    { href: '/challenges',                       label: t('home.mode_challenge'), color: '#00ff88', colorAlt: '#00b894' },
+    { href: '/frame-data',                       label: t('home.mode_learn'),     color: '#c084fc', colorAlt: '#7c3aed' },
   ]
 
   const activeLink = links.find(link =>
@@ -324,11 +325,12 @@ export default function Navbar() {
         borderBottom: '1px solid rgba(255,255,255,0.05)',
       }}>
 
-        {/* Top gold line */}
+        {/* Top accent line — follows the active page colour */}
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0, height: '2px', zIndex: 1,
-          background: 'var(--yellow)', opacity: 0.28,
-          boxShadow: '0 0 10px rgba(255,224,0,0.35)', pointerEvents: 'none',
+          background: `linear-gradient(90deg, transparent, ${logoColor}, ${logoColorAlt}, transparent)`,
+          opacity: 0.7, boxShadow: `0 0 12px ${logoColor}55`,
+          transition: 'all 0.5s', pointerEvents: 'none',
         }} />
 
         {/* Logo */}
@@ -340,11 +342,6 @@ export default function Navbar() {
           position: 'relative', zIndex: 2,
           borderRight: '1px solid rgba(255,255,255,0.07)',
         }}>
-          <div style={{
-            width: '3px', height: '28px', flexShrink: 0,
-            background: `linear-gradient(180deg, ${logoColor}, ${logoColorAlt})`,
-            boxShadow: `0 0 10px ${logoColor}`, transition: 'all 0.5s',
-          }} />
           <span style={{
             fontFamily: "'Bebas Neue', sans-serif",
             fontSize: isMobile ? '1rem' : 'clamp(0.9rem, 2.5vw, 1.15rem)',
@@ -366,17 +363,18 @@ export default function Navbar() {
             {links.map(link => {
               const active = isActive(link.href)
               const { color: c, colorAlt: cAlt } = link
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`nav-item${active ? ' active' : ''}`}
-                >
-                  {active && <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(180deg, ${c}18, ${cAlt}28)`, transition: 'all 0.3s' }} />}
-                  {active && <div style={{ position: 'absolute', top: 0, left: '15%', right: '15%', height: '2px', background: `linear-gradient(90deg, transparent, ${c}, transparent)`, boxShadow: `0 0 10px ${c}` }} />}
+              const inner = (
+                <>
+                  {active && <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(180deg, ${c}14, ${cAlt}22)`, transition: 'all 0.3s' }} />}
+                  {active && <div style={{ position: 'absolute', bottom: 0, left: '12%', right: '12%', height: '2px', background: `linear-gradient(90deg, transparent, ${c}, transparent)`, boxShadow: `0 0 12px ${c}` }} />}
                   {active && <div style={{ position: 'absolute', bottom: '-7px', left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '7px solid transparent', borderRight: '7px solid transparent', borderTop: `7px solid ${c}`, filter: `drop-shadow(0 0 5px ${c})`, zIndex: 3 }} />}
-                  <span style={{ position: 'relative', zIndex: 1, color: active ? '#fff' : undefined, textShadow: active ? `0 0 20px ${c}, 0 0 40px ${c}55` : 'none' }}>{link.label}</span>
-                </Link>
+                  <span style={{ position: 'relative', zIndex: 1, color: active ? '#fff' : undefined, textShadow: active ? `0 0 20px ${c}, 0 0 40px ${c}55` : 'none' }}>{link.label}{link.external ? ' ↗' : ''}</span>
+                </>
+              )
+              return link.external ? (
+                <a key={link.href} href={link.href} target="_blank" rel="noopener noreferrer" className="nav-item">{inner}</a>
+              ) : (
+                <Link key={link.href} href={link.href} className={`nav-item${active ? ' active' : ''}`}>{inner}</Link>
               )
             })}
           </div>
@@ -461,36 +459,23 @@ export default function Navbar() {
             {links.map(link => {
               const active = isActive(link.href)
               const { color: c, colorAlt: cAlt } = link
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMenuOpen(false)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '14px',
-                    padding: '18px 20px',
-                    textDecoration: 'none',
-                    borderBottom: '1px solid rgba(255,255,255,0.05)',
-                    background: active ? `linear-gradient(90deg, ${c}15, transparent)` : 'transparent',
-                    position: 'relative',
-                    transition: 'background 0.2s',
-                  }}
-                >
-                  {/* Left color bar */}
-                  <div style={{
-                    width: '3px', height: '20px', flexShrink: 0,
-                    background: active ? `linear-gradient(180deg, ${c}, ${cAlt})` : 'rgba(255,255,255,0.1)',
-                    boxShadow: active ? `0 0 8px ${c}` : 'none',
-                    transition: 'all 0.2s',
-                  }} />
-                  <span style={{
-                    fontFamily: "'Bebas Neue', sans-serif",
-                    fontSize: '1.1rem', letterSpacing: '4px',
-                    color: active ? '#fff' : 'rgba(255,255,255,0.45)',
-                    textShadow: active ? `0 0 16px ${c}` : 'none',
-                    transition: 'all 0.2s',
-                  }}>{link.label}</span>
-                </Link>
+              const rowStyle: CSSProperties = {
+                display: 'flex', alignItems: 'center', gap: '14px',
+                padding: '18px 20px', textDecoration: 'none',
+                borderBottom: '1px solid rgba(255,255,255,0.05)',
+                background: active ? `linear-gradient(90deg, ${c}15, transparent)` : 'transparent',
+                position: 'relative', transition: 'background 0.2s',
+              }
+              const inner = (
+                <>
+                  <div style={{ width: '3px', height: '20px', flexShrink: 0, background: active ? `linear-gradient(180deg, ${c}, ${cAlt})` : 'rgba(255,255,255,0.1)', boxShadow: active ? `0 0 8px ${c}` : 'none', transition: 'all 0.2s' }} />
+                  <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.1rem', letterSpacing: '4px', color: active ? '#fff' : 'rgba(255,255,255,0.45)', textShadow: active ? `0 0 16px ${c}` : 'none', transition: 'all 0.2s' }}>{link.label}{link.external ? ' ↗' : ''}</span>
+                </>
+              )
+              return link.external ? (
+                <a key={link.href} href={link.href} target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)} style={rowStyle}>{inner}</a>
+              ) : (
+                <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)} style={rowStyle}>{inner}</Link>
               )
             })}
           </div>
