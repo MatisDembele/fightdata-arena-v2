@@ -16,6 +16,7 @@ import { primaryGifSrc } from '@/lib/gif'
 
 const COLOR     = '#00ff88'
 const COLOR_ALT = '#00b894'
+const TIME_PER_Q = 8   // seconds per question — time-trial so answers can't be looked up
 
 type Phase       = 'intro' | 'playing' | 'finished'
 type AnswerState = 'idle' | 'correct' | 'wrong'
@@ -109,6 +110,7 @@ function DailyPage() {
   const [copied, setCopied]       = useState(false)
   const [loading, setLoading]     = useState(false)
   const [loadError, setLoadError] = useState(false)
+  const [timeLeft, setTimeLeft]   = useState(TIME_PER_Q)
   const [alreadyPlayed, setAlreadyPlayed] = useState<DailyResult | null>(null)
   const [leaderboard, setLeaderboard]     = useState<LeaderboardEntry[]>([])
   const [lbName, setLbName]               = useState('')
@@ -191,6 +193,7 @@ function DailyPage() {
 
   const startPlaying = () => {
     startTimeRef.current = Date.now()
+    setTimeLeft(TIME_PER_Q)
     loadQuestions()
     setPhase('playing')
   }
@@ -224,6 +227,25 @@ function DailyPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, state, idx, questions])
 
+  // Time-trial: per-question countdown
+  useEffect(() => {
+    if (phase !== 'playing' || state !== 'idle' || !questions[idx]) return
+    const iv = setInterval(() => setTimeLeft(p => Math.max(0, p - 1)), 1000)
+    return () => clearInterval(iv)
+  }, [phase, state, idx, questions])
+
+  // Out of time → the question counts as wrong
+  useEffect(() => {
+    if (phase !== 'playing' || state !== 'idle' || timeLeft > 0) return
+    playWrong()
+    setSelected(null)
+    setState('wrong')
+    const next = [...answersRef.current, false]
+    answersRef.current = next
+    setAnswers(next)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLeft, phase, state])
+
   const handleNext = () => {
     if (idx + 1 >= questions.length) {
       const finalAnswers = answersRef.current
@@ -252,6 +274,7 @@ function DailyPage() {
       setIdx(i => i + 1)
       setSelected(null)
       setState('idle')
+      setTimeLeft(TIME_PER_Q)
     }
   }
 
@@ -311,6 +334,9 @@ function DailyPage() {
             </div>
             <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.68)', marginTop: '10px' }}>
               {t('daily.one_per_day')}
+            </div>
+            <div style={{ display: 'inline-flex', marginTop: '12px', padding: '5px 13px', border: `1px solid ${COLOR}55`, background: `${COLOR}12`, fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: '2px', color: COLOR }}>
+              {t('daily.time_trial')}
             </div>
           </div>
           <div style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, maxWidth: '320px' }}>
@@ -539,6 +565,9 @@ function DailyPage() {
                   DAILY {formatDate()}
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  {state === 'idle' && (
+                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.15rem', letterSpacing: '1px', color: timeLeft <= 3 ? '#ff2d78' : COLOR, textShadow: `0 0 8px ${timeLeft <= 3 ? '#ff2d78' : COLOR}`, minWidth: '30px', textAlign: 'right' }}>{timeLeft}s</span>
+                  )}
                   <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '2px', color: COLOR }}>Q{idx + 1}/10</span>
                   <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.7)' }}>{question.fighter_slug}</span>
                 </div>

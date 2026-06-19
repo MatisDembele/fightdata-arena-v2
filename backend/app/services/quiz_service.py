@@ -12,14 +12,20 @@ def _is_numeric(value: str | None) -> bool:
     return bool(re.match(r"^\d+$", value.strip()))
 
 
-def _move_candidates(db: Session, fighter_id: int, require_gif: bool = True) -> list[Move]:
+def _move_candidates(
+    db: Session, fighter_id: int, require_gif: bool = True, exclude_jumps: bool = False
+) -> list[Move]:
     """Moves for a fighter. When require_gif is False, moves without a hitbox
     GIF (special moves, super arts, throws…) are included too — the frontend
-    falls back to the move's input notation for those."""
+    falls back to the move's input notation for those. When exclude_jumps is
+    True, jump attacks are dropped (used by the timed challenges)."""
     q = db.query(Move).filter(Move.fighter_id == fighter_id)
     if require_gif:
         q = q.filter(Move.gif_path.isnot(None))
-    return q.all()
+    moves = q.all()
+    if exclude_jumps:
+        moves = [m for m in moves if not (m.section and "jump" in m.section.lower())]
+    return moves
 
 
 def _pick_distractors(correct: int, pool: set[int], rng: random.Random) -> list[int]:
@@ -229,7 +235,7 @@ def _generate_startup_question_rng(
     if not fighter:
         return None
 
-    candidates = _move_candidates(db, fighter.id, require_gif)
+    candidates = _move_candidates(db, fighter.id, require_gif, exclude_jumps=True)
     candidates = [m for m in candidates if _is_numeric(m.startup)]
 
     if len(candidates) < 4:

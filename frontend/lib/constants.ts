@@ -42,13 +42,15 @@ export interface Rank {
   colorAlt: string
 }
 
+// SF6-style accuracy tiers — reworked thresholds (Master now reachable at 92%)
+// with rounder steps and clearer, more distinct colours.
 export function getRank(acc: number): Rank {
-  if (acc === 100) return { label: 'MASTER',   color: '#cc44ff', colorAlt: '#9b1fff' }
-  if (acc >= 88)   return { label: 'DIAMOND',  color: '#00ccff', colorAlt: '#0077ff' }
-  if (acc >= 75)   return { label: 'PLATINUM', color: '#88bbee', colorAlt: '#4477cc' }
-  if (acc >= 62)   return { label: 'GOLD',     color: '#ffd700', colorAlt: '#f0a800' }
-  if (acc >= 50)   return { label: 'SILVER',   color: '#d8dde8', colorAlt: '#b0b8c8' }
-  if (acc >= 37)   return { label: 'BRONZE',   color: '#cd7f32', colorAlt: '#a05020' }
-  if (acc >= 25)   return { label: 'IRON',     color: '#8b7355', colorAlt: '#6b5a45' }
-  return                  { label: 'ROOKIE',   color: '#c0c0c0', colorAlt: '#888888' }
+  if (acc >= 92) return { label: 'MASTER',   color: '#d64dff', colorAlt: '#9b1fff' }
+  if (acc >= 80) return { label: 'DIAMOND',  color: '#46d8ff', colorAlt: '#1488e6' }
+  if (acc >= 68) return { label: 'PLATINUM', color: '#74e0cf', colorAlt: '#2f9e8f' }
+  if (acc >= 55) return { label: 'GOLD',     color: '#ffcf3a', colorAlt: '#e0a000' }
+  if (acc >= 42) return { label: 'SILVER',   color: '#dfe6ef', colorAlt: '#a8b2c2' }
+  if (acc >= 28) return { label: 'BRONZE',   color: '#d08a4e', colorAlt: '#9a5a26' }
+  if (acc >= 15) return { label: 'IRON',     color: '#8a96a6', colorAlt: '#566273' }
+  return                 { label: 'ROOKIE',   color: '#c0c7d0', colorAlt: '#828a96' }
 }

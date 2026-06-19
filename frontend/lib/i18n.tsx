@@ -149,6 +149,7 @@ const en = {
 
   // daily
   'daily.one_per_day':     '10 QUESTIONS — ONE A DAY',
+  'daily.time_trial':      '⏱ 8 SECONDS PER QUESTION',
   'daily.intro_desc':      'Every day, 10 identical questions for all players. No skip — answer everything.',
   'daily.start':           'START →',
   'daily.home':            '← HOME',
@@ -640,6 +641,7 @@ const fr: Record<DictKey, string> = {
 
   // daily
   'daily.one_per_day':     '10 QUESTIONS — UN PAR JOUR',
+  'daily.time_trial':      '⏱ 8 SECONDES PAR QUESTION',
   'daily.intro_desc':      'Chaque jour, 10 questions identiques pour tous les joueurs. Pas de passe — réponds à tout.',
   'daily.start':           'COMMENCER →',
   'daily.home':            '← ACCUEIL',
@@ -1120,6 +1122,7 @@ const es: Record<DictKey, string> = {
   'play.share_score':             'Puntuación: {score} ({accuracy}%) — Rango {rank}',
   'play.share_combo':             'Combo máximo: {combo}🔥',
   'daily.one_per_day':     '10 PREGUNTAS — UNA POR DÍA',
+  'daily.time_trial':      '⏱ 8 SEGUNDOS POR PREGUNTA',
   'daily.intro_desc':      'Cada día, 10 preguntas idénticas para todos. Sin pasar — responde todo.',
   'daily.start':           'EMPEZAR →',
   'daily.home':            '← INICIO',
@@ -1572,6 +1575,7 @@ const ja: Record<DictKey, string> = {
   'play.share_score':             'スコア：{score}（{accuracy}%）— ランク{rank}',
   'play.share_combo':             '最大コンボ：{combo}🔥',
   'daily.one_per_day':     '10問 — 1日1回',
+  'daily.time_trial':      '⏱ 1問あたり8秒',
   'daily.intro_desc':      '毎日全員共通の10問。スキップなし — 全問答えよう。',
   'daily.start':           '開始 →',
   'daily.home':            '← ホーム',

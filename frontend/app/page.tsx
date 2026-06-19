@@ -1,12 +1,13 @@
 'use client'
 export const dynamic = 'force-static'
 import Link from 'next/link'
-import { useState, useRef, useEffect, Fragment } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useLanguage } from '@/lib/i18n'
 import Footer from '@/components/Footer'
 import { useAuth } from '@/components/AuthProvider'
 import { getDiscordOAuthUrl, getDiscordAvatarUrl } from '@/lib/auth'
 import DiscordIcon from '@/components/DiscordIcon'
+import { getDailyLeaderboard, getWeeklyLeaderboard, type LeaderboardEntry } from '@/lib/api'
 import { getRank } from '@/lib/constants'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -20,6 +21,8 @@ const LANGS = [
 
 export default function Home() {
   const [active, setActive] = useState(0)
+  const [dailyLb, setDailyLb]   = useState<LeaderboardEntry[]>([])
+  const [weeklyLb, setWeeklyLb] = useState<LeaderboardEntry[]>([])
   const [langOpen, setLangOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [authError, setAuthError] = useState<'error' | 'cancelled' | null>(() => {
@@ -53,6 +56,12 @@ export default function Home() {
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
+  }, [])
+
+  // Daily + weekly leaderboards shown at the bottom of the home page
+  useEffect(() => {
+    getDailyLeaderboard().then(setDailyLb).catch(() => {})
+    getWeeklyLeaderboard().then(setWeeklyLb).catch(() => {})
   }, [])
 
   // Pull the player's pseudo + lifetime stats for the top-right profile card.
@@ -128,11 +137,6 @@ export default function Home() {
     },
   ]
 
-  const STEPS = [
-    t('home.how1'),
-    t('home.how2'),
-    t('home.how3'),
-  ]
 
   const current = MODES[active]
 
@@ -445,29 +449,38 @@ export default function Home() {
           >»</button>
         </div>
 
-        {/* How it works — 3 quick steps (accent follows the active mode) */}
-        <div style={{ display: 'flex', gap: 'clamp(10px, 2.5vw, 26px)', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', padding: '0 16px', maxWidth: '780px' }}>
-          {STEPS.map((label, i) => (
-            <Fragment key={i}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
-                <div style={{
-                  width: '34px', height: '34px', flexShrink: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  border: `1px solid ${current.color}66`,
-                  background: `${current.color}12`,
-                  fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.35rem', lineHeight: 1,
-                  color: current.color, textShadow: `0 0 10px ${current.color}`,
-                  transition: 'all 0.3s',
-                }}>{i + 1}</div>
-                <div style={{
-                  fontFamily: "'Rajdhani', sans-serif", fontSize: 'clamp(0.85rem, 1.5vw, 1rem)', fontWeight: 600,
-                  letterSpacing: '0.5px', color: 'rgba(255,255,255,0.72)', whiteSpace: 'nowrap',
-                }}>{label}</div>
+        {/* Daily & weekly leaderboards */}
+        <div style={{ display: 'flex', gap: 'clamp(12px, 3vw, 28px)', justifyContent: 'center', flexWrap: 'wrap', width: '100%', maxWidth: '760px', padding: '0 16px' }}>
+          {([
+            { title: 'DAILY',  data: dailyLb,  color: '#00ff88', href: '/quiz/daily',  empty: 'daily.leaderboard_empty'  },
+            { title: 'WEEKLY', data: weeklyLb, color: '#ffd700', href: '/quiz/weekly', empty: 'weekly.leaderboard_empty' },
+          ] as const).map(col => (
+            <Link
+              key={col.title}
+              href={col.href}
+              style={{
+                flex: '1 1 260px', maxWidth: '340px', textDecoration: 'none',
+                background: 'rgba(0,0,0,0.32)', border: `1px solid ${col.color}33`,
+                padding: '11px 14px 12px', display: 'flex', flexDirection: 'column', gap: '6px',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = `${col.color}77`; e.currentTarget.style.background = `${col.color}0d` }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = `${col.color}33`; e.currentTarget.style.background = 'rgba(0,0,0,0.32)' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+                <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.05rem', letterSpacing: '3px', color: col.color, textShadow: `0 0 10px ${col.color}66` }}>{col.title}</span>
+                <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.55)' }}>›</span>
               </div>
-              {i < STEPS.length - 1 && (
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '1.1rem', color: `${current.color}99`, transition: 'all 0.3s' }}>→</div>
-              )}
-            </Fragment>
+              {col.data.length === 0 ? (
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.45)', padding: '4px 0' }}>{t(col.empty)}</div>
+              ) : col.data.slice(0, 5).map(e => (
+                <div key={e.rank} style={{ display: 'grid', gridTemplateColumns: '20px 1fr auto', gap: '8px', alignItems: 'center' }}>
+                  <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', color: e.rank === 1 ? '#ffd700' : e.rank === 2 ? '#c0c0c0' : e.rank === 3 ? '#cd7f32' : 'rgba(255,255,255,0.55)' }}>#{e.rank}</span>
+                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.62rem', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.78)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.player_name}</span>
+                  <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '1px', color: col.color }}>{e.score}/10</span>
+                </div>
+              ))}
+            </Link>
           ))}
         </div>
 
