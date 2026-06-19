@@ -133,19 +133,31 @@ export default function Navbar() {
         <div style={{
           display: 'flex', alignItems: 'center', gap: '8px',
           ...(inDrawer ? { padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.07)' } : {
-            padding: '0 12px',
-            borderRight: '1px solid rgba(255,255,255,0.07)',
+            padding: '0 16px 0 4px',
           }),
         }}>
-          <DiscordIcon size={13} />
-          <span style={{
-            fontFamily: "'Share Tech Mono', monospace",
-            fontSize: inDrawer ? '0.65rem' : '0.6rem', letterSpacing: '2px',
-            color: 'rgba(255,255,255,0.7)',
-            flex: inDrawer ? 1 : undefined,
-            maxWidth: inDrawer ? undefined : '120px',
-            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          }}>{user.username}</span>
+          <Link
+            href="/profile"
+            onClick={() => setMenuOpen(false)}
+            title={t('nav.profile')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              textDecoration: 'none', cursor: 'pointer',
+              flex: inDrawer ? 1 : undefined, minWidth: 0,
+              transition: 'opacity 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = '0.7' }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+          >
+            <DiscordIcon size={13} />
+            <span style={{
+              fontFamily: "'Share Tech Mono', monospace",
+              fontSize: inDrawer ? '0.65rem' : '0.6rem', letterSpacing: '2px',
+              color: 'rgba(255,255,255,0.75)',
+              maxWidth: inDrawer ? undefined : '120px',
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>{user.username}</span>
+          </Link>
           <button
             onClick={() => { logout(); setMenuOpen(false) }}
             style={{
@@ -163,8 +175,7 @@ export default function Navbar() {
           style={{
             position: 'relative',
             ...(inDrawer ? { padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.07)' } : {
-              padding: '0 12px',
-              borderRight: '1px solid rgba(255,255,255,0.07)',
+              padding: '0 16px 0 4px',
               display: 'flex', alignItems: 'center',
             }),
           }}
@@ -183,7 +194,7 @@ export default function Navbar() {
               }}
             >
               <DiscordIcon size={13} />
-              {warming ? 'DÉMARRAGE...' : 'CONNECT DISCORD'}
+              {warming ? t('nav.connect_warming') : t('nav.connect')}
             </button>
           ) : (
             <>
@@ -199,7 +210,7 @@ export default function Navbar() {
                 }}
               >
                 <DiscordIcon size={13} />
-                CONNECT
+                {t('nav.connect')}
               </button>
               {showConsent && (
                 <div style={{
@@ -209,10 +220,10 @@ export default function Navbar() {
                   padding: '14px', zIndex: 999,
                   boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
                 }}>
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-3)', color: '#5865F2', marginBottom: '8px' }}>DONNÉES COLLECTÉES</div>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-3)', color: '#5865F2', marginBottom: '8px' }}>{t('nav.consent_title')}</div>
                   <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, marginBottom: '12px' }}>
-                    Votre identifiant Discord et pseudo sont sauvegardés pour conserver votre progression. Aucune donnée sensible n'est collectée.{' '}
-                    <Link href="/privacy" style={{ color: '#5865F2' }} onClick={() => setShowConsent(false)}>Politique de confidentialité</Link>
+                    {t('nav.consent_body')}{' '}
+                    <Link href="/privacy" style={{ color: '#5865F2' }} onClick={() => setShowConsent(false)}>{t('nav.privacy_link')}</Link>
                   </div>
                   <button
                     onClick={() => handleDiscordConnect()}
@@ -227,7 +238,7 @@ export default function Navbar() {
                     }}
                   >
                     <DiscordIcon size={12} />
-                    {warming ? 'DÉMARRAGE...' : 'CONTINUER AVEC DISCORD'}
+                    {warming ? t('nav.connect_warming') : t('nav.connect_continue')}
                   </button>
                 </div>
               )}
@@ -269,25 +280,23 @@ export default function Navbar() {
     }
 
     return (
-      <div ref={langRef} style={{ position: 'relative', display: 'flex', alignItems: 'stretch', borderLeft: '1px solid rgba(255,255,255,0.07)' }}>
+      <div ref={langRef} style={{ position: 'relative', display: 'flex', alignItems: 'center', paddingRight: '14px' }}>
         <button
           onClick={() => setLangOpen(v => !v)}
+          title={currentLang.name}
           style={{
-            display: 'flex', alignItems: 'center', gap: '8px',
-            padding: '0 14px',
-            background: langOpen ? 'rgba(255,224,0,0.06)' : 'none',
-            border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: '7px',
+            padding: '6px 10px',
+            background: langOpen ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer',
             transition: 'background 0.15s', whiteSpace: 'nowrap',
           }}
         >
           <span className={`fi fi-${currentLang.cc}`} style={{ width: '20px', height: '15px', display: 'inline-block', borderRadius: '2px' }} />
-          <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.8)' }}>
-            {currentLang.name}
-          </span>
-          <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)', display: 'inline-block', transition: 'transform 0.2s', transform: langOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
+          <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.5)', display: 'inline-block', transition: 'transform 0.2s', transform: langOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
         </button>
         {langOpen && (
-          <div style={{ position: 'absolute', top: '100%', right: 0, background: 'rgba(4,0,12,0.98)', border: '1px solid rgba(255,255,255,0.1)', minWidth: '160px', zIndex: 999, boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}>
+          <div style={{ position: 'absolute', top: 'calc(100% + 4px)', right: '14px', background: 'rgba(4,0,12,0.98)', border: '1px solid rgba(255,255,255,0.1)', minWidth: '160px', zIndex: 999, boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}>
             {LANGS.map(l => (
               <button
                 key={l.code}
@@ -383,11 +392,11 @@ export default function Navbar() {
         {/* Spacer on mobile */}
         {isMobile && <div style={{ flex: 1 }} />}
 
-        {/* Desktop: auth + lang */}
+        {/* Desktop: lang + auth — same order as the home header */}
         {!isMobile && (
           <>
-            <AuthSection />
             <LangToggle />
+            <AuthSection />
           </>
         )}
 

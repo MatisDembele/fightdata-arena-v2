@@ -46,6 +46,29 @@ const SPECIAL: { id: IconName; label: string; color: string; href: string }[] = 
   { id: 'mistakes', label: 'MISTAKES', color: '#f43f5e', href: '/quiz/play?mode=mistakes'  },
 ]
 
+// Numbered step header: "① Pick a stat" — badge state drives the visual.
+function StepLabel({ n, text, color, state, chip }: {
+  n: string; text: string; color: string
+  state: 'done' | 'active' | 'locked'; chip?: string
+}) {
+  const badgeBg     = state === 'done' ? color : state === 'active' ? `${color}22` : 'rgba(255,255,255,0.06)'
+  const badgeBorder = state === 'locked' ? 'rgba(255,255,255,0.18)' : color
+  const badgeColor  = state === 'done' ? '#0a0010' : state === 'locked' ? 'rgba(255,255,255,0.5)' : color
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <span style={{
+        width: '26px', height: '26px', flexShrink: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: badgeBg, border: `1px solid ${badgeBorder}`,
+        fontFamily: "'Bebas Neue', sans-serif", fontSize: '1rem', color: badgeColor,
+        boxShadow: state === 'active' ? `0 0 12px ${color}55` : 'none', transition: 'all 0.3s',
+      }}>{state === 'done' ? '✓' : n}</span>
+      <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.1rem', letterSpacing: '3px', color: state === 'locked' ? 'rgba(255,255,255,0.6)' : '#fff' }}>{text}</span>
+      {chip && <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color, padding: '3px 9px', border: `1px solid ${color}66`, background: `${color}18` }}>{chip}</span>}
+    </div>
+  )
+}
+
 export default function QuizSelectPage() {
   const router = useRouter()
   const { t } = useLanguage()
@@ -221,155 +244,107 @@ export default function QuizSelectPage() {
             textShadow: `0 0 20px ${accentColor}`,
             transition: 'text-shadow 0.4s',
           }}>{t('quiz.choose_mode')}</h1>
-          <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-sm)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.4)', marginTop: '6px' }}>
+          <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-sm)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.55)', marginTop: '8px' }}>
             {t('quiz.pick_stat_format')}
           </p>
         </div>
 
-        <div style={{ width: '100%', maxWidth: '700px', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ width: '100%', maxWidth: '720px', display: 'flex', flexDirection: 'column', gap: '26px' }}>
 
-          {/* ── Stat selector ── */}
-          <div style={{ display: 'flex', overflowX: 'auto', gap: '6px', paddingBottom: '4px', scrollbarWidth: 'none' as const }}>
-            {STATS.map(s => {
-              const isSel = s.id === activeStat
-              return (
-                <button
-                  key={s.id}
-                  onClick={() => setActiveStat(s.id)}
-                  aria-pressed={isSel}
-                  style={{
-                    flexShrink: 0,
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px',
-                    padding: '10px 16px',
-                    background: isSel ? `${s.color}15` : 'rgba(255,255,255,0.03)',
-                    border: `1px solid ${isSel ? s.color + '88' : 'rgba(255,255,255,0.07)'}`,
-                    borderBottom: isSel ? `2px solid ${s.color}` : '1px solid rgba(255,255,255,0.07)',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    minWidth: '74px',
-                    boxShadow: isSel ? `0 0 14px ${s.color}20` : 'none',
-                  }}
-                >
-                  <Icon name={s.id} size={18} color={isSel ? s.color : 'rgba(255,255,255,0.4)'} />
-                  <span style={{
-                    fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.72rem', letterSpacing: '2px',
-                    color: isSel ? s.color : 'rgba(255,255,255,0.45)',
-                    transition: 'color 0.2s', whiteSpace: 'nowrap',
-                    textShadow: isSel ? `0 0 8px ${s.color}` : 'none',
-                  }}>{s.label}</span>
-                </button>
-              )
-            })}
-          </div>
-
-          {/* ── Stat description (or a hint to pick one first) ── */}
-          <div style={{ padding: '12px 2px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)', marginBottom: '16px' }}>
-            {stat ? (
-              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: stat.color, opacity: 0.85 }}>
-                {t(`quiz.stat_${stat.id}_desc` as DictKey)}
-              </span>
-            ) : (
-              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.45)' }}>
-                {t('quiz.pick_stat_first')}
-              </span>
-            )}
-          </div>
-
-          {/* ── Variants grid ── */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: '6px',
-            marginBottom: '32px',
+          {/* ── STEP 1 — choose a stat (highlighted until one is picked) ── */}
+          <section style={{
+            background: 'rgba(255,255,255,0.04)',
+            border: `1px solid ${stat ? 'rgba(255,255,255,0.1)' : accentColor + '66'}`,
+            boxShadow: stat ? 'none' : `0 0 26px ${accentColor}22`,
+            padding: '18px', transition: 'all 0.3s',
           }}>
-            {VARIANTS.map(v => {
-              const locked = !stat
-              return (
-                <button
-                  key={v.id}
-                  type="button"
-                  disabled={locked}
-                  aria-disabled={locked}
-                  onClick={() => handleVariantClick(v.id)}
-                  onMouseEnter={e => {
-                    if (locked) return
-                    const el = e.currentTarget as HTMLElement
-                    el.style.background = `${v.color}12`
-                    el.style.borderColor = v.color + '66'
-                    el.style.boxShadow = `0 0 18px ${v.color}18`
-                    const top = el.querySelector('.var-top') as HTMLElement | null
-                    if (top) top.style.opacity = '1'
-                  }}
-                  onMouseLeave={e => {
-                    if (locked) return
-                    const el = e.currentTarget as HTMLElement
-                    el.style.background = 'rgba(255,255,255,0.03)'
-                    el.style.borderColor = 'rgba(255,255,255,0.07)'
-                    el.style.boxShadow = 'none'
-                    const top = el.querySelector('.var-top') as HTMLElement | null
-                    if (top) top.style.opacity = '0'
-                  }}
-                  style={{
-                    font: 'inherit', textAlign: 'left',
-                    padding: '18px 16px',
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.07)',
-                    cursor: locked ? 'not-allowed' : 'pointer',
-                    opacity: locked ? 0.4 : 1,
-                    filter: locked ? 'grayscale(0.7)' : 'none',
-                    transition: 'all 0.18s',
-                    display: 'flex', flexDirection: 'column', gap: '8px',
-                    position: 'relative', overflow: 'hidden',
-                  }}
-                >
-                  <div className="var-top" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: `linear-gradient(90deg, transparent, ${v.color}, transparent)`, opacity: 0, transition: 'opacity 0.18s' }} />
-                  <Icon name={v.id} size={22} color={v.color} />
-                  <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.8)' }}>{v.label}</div>
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.45)' }}>{t(`quiz.var_${v.id}_sub` as DictKey)}</div>
-                </button>
-              )
-            })}
-          </div>
-
-          {/* ── Special modes ── */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.4)', whiteSpace: 'nowrap' }}>
-              {t('quiz.special_modes')}
+            <StepLabel n="1" text={t('quiz.step_stat')} color={accentColor} state={stat ? 'done' : 'active'} />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(98px, 1fr))', gap: '8px', marginTop: '16px' }}>
+              {STATS.map(s => {
+                const isSel = s.id === activeStat
+                return (
+                  <button key={s.id} onClick={() => setActiveStat(s.id)} aria-pressed={isSel} style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '7px', padding: '13px 8px',
+                    background: isSel ? `${s.color}22` : 'rgba(255,255,255,0.05)',
+                    border: `1px solid ${isSel ? s.color : 'rgba(255,255,255,0.14)'}`,
+                    boxShadow: isSel ? `0 0 16px ${s.color}44, inset 0 0 22px ${s.color}12` : 'none',
+                    cursor: 'pointer', transition: 'all 0.2s',
+                  }}>
+                    <Icon name={s.id} size={20} color={isSel ? s.color : 'rgba(255,255,255,0.62)'} />
+                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', letterSpacing: '1.5px', color: isSel ? '#fff' : 'rgba(255,255,255,0.7)', textShadow: isSel ? `0 0 8px ${s.color}` : 'none', whiteSpace: 'nowrap' }}>{s.label}</span>
+                  </button>
+                )
+              })}
             </div>
-            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.06)' }} />
-          </div>
+            {stat && (
+              <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: stat.color }}>{t(`quiz.stat_${stat.id}_desc` as DictKey)}</span>
+              </div>
+            )}
+          </section>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '6px' }}>
-            {SPECIAL.map(s => (
-              <Link
-                key={s.id}
-                href={s.href}
-                style={{
-                  textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: '6px',
-                  padding: '14px 14px',
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.07)',
-                  transition: 'all 0.18s',
-                }}
-                onMouseEnter={e => {
-                  const el = e.currentTarget as HTMLElement
-                  el.style.background = `${s.color}12`
-                  el.style.borderColor = s.color + '55'
-                  el.style.boxShadow = `0 0 14px ${s.color}18`
-                }}
-                onMouseLeave={e => {
-                  const el = e.currentTarget as HTMLElement
-                  el.style.background = 'rgba(255,255,255,0.03)'
-                  el.style.borderColor = 'rgba(255,255,255,0.07)'
-                  el.style.boxShadow = 'none'
-                }}
-              >
-                <Icon name={s.id} size={20} color={s.color} />
-                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '2px', color: s.color }}>{s.label}</div>
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.45)' }}>{t(`quiz.sp_${s.id}_sub` as DictKey)}</div>
-              </Link>
-            ))}
-          </div>
+          {/* ── STEP 2 — choose a mode (locked until a stat is picked) ── */}
+          <section>
+            <StepLabel n="2" text={t('quiz.step_mode')} color={accentColor} state={stat ? 'active' : 'locked'} chip={stat?.label} />
+
+            {!stat && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', marginTop: '14px', background: `${accentColor}16`, border: `1px solid ${accentColor}55` }}>
+                <span style={{ fontSize: '1rem' }} aria-hidden>🔒</span>
+                <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.9)' }}>{t('quiz.pick_stat_first')}</span>
+              </div>
+            )}
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginTop: '14px' }}>
+              {VARIANTS.map(v => {
+                const locked = !stat
+                return (
+                  <button
+                    key={v.id} type="button" disabled={locked} aria-disabled={locked}
+                    onClick={() => handleVariantClick(v.id)}
+                    onMouseEnter={e => { if (locked) return; const el = e.currentTarget; el.style.background = `${v.color}14`; el.style.borderColor = v.color + '88'; el.style.boxShadow = `0 0 18px ${v.color}22` }}
+                    onMouseLeave={e => { if (locked) return; const el = e.currentTarget; el.style.background = 'rgba(255,255,255,0.05)'; el.style.borderColor = 'rgba(255,255,255,0.12)'; el.style.boxShadow = 'none' }}
+                    style={{
+                      font: 'inherit', textAlign: 'left', padding: '16px',
+                      background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)',
+                      cursor: locked ? 'not-allowed' : 'pointer',
+                      opacity: locked ? 0.45 : 1, filter: locked ? 'grayscale(0.8)' : 'none',
+                      transition: 'all 0.18s', display: 'flex', flexDirection: 'column', gap: '7px',
+                    }}
+                  >
+                    <Icon name={v.id} size={22} color={v.color} />
+                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.05rem', letterSpacing: '3px', color: '#fff' }}>{v.label}</div>
+                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.6)' }}>{t(`quiz.var_${v.id}_sub` as DictKey)}</div>
+                  </button>
+                )
+              })}
+            </div>
+          </section>
+
+          {/* ── Special modes (independent of the stat) ── */}
+          <section>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.6)', whiteSpace: 'nowrap' }}>
+                {t('quiz.special_modes')}
+              </div>
+              <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }} />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '8px' }}>
+              {SPECIAL.map(s => (
+                <Link
+                  key={s.id}
+                  href={s.href}
+                  style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: '7px', padding: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', transition: 'all 0.18s' }}
+                  onMouseEnter={e => { const el = e.currentTarget; el.style.background = `${s.color}14`; el.style.borderColor = s.color + '66'; el.style.boxShadow = `0 0 14px ${s.color}22` }}
+                  onMouseLeave={e => { const el = e.currentTarget; el.style.background = 'rgba(255,255,255,0.05)'; el.style.borderColor = 'rgba(255,255,255,0.12)'; el.style.boxShadow = 'none' }}
+                >
+                  <Icon name={s.id} size={20} color={s.color} />
+                  <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '2px', color: s.color }}>{s.label}</div>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.6)' }}>{t(`quiz.sp_${s.id}_sub` as DictKey)}</div>
+                </Link>
+              ))}
+            </div>
+          </section>
 
         </div>
       </div>

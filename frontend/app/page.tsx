@@ -162,20 +162,16 @@ export default function Home() {
         <div ref={langRef} style={{ position: 'relative' }}>
         <button
           onClick={() => setLangOpen(v => !v)}
+          title={currentLang.name}
           style={{
-            display: 'flex', alignItems: 'center', gap: '8px',
-            padding: '6px 12px',
+            display: 'flex', alignItems: 'center', gap: '7px',
+            padding: '7px 10px',
             background: 'rgba(4,0,12,0.85)',
             border: '1px solid rgba(255,255,255,0.15)',
             cursor: 'pointer', backdropFilter: 'blur(8px)',
           }}
         >
           <span className={`fi fi-${currentLang.cc}`} style={{ width: '20px', height: '15px', display: 'inline-block', borderRadius: '2px' }} />
-          {!isMobile && (
-            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.8)' }}>
-              {currentLang.name}
-            </span>
-          )}
           <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)', display: 'inline-block', transition: 'transform 0.2s', transform: langOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
         </button>
         {langOpen && (
@@ -302,11 +298,11 @@ export default function Home() {
       </div>
 
       {/* Contenu */}
-      <div style={{
+      <div className="home-hero-content" style={{
         position: 'relative', zIndex: 10,
         height: '100vh', display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'space-between',
-        padding: '40px 0 48px',
+        paddingBottom: '48px',
       }}>
 
         {/* Titre */}
