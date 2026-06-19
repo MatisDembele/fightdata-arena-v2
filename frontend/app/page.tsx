@@ -300,8 +300,12 @@ export default function Home() {
           }}>{t('home.subtitle')}</div>
         </div>
 
-        {/* Description */}
-        <div style={{ textAlign: 'center', maxWidth: '480px', padding: '0 24px' }}>
+        {/* Description — fixed height (reserves 3 lines) so switching modes
+            never changes its height and the carousel below stays put. */}
+        <div style={{
+          textAlign: 'center', maxWidth: '480px', padding: '0 24px',
+          minHeight: '4.8em', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
           <p style={{
             fontFamily: "'Rajdhani', sans-serif",
             fontSize: '1rem', fontWeight: 500, lineHeight: 1.6,
@@ -364,6 +368,8 @@ export default function Home() {
                       letterSpacing: 'var(--ls-3)',
                       color: isActive ? mode.color : 'rgba(255,255,255,0.18)',
                       marginTop: '6px',
+                      lineHeight: 1.3,
+                      minHeight: '2.6em',   /* reserve 2 lines so 1- and 2-line subs give equal-height cards */
                       textShadow: isActive ? `0 0 8px ${mode.color}` : 'none',
                       transition: 'all 0.3s',
                     }}>{mode.sub}</div>
