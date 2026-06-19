@@ -1,12 +1,13 @@
 'use client'
 export const dynamic = 'force-static'
 import Link from 'next/link'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, Fragment } from 'react'
 import { useLanguage } from '@/lib/i18n'
 import Footer from '@/components/Footer'
 import { useAuth } from '@/components/AuthProvider'
 import { getDiscordOAuthUrl, getDiscordAvatarUrl } from '@/lib/auth'
 import DiscordIcon from '@/components/DiscordIcon'
+import { getRank } from '@/lib/constants'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -32,6 +33,8 @@ export default function Home() {
   const [showConsent, setShowConsent] = useState(false)
   const [warming, setWarming] = useState(false)
   const consentRef = useRef<HTMLDivElement>(null)
+  const [pseudo, setPseudo] = useState('')
+  const [lifetime, setLifetime] = useState<{ questions: number; totalCorrect: number }>({ questions: 0, totalCorrect: 0 })
 
   async function handleConnect() {
     setWarming(true)
@@ -51,6 +54,15 @@ export default function Home() {
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
+
+  // Pull the player's pseudo + lifetime stats for the top-right profile card.
+  useEffect(() => {
+    setPseudo(localStorage.getItem('fda_pseudo') || '')
+    try {
+      const lt = JSON.parse(localStorage.getItem('fda_lifetime') || '{}')
+      setLifetime({ questions: lt.questions ?? 0, totalCorrect: lt.totalCorrect ?? 0 })
+    } catch { /* ignore malformed */ }
+  }, [user])
 
 
   useEffect(() => {
@@ -76,6 +88,12 @@ export default function Home() {
   }, [showConsent])
 
   const currentLang = LANGS.find(l => l.code === lang) ?? LANGS[0]
+
+  // Top-right profile card data (shown once logged in)
+  const accuracy    = lifetime.questions > 0 ? Math.round((lifetime.totalCorrect / lifetime.questions) * 100) : 0
+  const rank        = getRank(accuracy)
+  const displayName = pseudo || user?.username || '—'
+  const avatarUrl   = user ? getDiscordAvatarUrl(user, 64) : null
 
   const MODES = [
     {
@@ -110,10 +128,10 @@ export default function Home() {
     },
   ]
 
-  const STATS = [
-    { val: '30',   label: t('home.stat_chars') },
-    { val: '1562', label: t('home.stat_moves') },
-    { val: '14',   label: t('home.stat_modes') },
+  const STEPS = [
+    t('home.how1'),
+    t('home.how2'),
+    t('home.how3'),
   ]
 
   const current = MODES[active]
@@ -139,52 +157,9 @@ export default function Home() {
     )}
     <div style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
 
-      {/* Discord auth (top-left) */}
-      {!isLoading && (
-        <div ref={consentRef} style={{ position: 'fixed', top: '16px', left: '20px', zIndex: 100 }}>
-          {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '5px 8px 5px 6px', background: 'rgba(4,0,12,0.85)', border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)' }}>
-              {getDiscordAvatarUrl(user, 32)
-                ? <img src={getDiscordAvatarUrl(user, 32)!} alt={user.username} style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-                : <DiscordIcon size={14} />}
-              {!isMobile && (
-                <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.8)', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.username}</span>
-              )}
-              <button onClick={logout} title="Déconnexion" style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: '2px 7px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '1px', flexShrink: 0 }}>✕</button>
-            </div>
-          ) : (
-            <>
-              <button
-                onClick={() => setShowConsent(v => !v)}
-                style={{ display: 'flex', alignItems: 'center', gap: '7px', background: '#5865F2', color: '#fff', border: 'none', cursor: 'pointer', padding: '7px 12px', backdropFilter: 'blur(8px)', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', letterSpacing: '2px', transition: 'opacity 0.15s', opacity: showConsent ? 0.85 : 1 }}
-              >
-                <DiscordIcon size={14} />
-                {isMobile ? 'CONNECT' : t('nav.connect')}
-              </button>
-              {showConsent && (
-                <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, width: '262px', background: 'rgba(10,0,20,0.97)', border: '1px solid rgba(88,101,242,0.4)', padding: '14px', zIndex: 101, boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-3)', color: '#5865F2', marginBottom: '8px' }}>{t('nav.consent_title')}</div>
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, marginBottom: '12px' }}>
-                    {t('nav.consent_body')}{' '}
-                    <Link href="/privacy" style={{ color: '#5865F2' }} onClick={() => setShowConsent(false)}>{t('nav.privacy_link')}</Link>
-                  </div>
-                  <button
-                    onClick={handleConnect}
-                    disabled={warming}
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', background: warming ? '#3a4299' : '#5865F2', color: '#fff', padding: '8px', border: 'none', cursor: warming ? 'wait' : 'pointer', width: '100%', opacity: warming ? 0.8 : 1, fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', transition: 'all 0.2s' }}
-                  >
-                    <DiscordIcon size={12} />
-                    {warming ? t('nav.connect_warming') : t('nav.connect_continue')}
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      )}
-
-      {/* Lang dropdown */}
-      <div ref={langRef} style={{ position: 'fixed', top: '16px', right: '20px', zIndex: 100 }}>
+      {/* Top-right: language selector + auth (profile card / connect button) */}
+      <div style={{ position: 'fixed', top: '16px', right: '20px', zIndex: 100, display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+        <div ref={langRef} style={{ position: 'relative' }}>
         <button
           onClick={() => setLangOpen(v => !v)}
           style={{
@@ -226,6 +201,58 @@ export default function Home() {
             ))}
           </div>
         )}
+        </div>
+
+        {/* Auth in the same top-right spot: profile card when logged in,
+            connect button when logged out. */}
+        {!isLoading && (user ? (
+          <div style={{ display: 'flex', alignItems: 'stretch', background: 'rgba(4,0,12,0.85)', border: `1px solid ${rank.color}66`, backdropFilter: 'blur(8px)', boxShadow: `0 0 18px ${rank.color}26` }}>
+            <Link href="/profile" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '5px 12px 5px 6px', textDecoration: 'none' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', border: `2px solid ${rank.color}`, boxShadow: `0 0 10px ${rank.color}66`, flexShrink: 0, background: `${rank.color}1a`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {avatarUrl
+                  ? <img src={avatarUrl} alt={displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : <DiscordIcon size={16} />}
+              </div>
+              {!isMobile && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', minWidth: 0 }}>
+                  <span style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '0.92rem', fontWeight: 700, color: '#fff', letterSpacing: '0.5px', lineHeight: 1, maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.74rem', letterSpacing: '1.5px', color: rank.color, textShadow: `0 0 8px ${rank.color}88`, lineHeight: 1 }}>{rank.label}</span>
+                    <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.55)' }}>{lifetime.totalCorrect} PTS</span>
+                  </div>
+                </div>
+              )}
+            </Link>
+            <button onClick={logout} title="Déconnexion" style={{ background: 'none', border: 'none', borderLeft: `1px solid ${rank.color}33`, color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: '0 10px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.72rem', flexShrink: 0 }}>✕</button>
+          </div>
+        ) : (
+          <div ref={consentRef} style={{ position: 'relative' }}>
+            <button
+              onClick={() => setShowConsent(v => !v)}
+              style={{ display: 'flex', alignItems: 'center', gap: '7px', background: '#5865F2', color: '#fff', border: 'none', cursor: 'pointer', padding: '8px 14px', backdropFilter: 'blur(8px)', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.72rem', letterSpacing: '2px', transition: 'opacity 0.15s', opacity: showConsent ? 0.85 : 1 }}
+            >
+              <DiscordIcon size={14} />
+              {isMobile ? 'CONNECT' : t('nav.connect')}
+            </button>
+            {showConsent && (
+              <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, width: '262px', background: 'rgba(10,0,20,0.97)', border: '1px solid rgba(88,101,242,0.4)', padding: '14px', zIndex: 101, boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-3)', color: '#5865F2', marginBottom: '8px' }}>{t('nav.consent_title')}</div>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, marginBottom: '12px' }}>
+                  {t('nav.consent_body')}{' '}
+                  <Link href="/privacy" style={{ color: '#5865F2' }} onClick={() => setShowConsent(false)}>{t('nav.privacy_link')}</Link>
+                </div>
+                <button
+                  onClick={handleConnect}
+                  disabled={warming}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', background: warming ? '#3a4299' : '#5865F2', color: '#fff', padding: '8px', border: 'none', cursor: warming ? 'wait' : 'pointer', width: '100%', opacity: warming ? 0.8 : 1, fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', transition: 'all 0.2s' }}
+                >
+                  <DiscordIcon size={12} />
+                  {warming ? t('nav.connect_warming') : t('nav.connect_continue')}
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
 
       {/* BG dynamique */}
@@ -401,29 +428,30 @@ export default function Home() {
           >»</button>
         </div>
 
-        {/* Stats */}
-        <div style={{ display: 'flex', gap: 'clamp(16px, 4vw, 48px)', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', padding: '0 16px' }}>
-          {STATS.map((s, i) => (
-            <div key={i} style={{ textAlign: 'center' }}>
-              <div style={{
-                fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: '2rem', letterSpacing: '2px',
-                color: current.color,
-                textShadow: `0 0 12px ${current.color}`,
-                transition: 'all 0.3s',
-              }}>{s.val}</div>
-              <div style={{
-                fontFamily: "'Share Tech Mono', monospace",
-                fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)',
-                color: 'rgba(255,255,255,0.25)',
-              }}>{s.label}</div>
-            </div>
+        {/* How it works — 3 quick steps (accent follows the active mode) */}
+        <div style={{ display: 'flex', gap: 'clamp(10px, 2.5vw, 26px)', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', padding: '0 16px', maxWidth: '780px' }}>
+          {STEPS.map((label, i) => (
+            <Fragment key={i}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
+                <div style={{
+                  width: '34px', height: '34px', flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  border: `1px solid ${current.color}66`,
+                  background: `${current.color}12`,
+                  fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.35rem', lineHeight: 1,
+                  color: current.color, textShadow: `0 0 10px ${current.color}`,
+                  transition: 'all 0.3s',
+                }}>{i + 1}</div>
+                <div style={{
+                  fontFamily: "'Rajdhani', sans-serif", fontSize: 'clamp(0.85rem, 1.5vw, 1rem)', fontWeight: 600,
+                  letterSpacing: '0.5px', color: 'rgba(255,255,255,0.72)', whiteSpace: 'nowrap',
+                }}>{label}</div>
+              </div>
+              {i < STEPS.length - 1 && (
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '1.1rem', color: `${current.color}99`, transition: 'all 0.3s' }}>→</div>
+              )}
+            </Fragment>
           ))}
-          <div style={{
-            fontFamily: "'Share Tech Mono', monospace",
-            fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)',
-            color: 'rgba(255,255,255,0.15)',
-          }}>{t('home.patch')}</div>
         </div>
 
       </div>
