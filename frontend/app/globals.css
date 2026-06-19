@@ -253,6 +253,7 @@ body {
   align-items: center;            /* cards share the same vertical axis */
   min-height: clamp(130px, 22vw, 175px);  /* lock height so arrows don't jump */
   gap: 0;
+  overflow: hidden;               /* never let cards spill past the row */
 }
 .home-mode-card {
   text-decoration: none;
@@ -261,8 +262,19 @@ body {
   position: relative;
   overflow: hidden;
 }
-.home-mode-active   { flex: 0 0 clamp(180px, 40vw, 320px); padding: 24px 28px 28px; }
-.home-mode-inactive { flex: 0 0 clamp(100px, 22vw, 200px); padding: 18px 20px 24px; }
+/* Wide screens: 5 cards (active bigger); they may shrink so the row always fits. */
+.home-mode-active   { flex: 0 1 clamp(180px, 40vw, 320px); min-width: 0; padding: 24px 28px 28px; }
+.home-mode-inactive { flex: 0 1 clamp(100px, 22vw, 200px); min-width: 0; padding: 18px 20px 24px; }
+
+/* Tablet & narrower: single-card carousel — the active card fills and the rest
+   collapse, so the right-hand cards never get clipped at in-between widths. */
+@media (max-width: 1023px) {
+  .home-arrow-btn { width: 50px; }
+  .home-arrow-btn:first-child { margin-left: 10px; }
+  .home-arrow-btn:last-child  { margin-right: 10px; }
+  .home-mode-active   { flex: 1 1 0; min-width: 0; padding: 20px 16px 24px; }
+  .home-mode-inactive { flex: 0 0 0; min-width: 0; overflow: hidden; padding: 0; }
+}
 
 /* Gameover score cards */
 .gameover-scores {
@@ -313,8 +325,6 @@ body {
 @media (max-width: 768px) {
   .navbar { padding: 0 20px; }
   .quiz-modes-grid { grid-template-columns: repeat(2, 1fr); }
-  .home-mode-active   { flex: 0 0 clamp(160px, 38vw, 280px); padding: 22px 20px 26px; }
-  .home-mode-inactive { flex: 0 0 clamp(80px, 18vw, 160px); padding: 16px 14px 20px; }
   .gameover-score-cell { padding: 20px 28px; }
 }
 
@@ -339,10 +349,6 @@ body {
   .home-arrow-btn { width: 44px; font-size: 2.5rem; }
   .home-arrow-btn:first-child { margin-left: 2px; }
   .home-arrow-btn:last-child  { margin-right: 2px; }
-
-  .home-modes-inner { overflow: hidden; }
-  .home-mode-active   { flex: 1 1 0; padding: 20px 16px 24px; }
-  .home-mode-inactive { flex: 0 0 0; min-width: 0; overflow: hidden; padding: 0; }
 
   .gameover-scores { flex-direction: column; }
   .gameover-score-cell { padding: 16px 24px; border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.08); }

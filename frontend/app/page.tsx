@@ -136,6 +136,27 @@ export default function Home() {
 
   const current = MODES[active]
 
+  // Touch swipe for the carousel (left → next, right → prev)
+  const touchX = useRef(0)
+  const touchY = useRef(0)
+  const swiped = useRef(false)
+  const goPrev = () => setActive(a => (a - 1 + MODES.length) % MODES.length)
+  const goNext = () => setActive(a => (a + 1) % MODES.length)
+  const onCarouselTouchStart = (e: React.TouchEvent) => {
+    touchX.current = e.touches[0].clientX
+    touchY.current = e.touches[0].clientY
+    swiped.current = false
+  }
+  const onCarouselTouchEnd = (e: React.TouchEvent) => {
+    const dx = e.changedTouches[0].clientX - touchX.current
+    const dy = e.changedTouches[0].clientY - touchY.current
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      swiped.current = true
+      if (dx < 0) goNext(); else goPrev()
+      setTimeout(() => { swiped.current = false }, 150)
+    }
+  }
+
   return (
     <>
     {authError && (
@@ -346,10 +367,10 @@ export default function Home() {
             onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
           >«</button>
 
-          <div className="home-modes-inner">
+          <div className="home-modes-inner" onTouchStart={onCarouselTouchStart} onTouchEnd={onCarouselTouchEnd} style={{ touchAction: 'pan-y' }}>
             {MODES.map((mode, i) => {
               const isActive = i === active
-              const handleClick = (e: React.MouseEvent) => { if (i !== active) { e.preventDefault(); setActive(i) } }
+              const handleClick = (e: React.MouseEvent) => { if (swiped.current) { e.preventDefault(); return } if (i !== active) { e.preventDefault(); setActive(i) } }
               const className = `home-mode-card ${isActive ? 'home-mode-active' : 'home-mode-inactive'}`
               const inner = (
                 <>
@@ -402,14 +423,14 @@ export default function Home() {
               if (mode.external) {
                 return (
                   <a key={mode.id} href={mode.href} target="_blank" rel="noopener noreferrer"
-                    className={className} onMouseEnter={() => setActive(i)} onClick={handleClick}>
+                    className={className} onMouseEnter={() => { if (!swiped.current) setActive(i) }} onClick={handleClick}>
                     {inner}
                   </a>
                 )
               }
               return (
                 <Link key={mode.id} href={mode.href}
-                  className={className} onMouseEnter={() => setActive(i)} onClick={handleClick}>
+                  className={className} onMouseEnter={() => { if (!swiped.current) setActive(i) }} onClick={handleClick}>
                   {inner}
                 </Link>
               )
