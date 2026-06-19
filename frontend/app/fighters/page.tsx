@@ -87,7 +87,7 @@ export default function FightersPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px', flexWrap: 'wrap' }}>
               <button
                 onClick={() => { setSelected(null); setMoves([]) }}
-                style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', padding: '7px 14px', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '2px', flexShrink: 0 }}
+                style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.65)', cursor: 'pointer', padding: '7px 14px', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '2px', flexShrink: 0 }}
               >← BACK</button>
 
               {getFighterPortrait(selected.slug) && (
@@ -100,7 +100,7 @@ export default function FightersPage() {
                 <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(1.4rem, 4vw, 2rem)', letterSpacing: '5px', color: '#fff', textShadow: `0 0 14px ${color}55`, lineHeight: 1 }}>
                   {selected.name.toUpperCase()}
                 </div>
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.25)', marginTop: '4px' }}>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.68)', marginTop: '4px' }}>
                   {moves.length} MOVES · STREET FIGHTER 6
                 </div>
               </div>
@@ -119,7 +119,7 @@ export default function FightersPage() {
                 {['ALL', ...sections].map(s => {
                   const active = s === activeSection
                   return (
-                    <button key={s} onClick={() => setActiveSection(s)} style={{ padding: '5px 12px', background: active ? `${color}18` : 'rgba(255,255,255,0.03)', border: `1px solid ${active ? color : 'rgba(255,255,255,0.08)'}`, color: active ? color : 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-1)', transition: 'all 0.15s', textTransform: 'uppercase' }}>
+                    <button key={s} onClick={() => setActiveSection(s)} style={{ padding: '5px 12px', background: active ? `${color}18` : 'rgba(255,255,255,0.03)', border: `1px solid ${active ? color : 'rgba(255,255,255,0.65)'}`, color: active ? color : 'rgba(255,255,255,0.7)', cursor: 'pointer', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-1)', transition: 'all 0.15s', textTransform: 'uppercase' }}>
                       {s}
                     </button>
                   )
@@ -129,7 +129,7 @@ export default function FightersPage() {
 
             {/* Table */}
             {loadingMoves ? (
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.3)', letterSpacing: '4px', padding: '40px 0', textAlign: 'center' }}>LOADING...</div>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.7)', letterSpacing: '4px', padding: '40px 0', textAlign: 'center' }}>LOADING...</div>
             ) : (
               <div style={{ overflowX: 'auto' }}>
                 {/* Header row */}
@@ -160,7 +160,7 @@ export default function FightersPage() {
                 </div>
 
                 {filtered.length === 0 && (
-                  <div style={{ padding: '32px', textAlign: 'center', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.2)' }}>
+                  <div style={{ padding: '32px', textAlign: 'center', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.65)' }}>
                     NO MOVES FOUND
                   </div>
                 )}
@@ -183,7 +183,7 @@ export default function FightersPage() {
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2rem, 5vw, 3rem)', letterSpacing: '8px', color: '#fff', textShadow: `0 0 20px ${COL_COLOR}55`, lineHeight: 1 }}>
               FRAME DATA
             </div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-4)', color: 'rgba(255,255,255,0.2)', marginTop: '6px' }}>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-4)', color: 'rgba(255,255,255,0.65)', marginTop: '6px' }}>
               STREET FIGHTER 6 // SELECT A FIGHTER
             </div>
           </div>
@@ -196,7 +196,7 @@ export default function FightersPage() {
           />
 
           {loadingList ? (
-            <div style={{ textAlign: 'center', padding: '60px', fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.3)', letterSpacing: '4px' }}>LOADING...</div>
+            <div style={{ textAlign: 'center', padding: '60px', fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.7)', letterSpacing: '4px' }}>LOADING...</div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '6px' }}>
               {filteredFighters.map(fighter => {

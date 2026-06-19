@@ -309,11 +309,11 @@ function DailyPage() {
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2.5rem, 8vw, 4rem)', letterSpacing: '8px', color: '#fff', textShadow: `0 0 20px ${COLOR}, 0 0 50px ${COLOR}55`, lineHeight: 1 }}>
               DAILY {formatDate()}
             </div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.25)', marginTop: '10px' }}>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.68)', marginTop: '10px' }}>
               {t('daily.one_per_day')}
             </div>
           </div>
-          <div style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '0.9rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, maxWidth: '320px' }}>
+          <div style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, maxWidth: '320px' }}>
             {t('daily.intro_desc')}
           </div>
           <button onClick={startPlaying} style={{
@@ -326,7 +326,7 @@ function DailyPage() {
           }}>
             {t('daily.start')}
           </button>
-          <Link href="/" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
+          <Link href="/" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.65)', textDecoration: 'none' }}>
             {t('daily.home')}
           </Link>
         </div>
@@ -345,7 +345,7 @@ function DailyPage() {
               DAILY {formatDate()}
             </div>
             {alreadyPlayed && (
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.3)', marginTop: '8px' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.7)', marginTop: '8px' }}>
                 {t('daily.already_played')}
               </div>
             )}
@@ -423,7 +423,7 @@ function DailyPage() {
                     border: 'none', cursor: lbName.trim() ? 'pointer' : 'default',
                     fontFamily: "'Bebas Neue', sans-serif",
                     fontSize: '0.8rem', letterSpacing: '2px',
-                    color: lbName.trim() ? '#000' : 'rgba(255,255,255,0.2)',
+                    color: lbName.trim() ? '#000' : 'rgba(255,255,255,0.6)',
                     transition: 'all 0.2s', whiteSpace: 'nowrap',
                   }}
                 >
@@ -440,7 +440,7 @@ function DailyPage() {
 
             {/* Top 10 */}
             {leaderboard.length === 0 ? (
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.2)' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.65)' }}>
                 {t('daily.leaderboard_empty')}
               </div>
             ) : (
@@ -456,7 +456,7 @@ function DailyPage() {
                     }}>
                       <span style={{
                         fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '1px',
-                        color: entry.rank === 1 ? '#ffd700' : entry.rank === 2 ? '#c0c0c0' : entry.rank === 3 ? '#cd7f32' : 'rgba(255,255,255,0.3)',
+                        color: entry.rank === 1 ? '#ffd700' : entry.rank === 2 ? '#c0c0c0' : entry.rank === 3 ? '#cd7f32' : 'rgba(255,255,255,0.6)',
                       }}>#{entry.rank}</span>
                       <span style={{
                         fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '1px',
@@ -466,11 +466,11 @@ function DailyPage() {
                       }}>{entry.player_name}</span>
                       <span style={{
                         fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: '1px',
-                        color: 'rgba(255,255,255,0.25)', textAlign: 'right',
+                        color: 'rgba(255,255,255,0.68)', textAlign: 'right',
                       }}>{entry.elapsed_seconds != null ? formatTime(entry.elapsed_seconds) : '—'}</span>
                       <span style={{
                         fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '1px',
-                        color: isMe ? COLOR : 'rgba(255,255,255,0.5)', textAlign: 'right',
+                        color: isMe ? COLOR : 'rgba(255,255,255,0.65)', textAlign: 'right',
                       }}>{entry.score}/10</span>
                     </div>
                   )
@@ -479,7 +479,7 @@ function DailyPage() {
             )}
           </div>
 
-          <Link href="/" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
+          <Link href="/" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.65)', textDecoration: 'none' }}>
             {t('daily.home')}
           </Link>
         </div>
@@ -505,7 +505,7 @@ function DailyPage() {
               <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.7rem', letterSpacing: '2px', background: `linear-gradient(180deg, #fff, ${COLOR})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                 {s.val}
               </div>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.28)' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.7)' }}>
                 {s.label}
               </div>
             </div>
@@ -513,7 +513,7 @@ function DailyPage() {
         </div>
 
         {loading ? (
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.3)', letterSpacing: '4px' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.7)', letterSpacing: '4px' }}>
             {t('daily.loading')}
           </div>
         ) : loadError ? (
@@ -524,7 +524,7 @@ function DailyPage() {
             </button>
           </div>
         ) : !question ? (
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.3)', letterSpacing: '4px' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.7)', letterSpacing: '4px' }}>
             {t('daily.loading')}
           </div>
         ) : (
@@ -540,7 +540,7 @@ function DailyPage() {
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '2px', color: COLOR }}>Q{idx + 1}/10</span>
-                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.4)' }}>{question.fighter_slug}</span>
+                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.7)' }}>{question.fighter_slug}</span>
                 </div>
               </div>
             }
@@ -582,7 +582,7 @@ function DailyPage() {
             }
           />
         )}
-        <Link href="/" style={{ marginTop: '16px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
+        <Link href="/" style={{ marginTop: '16px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.65)', textDecoration: 'none' }}>
           {t('daily.home')}
         </Link>
       </main>

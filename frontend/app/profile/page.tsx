@@ -205,7 +205,7 @@ export default function ProfilePage() {
     <>
       <Navbar />
       <main style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 60px)' }}>
-        <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.3)', letterSpacing: '4px', fontSize: '0.7rem' }}>{t('play.loading')}</div>
+        <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.7)', letterSpacing: '4px', fontSize: '0.7rem' }}>{t('play.loading')}</div>
       </main>
     </>
   )
@@ -276,9 +276,9 @@ export default function ProfilePage() {
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                     <input value={editPseudo} onChange={e => setEditPseudo(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && savePseudo()} maxLength={20} autoFocus
-                      style={{ flex: 1, padding: '8px 12px', background: 'rgba(255,255,255,0.07)', border: `1px solid ${color}55`, color: '#fff', outline: 'none', fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.4rem', letterSpacing: '4px' }} />
+                      style={{ flex: 1, padding: '8px 12px', background: 'rgba(255,255,255,0.1)', border: `1px solid ${color}55`, color: '#fff', outline: 'none', fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.4rem', letterSpacing: '4px' }} />
                     <button onClick={savePseudo} style={{ padding: '8px 16px', background: color, border: 'none', color: '#000', cursor: 'pointer', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', letterSpacing: '2px' }}>{t('profile.save')}</button>
-                    <button onClick={() => setEditing(false)} style={{ padding: '8px 12px', background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)' }}>✕</button>
+                    <button onClick={() => setEditing(false)} style={{ padding: '8px 12px', background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)' }}>✕</button>
                   </div>
                 ) : (
                   <>
@@ -286,7 +286,7 @@ export default function ProfilePage() {
                       <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(1.8rem,5vw,3rem)', letterSpacing: '6px', color: '#fff', textShadow: `0 0 14px ${color}44`, lineHeight: 1 }}>
                         {pseudo || '—'}
                       </div>
-                      <button onClick={() => setEditing(true)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', padding: '4px 10px', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)' }}>
+                      <button onClick={() => setEditing(true)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', padding: '4px 10px', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)' }}>
                         {t('profile.edit')}
                       </button>
                     </div>
@@ -323,7 +323,7 @@ export default function ProfilePage() {
                         )}
                       </div>
                     )}
-                    {!pseudo && <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.25)', marginTop: '8px', lineHeight: 1.5 }}>{t('profile.no_pseudo')}</div>}
+                    {!pseudo && <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.7)', marginTop: '8px', lineHeight: 1.5 }}>{t('profile.no_pseudo')}</div>}
                   </>
                 )}
               </div>
@@ -334,14 +334,14 @@ export default function ProfilePage() {
               {user ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <DiscordIcon size={12} />
-                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.6)', flex: 1 }}>{user.username}</span>
+                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.7)', flex: 1 }}>{user.username}</span>
                   <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(88,101,242,0.6)' }}>CLOUD BACKUP ACTIVE</span>
                   <button onClick={syncNow} style={{ background: 'rgba(88,101,242,0.15)', border: '1px solid rgba(88,101,242,0.5)', color: '#5865F2', cursor: 'pointer', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', padding: '3px 8px', transition: 'all 0.15s' }}>SYNC</button>
                 </div>
               ) : (
                 <a href={getDiscordOAuthUrl()} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
                   <DiscordIcon size={12} />
-                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.28)', flex: 1 }}>CONNECT DISCORD — BACKUP YOUR PROGRESS TO THE CLOUD</span>
+                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.7)', flex: 1 }}>CONNECT DISCORD — BACKUP YOUR PROGRESS TO THE CLOUD</span>
                   <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: '#5865F2' }}>CONNECT →</span>
                 </a>
               )}
@@ -349,21 +349,24 @@ export default function ProfilePage() {
           </div>
 
           {/* ── TABS ── */}
-          <div style={{ display: 'flex', gap: '2px', borderBottom: '1px solid rgba(255,255,255,0.07)', overflowX: 'auto' }}>
+          <div style={{ display: 'flex', gap: '2px', borderBottom: '1px solid rgba(255,255,255,0.1)', overflowX: 'auto' }}>
             {TABS.map(tab => {
               const isActive = activeTab === tab.id
               return (
-                <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
+                <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = 'rgba(255,255,255,0.85)' }}
+                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = 'rgba(255,255,255,0.55)' }}
+                  style={{
                   background: 'none', border: 'none', cursor: 'pointer',
                   padding: isDesktop ? '10px 22px' : '8px 14px',
                   fontFamily: "'Share Tech Mono', monospace",
                   fontSize: isDesktop ? 'var(--fs-xs)' : 'var(--fs-xs)', letterSpacing: 'var(--ls-3)',
-                  color: isActive ? '#fff' : 'rgba(255,255,255,0.3)',
+                  color: isActive ? '#fff' : 'rgba(255,255,255,0.7)',
                   position: 'relative', whiteSpace: 'nowrap', transition: 'color 0.15s',
                 }}>
                   {tab.label}
                   {tab.badge !== undefined && (
-                    <span style={{ marginLeft: '6px', fontSize: 'var(--fs-2xs)', color: isActive ? color : 'rgba(255,255,255,0.2)' }}>
+                    <span style={{ marginLeft: '6px', fontSize: 'var(--fs-2xs)', color: isActive ? color : 'rgba(255,255,255,0.7)' }}>
                       {tab.badge}
                     </span>
                   )}
@@ -391,7 +394,7 @@ export default function ProfilePage() {
                   ].map((s, i) => (
                     <div key={i} style={{ padding: isDesktop ? '22px 16px' : '16px 12px', background: '#0d0015', textAlign: 'center' }}>
                       <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(1.6rem,4vw,2.4rem)', letterSpacing: '2px', color, textShadow: `0 0 10px ${color}66` }}>{s.val}</div>
-                      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.28)', marginTop: '6px' }}>{s.label}</div>
+                      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.7)', marginTop: '6px' }}>{s.label}</div>
                     </div>
                   ))}
                 </div>
@@ -403,18 +406,18 @@ export default function ProfilePage() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 70px 56px', gap: '8px', padding: '8px 16px', background: 'rgba(255,255,255,0.04)' }}>
                       {(['MODE', t('profile.col_best'), t('profile.col_acc'), t('profile.col_games')] as string[]).map((h, i) => (
-                        <div key={i} style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.3)', textAlign: i === 0 ? 'left' : 'center' }}>{h}</div>
+                        <div key={i} style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.7)', textAlign: i === 0 ? 'left' : 'center' }}>{h}</div>
                       ))}
                     </div>
                     {QUIZ_MODES.map((m, i) => {
                       const best = modeBests[m]
                       const c = MODE_COLORS[m] || '#888'
                       return (
-                        <div key={m} style={{ display: 'grid', gridTemplateColumns: '1fr 70px 70px 56px', gap: '8px', padding: isDesktop ? '10px 16px' : '9px 14px', background: i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                        <div key={m} style={{ display: 'grid', gridTemplateColumns: '1fr 70px 70px 56px', gap: '8px', padding: isDesktop ? '10px 16px' : '9px 14px', background: i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                           <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '0.85rem' : '0.8rem', letterSpacing: '1px', color: c }}>{MODE_LABEL[m]}</div>
-                          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.6rem' : '0.55rem', color: best ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.15)', textAlign: 'center' }}>{best ? best.bestScore : '—'}</div>
-                          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.6rem' : '0.55rem', color: best && !HIGHSCORE_MODES.has(m) ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.15)', textAlign: 'center' }}>{best && !HIGHSCORE_MODES.has(m) ? `${best.bestAccuracy}%` : '—'}</div>
-                          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.6rem' : '0.55rem', color: best ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.15)', textAlign: 'center' }}>{best?.totalGames ?? '—'}</div>
+                          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.6rem' : '0.55rem', color: best ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.32)', textAlign: 'center' }}>{best ? best.bestScore : '—'}</div>
+                          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.6rem' : '0.55rem', color: best && !HIGHSCORE_MODES.has(m) ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.32)', textAlign: 'center' }}>{best && !HIGHSCORE_MODES.has(m) ? `${best.bestAccuracy}%` : '—'}</div>
+                          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.6rem' : '0.55rem', color: best ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.32)', textAlign: 'center' }}>{best?.totalGames ?? '—'}</div>
                         </div>
                       )
                     })}
@@ -426,7 +429,7 @@ export default function ProfilePage() {
                     {percentileRank && (
                       <div style={{ padding: '10px 14px', background: 'rgba(255,215,0,0.05)', borderBottom: '1px solid rgba(255,215,0,0.1)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.5rem', color: '#ffd700', letterSpacing: '2px' }}>TOP {percentileRank}%</span>
-                        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.3)' }}>sur {globalLb.length} joueurs</span>
+                        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.7)' }}>sur {globalLb.length} joueurs</span>
                       </div>
                     )}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '8px' }}>
@@ -437,13 +440,13 @@ export default function ProfilePage() {
                           <div key={entry.rank} style={{
                             display: 'grid', gridTemplateColumns: '32px 1fr 64px 44px',
                             padding: isDesktop ? '9px 14px' : '7px 12px', alignItems: 'center', gap: '10px',
-                            background: isMe ? 'rgba(255,215,0,0.08)' : entry.rank <= 3 ? 'rgba(255,255,255,0.03)' : 'transparent',
+                            background: isMe ? 'rgba(255,215,0,0.08)' : entry.rank <= 3 ? 'rgba(255,255,255,0.05)' : 'transparent',
                             border: `1px solid ${isMe ? '#ffd70044' : 'rgba(255,255,255,0.05)'}`,
                           }}>
-                            <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', color: entry.rank === 1 ? '#ffd700' : entry.rank === 2 ? '#c0c0c0' : entry.rank === 3 ? '#cd7f32' : 'rgba(255,255,255,0.3)' }}>#{entry.rank}</span>
+                            <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', color: entry.rank === 1 ? '#ffd700' : entry.rank === 2 ? '#c0c0c0' : entry.rank === 3 ? '#cd7f32' : 'rgba(255,255,255,0.7)' }}>#{entry.rank}</span>
                             <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.7rem' : '0.65rem', letterSpacing: '1px', color: isMe ? '#ffd700' : 'rgba(255,255,255,0.75)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.player_name}</span>
-                            <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1rem', color: isMe ? '#ffd700' : 'rgba(255,255,255,0.5)', textAlign: 'right' }}>{entry.total_correct}</span>
-                            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', color: 'rgba(255,255,255,0.3)', textAlign: 'right' }}>{acc}%</span>
+                            <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1rem', color: isMe ? '#ffd700' : 'rgba(255,255,255,0.65)', textAlign: 'right' }}>{entry.total_correct}</span>
+                            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', color: 'rgba(255,255,255,0.7)', textAlign: 'right' }}>{acc}%</span>
                           </div>
                         )
                       })}
@@ -477,13 +480,13 @@ export default function ProfilePage() {
                         {group.map(a => {
                           const isUnlocked = !!achievements[a.id]
                           return (
-                            <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: isDesktop ? '12px 14px' : '10px 12px', background: isUnlocked ? `${rc}0d` : 'rgba(255,255,255,0.02)', border: `1px solid ${isUnlocked ? rc + '33' : 'rgba(255,255,255,0.05)'}`, opacity: isUnlocked ? 1 : 0.4 }}>
+                            <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: isDesktop ? '12px 14px' : '10px 12px', background: isUnlocked ? `${rc}0d` : 'rgba(255,255,255,0.02)', border: `1px solid ${isUnlocked ? rc + '33' : 'rgba(255,255,255,0.08)'}`, opacity: isUnlocked ? 1 : 0.55 }}>
                               <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: isDesktop ? '26px' : '22px' }}>
-                                <Icon name={a.icon} size={isDesktop ? 24 : 20} color={isUnlocked ? rc : 'rgba(255,255,255,0.28)'} />
+                                <Icon name={a.icon} size={isDesktop ? 24 : 20} color={isUnlocked ? rc : 'rgba(255,255,255,0.55)'} />
                               </div>
                               <div>
-                                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '0.78rem' : '0.7rem', letterSpacing: '1px', color: isUnlocked ? rc : 'rgba(255,255,255,0.3)' }}>{a.name}</div>
-                                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.28)', marginTop: '3px', lineHeight: 1.4 }}>{achDesc(a, lang)}</div>
+                                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '0.78rem' : '0.7rem', letterSpacing: '1px', color: isUnlocked ? rc : 'rgba(255,255,255,0.7)' }}>{a.name}</div>
+                                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.7)', marginTop: '3px', lineHeight: 1.4 }}>{achDesc(a, lang)}</div>
                               </div>
                             </div>
                           )
@@ -500,27 +503,27 @@ export default function ProfilePage() {
           {activeTab === 'history' && (
             <Section title={t('profile.history')} color={color} isDesktop={isDesktop}>
               {history.length === 0 ? (
-                <div style={{ padding: '28px', textAlign: 'center', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.2)' }}>
+                <div style={{ padding: '28px', textAlign: 'center', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.7)' }}>
                   {t('profile.no_history')}
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? '100px 1fr 80px 70px 64px' : '80px 1fr 60px 60px 50px', gap: '8px', padding: isDesktop ? '9px 16px' : '7px 14px', background: 'rgba(255,255,255,0.04)' }}>
                     {(['DATE','MODE','SCORE', t('profile.col_acc'),'COMBO'] as string[]).map((h, i) => (
-                      <div key={i} style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.3)' }}>{h}</div>
+                      <div key={i} style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.7)' }}>{h}</div>
                     ))}
                   </div>
                   {history.slice(0, 30).map((rec, i) => {
                     const c = MODE_COLORS[rec.mode] || '#888'
                     return (
-                      <div key={i} style={{ display: 'grid', gridTemplateColumns: isDesktop ? '100px 1fr 80px 70px 64px' : '80px 1fr 60px 60px 50px', gap: '8px', padding: isDesktop ? '11px 16px' : '9px 14px', background: i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent', borderBottom: '1px solid rgba(255,255,255,0.03)', alignItems: 'center' }}>
-                        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.3)' }}>{timeAgo(rec.date, t)}</div>
+                      <div key={i} style={{ display: 'grid', gridTemplateColumns: isDesktop ? '100px 1fr 80px 70px 64px' : '80px 1fr 60px 60px 50px', gap: '8px', padding: isDesktop ? '11px 16px' : '9px 14px', background: i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)', alignItems: 'center' }}>
+                        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.7)' }}>{timeAgo(rec.date, t)}</div>
                         <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '0.82rem' : '0.75rem', letterSpacing: '1px', color: c }}>
                           {MODE_LABEL[rec.mode] ?? rec.mode.toUpperCase()}{rec.fighter ? ` // ${rec.fighter.toUpperCase()}` : ''}
                         </div>
                         <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.62rem' : '0.55rem', color: 'rgba(255,255,255,0.7)' }}>{rec.score}/{rec.total}</div>
-                        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.62rem' : '0.55rem', color: 'rgba(255,255,255,0.5)' }}>{rec.accuracy}%</div>
-                        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.56rem' : '0.5rem', color: 'rgba(255,255,255,0.3)' }}>{rec.maxCombo > 0 ? streakVal(rec.maxCombo, 11) : '—'}</div>
+                        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.62rem' : '0.55rem', color: 'rgba(255,255,255,0.65)' }}>{rec.accuracy}%</div>
+                        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.56rem' : '0.5rem', color: 'rgba(255,255,255,0.7)' }}>{rec.maxCombo > 0 ? streakVal(rec.maxCombo, 11) : '—'}</div>
                       </div>
                     )
                   })}
@@ -532,7 +535,7 @@ export default function ProfilePage() {
           {/* ── TAB: FIGHTERS ── */}
           {activeTab === 'fighters' && (
             fighters.length === 0 ? (
-              <div style={{ padding: '48px', textAlign: 'center', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.2)' }}>
+              <div style={{ padding: '48px', textAlign: 'center', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.7)' }}>
                 JOUEZ EN MODE FIGHTER POUR VOIR VOS STATS PAR PERSONNAGE
               </div>
             ) : (
@@ -548,7 +551,7 @@ export default function ProfilePage() {
                       <div key={slug} style={{ padding: isDesktop ? '10px 6px' : '8px 4px', background: `${c}18`, border: `1px solid ${c}44`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                         <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: '0.5px', color: c, textTransform: 'uppercase', textAlign: 'center', lineHeight: 1.2 }}>{slug}</div>
                         <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1rem' : '0.9rem', letterSpacing: '1px', color: c }}>{s.bestAccuracy}%</div>
-                        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', color: 'rgba(255,255,255,0.25)' }}>{s.totalGames}g</div>
+                        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', color: 'rgba(255,255,255,0.7)' }}>{s.totalGames}g</div>
                       </div>
                     )
                   })}
@@ -564,7 +567,7 @@ export default function ProfilePage() {
               color="#f43f5e" isDesktop={isDesktop}
             >
               {mistakesCount === 0 ? (
-                <div style={{ padding: '32px', textAlign: 'center', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.2)' }}>
+                <div style={{ padding: '32px', textAlign: 'center', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.7)' }}>
                   {t('profile.bank_empty')}
                 </div>
               ) : (
@@ -583,7 +586,7 @@ export default function ProfilePage() {
                         <button key={s} onClick={() => setMistakeSortBy(s)} style={{
                           background: mistakeSortBy === s ? 'rgba(244,63,94,0.18)' : 'none',
                           border: `1px solid ${mistakeSortBy === s ? '#f43f5e' : 'rgba(255,255,255,0.1)'}`,
-                          color: mistakeSortBy === s ? '#f43f5e' : 'rgba(255,255,255,0.3)',
+                          color: mistakeSortBy === s ? '#f43f5e' : 'rgba(255,255,255,0.7)',
                           cursor: 'pointer', padding: '4px 10px',
                           fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)',
                         }}>
@@ -593,25 +596,25 @@ export default function ProfilePage() {
                     </div>
                     {!clearConfirm ? (
                       <button onClick={() => setClearConfirm(true)} style={{
-                        background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.25)',
+                        background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)',
                         cursor: 'pointer', padding: '4px 10px',
                         fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)',
                       }}>TOUT EFFACER</button>
                     ) : (
                       <div style={{ display: 'flex', gap: '4px' }}>
                         <button onClick={clearAllMistakes} style={{ background: 'rgba(244,63,94,0.15)', border: '1px solid #f43f5e', color: '#f43f5e', cursor: 'pointer', padding: '4px 10px', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)' }}>CONFIRMER</button>
-                        <button onClick={() => setClearConfirm(false)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', padding: '4px 10px', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)' }}>ANNULER</button>
+                        <button onClick={() => setClearConfirm(false)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', padding: '4px 10px', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)' }}>ANNULER</button>
                       </div>
                     )}
                   </div>
 
                   {/* Column headers */}
-                  <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr 130px 60px 80px 32px' : '1fr 52px 60px 32px', gap: '8px', padding: '7px 16px', background: 'rgba(255,255,255,0.03)' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr 130px 60px 80px 32px' : '1fr 52px 60px 32px', gap: '8px', padding: '7px 16px', background: 'rgba(255,255,255,0.05)' }}>
                     {(isDesktop
                       ? ['MOVE / FIGHTER', 'MODE', '×', 'VU', '']
                       : ['MOVE / FIGHTER', '×', 'VU', '']
                     ).map((h, i) => (
-                      <div key={i} style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.25)' }}>{h}</div>
+                      <div key={i} style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.7)' }}>{h}</div>
                     ))}
                   </div>
 
@@ -632,7 +635,7 @@ export default function ProfilePage() {
                             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '0.9rem' : '0.8rem', letterSpacing: '1px', color: '#fff', lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {question.move_name}
                             </div>
-                            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.28)', marginTop: '3px' }}>
+                            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.7)', marginTop: '3px' }}>
                               {question.fighter_slug.toUpperCase()}
                             </div>
                           </div>
@@ -646,11 +649,11 @@ export default function ProfilePage() {
                           <div style={{ textAlign: 'center' }}>
                             <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.2rem', color: countColor, letterSpacing: '1px' }}>×{count}</span>
                           </div>
-                          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.2)', textAlign: 'center', lineHeight: 1.3 }}>
+                          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.7)', textAlign: 'center', lineHeight: 1.3 }}>
                             {timeAgo(lastSeen, t)}
                           </div>
                           <button onClick={() => removeMistake(key)} style={{
-                            background: 'none', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.2)',
+                            background: 'none', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)',
                             cursor: 'pointer', padding: '3px 6px', fontFamily: "'Share Tech Mono', monospace",
                             fontSize: 'var(--fs-xs)', lineHeight: 1, transition: 'all 0.15s',
                           }}>✕</button>
@@ -673,7 +676,7 @@ function MiniStat({ val, label, color }: { val: ReactNode; label: string; color:
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
       <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.1rem', letterSpacing: '2px', color, lineHeight: 1 }}>{val}</div>
-      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.28)' }}>{label}</div>
+      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.7)' }}>{label}</div>
     </div>
   )
 }
@@ -705,14 +708,14 @@ function DeleteAccountSection({ token, onDeleted }: { token: string; onDeleted: 
         </button>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', background: 'rgba(255,0,0,0.05)', border: '1px solid rgba(255,50,50,0.2)' }}>
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.6)' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.7)' }}>
             Cette action est irréversible. Toutes vos données cloud (succès, statistiques, historique) seront définitivement supprimées.
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
             <button onClick={handleDelete} disabled={loading} style={{ background: 'rgba(255,50,50,0.15)', border: '1px solid rgba(255,50,50,0.5)', color: '#ff5050', cursor: loading ? 'default' : 'pointer', padding: '8px 16px', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', opacity: loading ? 0.5 : 1 }}>
               {loading ? 'SUPPRESSION...' : 'CONFIRMER LA SUPPRESSION'}
             </button>
-            <button onClick={() => setConfirm(false)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', padding: '8px 16px', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)' }}>
+            <button onClick={() => setConfirm(false)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', padding: '8px 16px', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)' }}>
               ANNULER
             </button>
           </div>
@@ -725,7 +728,7 @@ function DeleteAccountSection({ token, onDeleted }: { token: string; onDeleted: 
 function Section({ title, color, isDesktop, children }: { title: string; color: string; isDesktop?: boolean; children: ReactNode }) {
   return (
     <div>
-      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? 'var(--fs-xs)' : 'var(--fs-xs)', letterSpacing: 'var(--ls-4)', color: 'rgba(255,255,255,0.28)', marginBottom: isDesktop ? '14px' : '10px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '9px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? 'var(--fs-xs)' : 'var(--fs-xs)', letterSpacing: 'var(--ls-4)', color: 'rgba(255,255,255,0.7)', marginBottom: isDesktop ? '14px' : '10px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '9px', display: 'flex', alignItems: 'center', gap: '10px' }}>
         <div style={{ width: '3px', height: '14px', background: color, boxShadow: `0 0 6px ${color}` }} />
         {title}
       </div>

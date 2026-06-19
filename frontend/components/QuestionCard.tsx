@@ -117,22 +117,22 @@ export function GifSection({ gifUrl, gifPath, moveName, color, fallback = 'HITBO
       ) : input ? (
         // No hitbox GIF for this move (special/super/throw) — show the command instead.
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '20px' }}>
-          <span style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.28)', fontSize: '0.55rem', letterSpacing: '4px' }}>
+          <span style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.7)', fontSize: '0.55rem', letterSpacing: '4px' }}>
             {titleSection(section)}
           </span>
           <span style={{ fontFamily: "'Share Tech Mono', monospace", color, fontSize: 'clamp(1.4rem, 5vw, 2.2rem)', letterSpacing: '2px', textShadow: `0 0 16px ${color}66`, textAlign: 'center', lineHeight: 1.3 }}>
             {formatInput(input)}
           </span>
-          <span style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.2)', fontSize: '0.5rem', letterSpacing: '3px' }}>
+          <span style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.65)', fontSize: '0.5rem', letterSpacing: '3px' }}>
             INPUT
           </span>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', padding: '20px' }}>
-          <span style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem', letterSpacing: '3px', textAlign: 'center' }}>
+          <span style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.7)', fontSize: '0.7rem', letterSpacing: '3px', textAlign: 'center' }}>
             {titleSection(section)}
           </span>
-          <span style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.15)', fontSize: '0.55rem', letterSpacing: '3px' }}>{fallback}</span>
+          <span style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.65)', fontSize: '0.55rem', letterSpacing: '3px' }}>{fallback}</span>
         </div>
       )}
       {corners.map((s, i) => (

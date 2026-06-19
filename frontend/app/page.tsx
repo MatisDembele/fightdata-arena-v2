@@ -152,7 +152,7 @@ export default function Home() {
             ? '⚠ Connexion Discord échouée — le serveur est peut-être en train de démarrer, réessaie dans 30 secondes.'
             : '— Connexion Discord annulée.'}
         </span>
-        <button onClick={() => setAuthError(null)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '1rem', lineHeight: 1, flexShrink: 0 }}>✕</button>
+        <button onClick={() => setAuthError(null)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', fontSize: '1rem', lineHeight: 1, flexShrink: 0 }}>✕</button>
       </div>
     )}
     <div style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
@@ -172,7 +172,7 @@ export default function Home() {
           }}
         >
           <span className={`fi fi-${currentLang.cc}`} style={{ width: '20px', height: '15px', display: 'inline-block', borderRadius: '2px' }} />
-          <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)', display: 'inline-block', transition: 'transform 0.2s', transform: langOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
+          <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.7)', display: 'inline-block', transition: 'transform 0.2s', transform: langOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
         </button>
         {langOpen && (
           <div style={{ position: 'absolute', top: 'calc(100% + 4px)', right: 0, background: 'rgba(4,0,12,0.97)', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)', minWidth: '160px', zIndex: 101, boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}>
@@ -189,7 +189,7 @@ export default function Home() {
                 }}
               >
                 <span className={`fi fi-${l.cc}`} style={{ width: '20px', height: '15px', display: 'inline-block', borderRadius: '2px', flexShrink: 0 }} />
-                <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', letterSpacing: '2px', color: lang === l.code ? '#ffe000' : 'rgba(255,255,255,0.6)' }}>
+                <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', letterSpacing: '2px', color: lang === l.code ? '#ffe000' : 'rgba(255,255,255,0.7)' }}>
                   {l.name}
                 </span>
                 {lang === l.code && <span style={{ marginLeft: 'auto', color: '#ffe000', fontSize: '0.6rem' }}>✓</span>}
@@ -214,12 +214,12 @@ export default function Home() {
                   <span style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '0.92rem', fontWeight: 700, color: '#fff', letterSpacing: '0.5px', lineHeight: 1, maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.74rem', letterSpacing: '1.5px', color: rank.color, textShadow: `0 0 8px ${rank.color}88`, lineHeight: 1 }}>{rank.label}</span>
-                    <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.55)' }}>{lifetime.totalCorrect} PTS</span>
+                    <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.7)' }}>{lifetime.totalCorrect} PTS</span>
                   </div>
                 </div>
               )}
             </Link>
-            <button onClick={logout} title="Déconnexion" style={{ background: 'none', border: 'none', borderLeft: `1px solid ${rank.color}33`, color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: '0 10px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.72rem', flexShrink: 0 }}>✕</button>
+            <button onClick={logout} title="Déconnexion" style={{ background: 'none', border: 'none', borderLeft: `1px solid ${rank.color}33`, color: 'rgba(255,255,255,0.7)', cursor: 'pointer', padding: '0 10px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.72rem', flexShrink: 0 }}>✕</button>
           </div>
         ) : (
           <div ref={consentRef} style={{ position: 'relative' }}>
@@ -233,7 +233,7 @@ export default function Home() {
             {showConsent && (
               <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, width: '262px', background: 'rgba(10,0,20,0.97)', border: '1px solid rgba(88,101,242,0.4)', padding: '14px', zIndex: 101, boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
                 <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-3)', color: '#5865F2', marginBottom: '8px' }}>{t('nav.consent_title')}</div>
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, marginBottom: '12px' }}>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.65)', lineHeight: 1.7, marginBottom: '12px' }}>
                   {t('nav.consent_body')}{' '}
                   <Link href="/privacy" style={{ color: '#5865F2' }} onClick={() => setShowConsent(false)}>{t('nav.privacy_link')}</Link>
                 </div>
@@ -319,7 +319,7 @@ export default function Home() {
           <div style={{
             fontFamily: "'Share Tech Mono', monospace",
             fontSize: 'var(--fs-sm)', letterSpacing: 'var(--ls-4)',
-            color: 'rgba(255,255,255,0.25)', marginTop: '8px',
+            color: 'rgba(255,255,255,0.68)', marginTop: '8px',
           }}>{t('home.subtitle')}</div>
         </div>
 
@@ -332,7 +332,7 @@ export default function Home() {
           <p style={{
             fontFamily: "'Rajdhani', sans-serif",
             fontSize: '1rem', fontWeight: 500, lineHeight: 1.6,
-            color: 'rgba(255,255,255,0.45)', letterSpacing: '0.5px',
+            color: 'rgba(255,255,255,0.7)', letterSpacing: '0.5px',
             transition: 'all 0.3s',
           }}>{current.desc}</p>
         </div>
@@ -381,7 +381,7 @@ export default function Home() {
                       fontFamily: "'Bebas Neue', sans-serif",
                       fontSize: isActive ? 'clamp(1.8rem, 3.6vw, 2.6rem)' : 'clamp(1.2rem, 2.5vw, 1.8rem)',
                       letterSpacing: isActive ? '5px' : '4px',
-                      color: isActive ? '#fff' : 'rgba(255,255,255,0.3)',
+                      color: isActive ? '#fff' : 'rgba(255,255,255,0.6)',
                       textShadow: isActive ? `0 0 20px ${mode.color}, 0 0 40px ${mode.color}55` : 'none',
                       transition: 'all 0.3s', lineHeight: 1, whiteSpace: 'nowrap',
                     }}>{mode.label}</div>
@@ -389,7 +389,7 @@ export default function Home() {
                       fontFamily: "'Share Tech Mono', monospace",
                       fontSize: isActive ? 'var(--fs-sm)' : 'var(--fs-xs)',
                       letterSpacing: 'var(--ls-3)',
-                      color: isActive ? mode.color : 'rgba(255,255,255,0.18)',
+                      color: isActive ? mode.color : 'rgba(255,255,255,0.65)',
                       marginTop: '6px',
                       lineHeight: 1.3,
                       minHeight: '2.6em',   /* reserve 2 lines so 1- and 2-line subs give equal-height cards */

@@ -66,7 +66,7 @@ export default function AchievementToast({
           <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.05rem', letterSpacing: '3px', color: '#fff', lineHeight: 1.1 }}>
             {current.name}
           </div>
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.4)', marginTop: '5px', lineHeight: 1.5 }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.7)', marginTop: '5px', lineHeight: 1.5 }}>
             {achDesc(current, lang)}
           </div>
         </div>
@@ -77,7 +77,7 @@ export default function AchievementToast({
           {RARITY_LABEL[current.rarity]}
         </span>
         {achievements.length > 1 && (
-          <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.3)' }}>
+          <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.7)' }}>
             +{achievements.length - 1}
           </span>
         )}

@@ -51,7 +51,7 @@ function StepLabel({ n, text, color, state, chip }: {
   n: string; text: string; color: string
   state: 'done' | 'active' | 'locked'; chip?: string
 }) {
-  const badgeBg     = state === 'done' ? color : state === 'active' ? `${color}22` : 'rgba(255,255,255,0.06)'
+  const badgeBg     = state === 'done' ? color : state === 'active' ? `${color}22` : 'rgba(255,255,255,0.6)'
   const badgeBorder = state === 'locked' ? 'rgba(255,255,255,0.18)' : color
   const badgeColor  = state === 'done' ? '#0a0010' : state === 'locked' ? 'rgba(255,255,255,0.5)' : color
   return (
@@ -63,7 +63,7 @@ function StepLabel({ n, text, color, state, chip }: {
         fontFamily: "'Bebas Neue', sans-serif", fontSize: '1rem', color: badgeColor,
         boxShadow: state === 'active' ? `0 0 12px ${color}55` : 'none', transition: 'all 0.3s',
       }}>{state === 'done' ? '✓' : n}</span>
-      <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.1rem', letterSpacing: '3px', color: state === 'locked' ? 'rgba(255,255,255,0.6)' : '#fff' }}>{text}</span>
+      <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.1rem', letterSpacing: '3px', color: state === 'locked' ? 'rgba(255,255,255,0.7)' : '#fff' }}>{text}</span>
       {chip && <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color, padding: '3px 9px', border: `1px solid ${color}66`, background: `${color}18` }}>{chip}</span>}
     </div>
   )
@@ -106,7 +106,7 @@ export default function QuizSelectPage() {
 
   const backBtn: React.CSSProperties = {
     background: 'none', border: '1px solid rgba(255,255,255,0.15)',
-    color: 'rgba(255,255,255,0.6)', cursor: 'pointer',
+    color: 'rgba(255,255,255,0.7)', cursor: 'pointer',
     padding: '8px 16px', fontFamily: "'Bebas Neue', sans-serif",
     fontSize: '0.85rem', letterSpacing: '2px',
   }
@@ -134,7 +134,7 @@ export default function QuizSelectPage() {
             </div>
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('quiz.search')} style={searchInput} />
             {loadingF ? (
-              <div style={{ textAlign: 'center', padding: '40px', fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.3)', letterSpacing: '4px' }}>{t('quiz.loading')}</div>
+              <div style={{ textAlign: 'center', padding: '40px', fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.7)', letterSpacing: '4px' }}>{t('quiz.loading')}</div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '6px' }}>
                 {filtered.map(fighter => {
@@ -178,7 +178,7 @@ export default function QuizSelectPage() {
             </div>
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('quiz.search')} style={searchInput} />
             {loadingF ? (
-              <div style={{ textAlign: 'center', padding: '40px', fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.3)', letterSpacing: '4px' }}>{t('quiz.loading')}</div>
+              <div style={{ textAlign: 'center', padding: '40px', fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.7)', letterSpacing: '4px' }}>{t('quiz.loading')}</div>
             ) : (
               <>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '6px', paddingBottom: '80px' }}>
@@ -192,7 +192,7 @@ export default function QuizSelectPage() {
                         type="button"
                         aria-pressed={isSel}
                         onClick={() => setSelectedFighters(prev => prev.includes(fighter.slug) ? prev.filter(s => s !== fighter.slug) : [...prev, fighter.slug])}
-                        style={{ font: 'inherit', textAlign: 'inherit', padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', background: isSel ? `${color}20` : 'rgba(255,255,255,0.03)', border: `1px solid ${isSel ? color : 'rgba(255,255,255,0.07)'}`, boxShadow: isSel ? `0 0 12px ${color}44` : 'none', overflow: 'hidden', transition: 'all 0.15s', cursor: 'pointer' }}
+                        style={{ font: 'inherit', textAlign: 'inherit', padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', background: isSel ? `${color}20` : 'rgba(255,255,255,0.03)', border: `1px solid ${isSel ? color : 'rgba(255,255,255,0.65)'}`, boxShadow: isSel ? `0 0 12px ${color}44` : 'none', overflow: 'hidden', transition: 'all 0.15s', cursor: 'pointer' }}
                       >
                         <div style={{ width: '100%', height: '90px', background: `linear-gradient(180deg, ${color}28, ${color}0d)`, overflow: 'hidden', position: 'relative' }}>
                           {portrait && <img src={portrait} alt={fighter.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />}
@@ -205,7 +205,7 @@ export default function QuizSelectPage() {
                 </div>
                 <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '14px 20px', background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(12px)', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
                   {selectedFighters.length < 2 ? (
-                    <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.3)' }}>{t('quiz.custom_min')}</span>
+                    <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.7)' }}>{t('quiz.custom_min')}</span>
                   ) : (
                     <button
                       onClick={() => router.push(`/quiz/play?mode=custom&fighters=${selectedFighters.join(',')}&dataType=${stat.id}`)}
@@ -244,7 +244,7 @@ export default function QuizSelectPage() {
             textShadow: `0 0 20px ${accentColor}`,
             transition: 'text-shadow 0.4s',
           }}>{t('quiz.choose_mode')}</h1>
-          <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-sm)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.55)', marginTop: '8px' }}>
+          <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-sm)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.7)', marginTop: '8px' }}>
             {t('quiz.pick_stat_format')}
           </p>
         </div>
@@ -266,7 +266,7 @@ export default function QuizSelectPage() {
                   <button key={s.id} onClick={() => setActiveStat(s.id)} aria-pressed={isSel} style={{
                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '7px', padding: '13px 8px',
                     background: isSel ? `${s.color}22` : 'rgba(255,255,255,0.05)',
-                    border: `1px solid ${isSel ? s.color : 'rgba(255,255,255,0.14)'}`,
+                    border: `1px solid ${isSel ? s.color : 'rgba(255,255,255,0.65)'}`,
                     boxShadow: isSel ? `0 0 16px ${s.color}44, inset 0 0 22px ${s.color}12` : 'none',
                     cursor: 'pointer', transition: 'all 0.2s',
                   }}>
@@ -313,7 +313,7 @@ export default function QuizSelectPage() {
                   >
                     <Icon name={v.id} size={22} color={v.color} />
                     <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.05rem', letterSpacing: '3px', color: '#fff' }}>{v.label}</div>
-                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.6)' }}>{t(`quiz.var_${v.id}_sub` as DictKey)}</div>
+                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.7)' }}>{t(`quiz.var_${v.id}_sub` as DictKey)}</div>
                   </button>
                 )
               })}
@@ -323,7 +323,7 @@ export default function QuizSelectPage() {
           {/* ── Special modes (independent of the stat) ── */}
           <section>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.6)', whiteSpace: 'nowrap' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.7)', whiteSpace: 'nowrap' }}>
                 {t('quiz.special_modes')}
               </div>
               <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }} />
@@ -340,7 +340,7 @@ export default function QuizSelectPage() {
                 >
                   <Icon name={s.id} size={20} color={s.color} />
                   <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '2px', color: s.color }}>{s.label}</div>
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.6)' }}>{t(`quiz.sp_${s.id}_sub` as DictKey)}</div>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.7)' }}>{t(`quiz.sp_${s.id}_sub` as DictKey)}</div>
                 </Link>
               ))}
             </div>

@@ -253,11 +253,11 @@ function WeeklyPage() {
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2.5rem, 8vw, 4rem)', letterSpacing: '8px', color: '#fff', textShadow: `0 0 20px ${COLOR}, 0 0 50px ${COLOR}55`, lineHeight: 1 }}>
               {t('weekly.title')}
             </div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.25)', marginTop: '10px' }}>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.68)', marginTop: '10px' }}>
               {t('quiz.mode_weekly_sub')}
             </div>
           </div>
-          <div style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '0.9rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, maxWidth: '320px' }}>
+          <div style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, maxWidth: '320px' }}>
             {t('quiz.mode_weekly_desc')}
           </div>
           <button onClick={startPlaying} style={{
@@ -270,7 +270,7 @@ function WeeklyPage() {
           }}>
             {t('daily.start')}
           </button>
-          <Link href="/quiz" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
+          <Link href="/quiz" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.65)', textDecoration: 'none' }}>
             {t('play.change_mode')}
           </Link>
         </div>
@@ -289,7 +289,7 @@ function WeeklyPage() {
               {t('weekly.title')}
             </div>
             {alreadyPlayed && (
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.3)', marginTop: '8px' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.7)', marginTop: '8px' }}>
                 {t('weekly.already_played')}
               </div>
             )}
@@ -365,7 +365,7 @@ function WeeklyPage() {
                     border: 'none', cursor: lbName.trim() ? 'pointer' : 'default',
                     fontFamily: "'Bebas Neue', sans-serif",
                     fontSize: '0.8rem', letterSpacing: '2px',
-                    color: lbName.trim() ? '#fff' : 'rgba(255,255,255,0.2)',
+                    color: lbName.trim() ? '#fff' : 'rgba(255,255,255,0.6)',
                     transition: 'all 0.2s', whiteSpace: 'nowrap',
                   }}
                 >
@@ -381,7 +381,7 @@ function WeeklyPage() {
             )}
 
             {leaderboard.length === 0 ? (
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.2)' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.65)' }}>
                 {t('weekly.leaderboard_empty')}
               </div>
             ) : (
@@ -397,7 +397,7 @@ function WeeklyPage() {
                     }}>
                       <span style={{
                         fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '1px',
-                        color: entry.rank === 1 ? '#ffd700' : entry.rank === 2 ? '#c0c0c0' : entry.rank === 3 ? '#cd7f32' : 'rgba(255,255,255,0.3)',
+                        color: entry.rank === 1 ? '#ffd700' : entry.rank === 2 ? '#c0c0c0' : entry.rank === 3 ? '#cd7f32' : 'rgba(255,255,255,0.6)',
                       }}>#{entry.rank}</span>
                       <span style={{
                         fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '1px',
@@ -407,11 +407,11 @@ function WeeklyPage() {
                       }}>{entry.player_name}</span>
                       <span style={{
                         fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: '1px',
-                        color: 'rgba(255,255,255,0.25)', textAlign: 'right',
+                        color: 'rgba(255,255,255,0.68)', textAlign: 'right',
                       }}>{entry.elapsed_seconds != null ? formatTime(entry.elapsed_seconds) : '—'}</span>
                       <span style={{
                         fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '1px',
-                        color: isMe ? COLOR : 'rgba(255,255,255,0.5)', textAlign: 'right',
+                        color: isMe ? COLOR : 'rgba(255,255,255,0.65)', textAlign: 'right',
                       }}>{entry.score}/{TOTAL_Q}</span>
                     </div>
                   )
@@ -420,7 +420,7 @@ function WeeklyPage() {
             )}
           </div>
 
-          <Link href="/quiz" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
+          <Link href="/quiz" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.65)', textDecoration: 'none' }}>
             {t('play.change_mode')}
           </Link>
         </div>
@@ -449,7 +449,7 @@ function WeeklyPage() {
               <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.7rem', letterSpacing: '2px', background: `linear-gradient(180deg, #fff, ${COLOR})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                 {s.val}
               </div>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.28)' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.7)' }}>
                 {s.label}
               </div>
             </div>
@@ -457,7 +457,7 @@ function WeeklyPage() {
         </div>
 
         {loading ? (
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.3)', letterSpacing: '4px' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.7)', letterSpacing: '4px' }}>
             {t('daily.loading')}
           </div>
         ) : loadError ? (
@@ -468,7 +468,7 @@ function WeeklyPage() {
             </button>
           </div>
         ) : !question ? (
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.3)', letterSpacing: '4px' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.7)', letterSpacing: '4px' }}>
             {t('daily.loading')}
           </div>
         ) : (
@@ -484,7 +484,7 @@ function WeeklyPage() {
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '2px', color: COLOR }}>Q{idx + 1}/{TOTAL_Q}</span>
-                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.4)' }}>{question.fighter_slug}</span>
+                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.7)' }}>{question.fighter_slug}</span>
                 </div>
               </div>
             }
@@ -514,7 +514,7 @@ function WeeklyPage() {
                       ? t('daily.feedback_correct', { n: question.answer })
                       : t('daily.feedback_wrong', { n: question.answer })}
                     {question.on_block_value && (
-                      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.4)', marginTop: '6px' }}>
+                      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.7)', marginTop: '6px' }}>
                         {question.move_name} — {question.answer}f startup · {question.on_block_value} on block
                       </div>
                     )}
@@ -531,7 +531,7 @@ function WeeklyPage() {
             }
           />
         )}
-        <Link href="/quiz" style={{ marginTop: '16px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
+        <Link href="/quiz" style={{ marginTop: '16px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.65)', textDecoration: 'none' }}>
           {t('play.change_mode')}
         </Link>
       </main>

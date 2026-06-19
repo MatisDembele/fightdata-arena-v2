@@ -34,7 +34,7 @@ function Tile({ label, value, color = '#00f0ff' }: { label: string; value: numbe
   return (
     <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', padding: '16px 18px', minWidth: 0 }}>
       <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '2rem', letterSpacing: '1px', color, textShadow: `0 0 14px ${color}55`, lineHeight: 1 }}>{value}</div>
-      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.35)', marginTop: '6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
+      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.7)', marginTop: '6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
     </div>
   )
 }
@@ -106,7 +106,7 @@ export default function AdminDashboard() {
           <button
             type="submit"
             disabled={!pw.trim() || phase === 'loading'}
-            style={{ padding: '11px', background: pw.trim() ? 'linear-gradient(90deg, #0050ff, #00f0ff)' : 'rgba(255,255,255,0.05)', border: 'none', cursor: pw.trim() ? 'pointer' : 'default', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '3px', color: pw.trim() ? '#001018' : 'rgba(255,255,255,0.2)' }}
+            style={{ padding: '11px', background: pw.trim() ? 'linear-gradient(90deg, #0050ff, #00f0ff)' : 'rgba(255,255,255,0.05)', border: 'none', cursor: pw.trim() ? 'pointer' : 'default', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '3px', color: pw.trim() ? '#001018' : 'rgba(255,255,255,0.6)' }}
           >
             {phase === 'loading' ? 'CONNEXION…' : 'ENTRER'}
           </button>
@@ -124,7 +124,7 @@ export default function AdminDashboard() {
 
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
           <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '2rem', letterSpacing: '6px', color: '#fff', textShadow: '0 0 18px #00f0ff55' }}>FDA ADMIN</div>
-          <button onClick={lock} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.45)', cursor: 'pointer', padding: '6px 14px', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)' }}>VERROUILLER</button>
+          <button onClick={lock} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', padding: '6px 14px', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)' }}>VERROUILLER</button>
         </div>
 
         {/* Live online now */}
@@ -136,14 +136,14 @@ export default function AdminDashboard() {
           <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '2.6rem', letterSpacing: '2px', color: '#4ade80', textShadow: '0 0 16px #4ade8066', lineHeight: 1 }}>
             {online ?? '—'}
           </div>
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.45)', lineHeight: 1.4 }}>
-            EN LIGNE<br /><span style={{ fontSize: 'var(--fs-2xs)', color: 'rgba(255,255,255,0.25)' }}>maj. ~8s · fenêtre 60s</span>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.7)', lineHeight: 1.4 }}>
+            EN LIGNE<br /><span style={{ fontSize: 'var(--fs-2xs)', color: 'rgba(255,255,255,0.68)' }}>maj. ~8s · fenêtre 60s</span>
           </div>
         </div>
 
         {/* Users */}
         <section style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.3)' }}>COMPTES DISCORD</div>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.7)' }}>COMPTES DISCORD</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '10px' }}>
             <Tile label="COMPTES" value={users.count} />
             <Tile label="1ER COMPTE" value={fmtDate(users.first)} color="#a3e635" />
@@ -152,7 +152,7 @@ export default function AdminDashboard() {
           {users.recent.length > 0 && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '2px' }}>
               {users.recent.map((u, i) => (
-                <span key={i} style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', padding: '3px 8px' }}>{u.username}</span>
+                <span key={i} style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.65)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', padding: '3px 8px' }}>{u.username}</span>
               ))}
             </div>
           )}
@@ -160,7 +160,7 @@ export default function AdminDashboard() {
 
         {/* Plays */}
         <section style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.3)' }}>PARTIES SOUMISES</div>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.7)' }}>PARTIES SOUMISES</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '10px' }}>
             <Tile label="GLOBAL" value={plays.global} color="#ff2d78" />
             <Tile label="JOUEURS GLOBAL" value={plays.global_distinct_players} color="#ff2d78" />
@@ -177,9 +177,9 @@ export default function AdminDashboard() {
 
         {/* Feedback */}
         <section style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.3)' }}>FEEDBACK ({feedback.count})</div>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.7)' }}>FEEDBACK ({feedback.count})</div>
           {feedback.recent.length === 0 ? (
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', color: 'rgba(255,255,255,0.25)', padding: '8px 0' }}>Aucun message reçu pour le moment.</div>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', color: 'rgba(255,255,255,0.68)', padding: '8px 0' }}>Aucun message reçu pour le moment.</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {feedback.recent.map((f, i) => {
@@ -190,11 +190,11 @@ export default function AdminDashboard() {
                       <Icon name={CAT_ICON[f.category] ?? 'chat'} size={14} color={color} />
                       <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color, textTransform: 'uppercase' }}>{f.category}</span>
                       <span style={{ flex: 1 }} />
-                      {f.lang && <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', color: 'rgba(255,255,255,0.3)' }}>{f.lang}</span>}
-                      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', color: 'rgba(255,255,255,0.3)' }}>{fmtDate(f.created_at)}</span>
+                      {f.lang && <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', color: 'rgba(255,255,255,0.7)' }}>{f.lang}</span>}
+                      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', color: 'rgba(255,255,255,0.7)' }}>{fmtDate(f.created_at)}</span>
                     </div>
                     <div style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '0.9rem', fontWeight: 500, color: 'rgba(255,255,255,0.85)', lineHeight: 1.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{f.message}</div>
-                    {f.contact && <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.4)' }}>contact : {f.contact}</div>}
+                    {f.contact && <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.7)' }}>contact : {f.contact}</div>}
                   </div>
                 )
               })}

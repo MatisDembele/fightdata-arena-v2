@@ -162,7 +162,7 @@ export default function Navbar() {
             onClick={() => { logout(); setMenuOpen(false) }}
             style={{
               background: 'none', border: '1px solid rgba(255,255,255,0.15)',
-              color: 'rgba(255,255,255,0.4)', cursor: 'pointer',
+              color: 'rgba(255,255,255,0.7)', cursor: 'pointer',
               fontFamily: "'Share Tech Mono', monospace",
               fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
               padding: inDrawer ? '4px 10px' : '3px 7px',
@@ -221,7 +221,7 @@ export default function Navbar() {
                   boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
                 }}>
                   <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-3)', color: '#5865F2', marginBottom: '8px' }}>{t('nav.consent_title')}</div>
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, marginBottom: '12px' }}>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.65)', lineHeight: 1.7, marginBottom: '12px' }}>
                     {t('nav.consent_body')}{' '}
                     <Link href="/privacy" style={{ color: '#5865F2' }} onClick={() => setShowConsent(false)}>{t('nav.privacy_link')}</Link>
                   </div>
@@ -268,7 +268,7 @@ export default function Navbar() {
                 cursor: 'pointer',
                 fontFamily: "'Share Tech Mono', monospace",
                 fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
-                color: lang === l.code ? '#ffe000' : 'rgba(255,255,255,0.4)',
+                color: lang === l.code ? '#ffe000' : 'rgba(255,255,255,0.6)',
               }}
             >
               <span className={`fi fi-${l.cc}`} style={{ width: '20px', height: '15px', display: 'inline-block', borderRadius: '2px', flexShrink: 0 }} />
@@ -293,7 +293,7 @@ export default function Navbar() {
           }}
         >
           <span className={`fi fi-${currentLang.cc}`} style={{ width: '20px', height: '15px', display: 'inline-block', borderRadius: '2px' }} />
-          <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.5)', display: 'inline-block', transition: 'transform 0.2s', transform: langOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
+          <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.65)', display: 'inline-block', transition: 'transform 0.2s', transform: langOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
         </button>
         {langOpen && (
           <div style={{ position: 'absolute', top: 'calc(100% + 4px)', right: '14px', background: 'rgba(4,0,12,0.98)', border: '1px solid rgba(255,255,255,0.1)', minWidth: '160px', zIndex: 999, boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}>
@@ -310,7 +310,7 @@ export default function Navbar() {
                 }}
               >
                 <span className={`fi fi-${l.cc}`} style={{ width: '20px', height: '15px', display: 'inline-block', borderRadius: '2px', flexShrink: 0 }} />
-                <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: lang === l.code ? '#ffe000' : 'rgba(255,255,255,0.6)' }}>
+                <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: lang === l.code ? '#ffe000' : 'rgba(255,255,255,0.7)' }}>
                   {l.name}
                 </span>
                 {lang === l.code && <span style={{ marginLeft: 'auto', color: '#ffe000', fontSize: '0.6rem' }}>✓</span>}
@@ -452,13 +452,13 @@ export default function Navbar() {
           }}>
             <span style={{
               fontFamily: "'Share Tech Mono', monospace",
-              fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-4)', color: 'rgba(255,255,255,0.3)',
+              fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-4)', color: 'rgba(255,255,255,0.7)',
             }}>NAVIGATION</span>
             <button
               onClick={() => setMenuOpen(false)}
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
-                color: 'rgba(255,255,255,0.5)', fontSize: '1.1rem', lineHeight: 1,
+                color: 'rgba(255,255,255,0.65)', fontSize: '1.1rem', lineHeight: 1,
               }}
             >✕</button>
           </div>
@@ -478,7 +478,7 @@ export default function Navbar() {
               const inner = (
                 <>
                   <div style={{ width: '3px', height: '20px', flexShrink: 0, background: active ? `linear-gradient(180deg, ${c}, ${cAlt})` : 'rgba(255,255,255,0.1)', boxShadow: active ? `0 0 8px ${c}` : 'none', transition: 'all 0.2s' }} />
-                  <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.1rem', letterSpacing: '4px', color: active ? '#fff' : 'rgba(255,255,255,0.45)', textShadow: active ? `0 0 16px ${c}` : 'none', transition: 'all 0.2s' }}>{link.label}{link.external ? ' ↗' : ''}</span>
+                  <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.1rem', letterSpacing: '4px', color: active ? '#fff' : 'rgba(255,255,255,0.6)', textShadow: active ? `0 0 16px ${c}` : 'none', transition: 'all 0.2s' }}>{link.label}{link.external ? ' ↗' : ''}</span>
                 </>
               )
               return link.external ? (

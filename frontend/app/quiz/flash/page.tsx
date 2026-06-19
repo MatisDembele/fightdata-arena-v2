@@ -270,7 +270,7 @@ export default function FlashPage() {
               <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2.5rem, 8vw, 4rem)', letterSpacing: '10px', lineHeight: 1, background: `linear-gradient(135deg, ${COLOR}, ${COLOR_ALT})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: `drop-shadow(0 0 18px ${COLOR}55)` }}>
                 FLASH
               </div>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.3)', marginTop: '8px' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.7)', marginTop: '8px' }}>
                 {t('quiz.mode_flash_sub')}
               </div>
             </div>
@@ -283,14 +283,14 @@ export default function FlashPage() {
               ] as { icon: IconName; label: string }[]).map(r => (
                 <div key={r.icon} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', padding: '10px 14px', background: `${COLOR}08`, border: `1px solid ${COLOR}22` }}>
                   <Icon name={r.icon} size={17} color={COLOR} style={{ flexShrink: 0, marginTop: '1px' }} />
-                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>{r.label}</span>
+                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.65)', lineHeight: 1.5 }}>{r.label}</span>
                 </div>
               ))}
             </div>
 
             {bestScore > 0 && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.25)' }}>RECORD</span>
+                <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.68)' }}>RECORD</span>
                 <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.1rem', letterSpacing: '3px', color: COLOR, textShadow: `0 0 10px ${COLOR}` }}>{bestScore} CORRECT</span>
               </div>
             )}
@@ -299,7 +299,7 @@ export default function FlashPage() {
               {t('play.start')}
             </button>
 
-            <Link href="/quiz" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.2)', textDecoration: 'none', textAlign: 'center' }}>
+            <Link href="/quiz" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.65)', textDecoration: 'none', textAlign: 'center' }}>
               {t('play.change_mode')}
             </Link>
           </div>
@@ -319,7 +319,7 @@ export default function FlashPage() {
           <div className="animate-fadeInUp" style={{ width: '100%', maxWidth: isDesktop ? '620px' : '420px', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center', textAlign: 'center' }}>
 
             <div>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.3)', marginBottom: '8px' }}>GAME OVER</div>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.7)', marginBottom: '8px' }}>GAME OVER</div>
               <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(3rem, 10vw, 5rem)', letterSpacing: '4px', color: '#fff', textShadow: `0 0 30px ${COLOR}88`, lineHeight: 1 }}>
                 {score}
                 <span style={{ fontSize: '0.35em', color: COLOR, marginLeft: '6px' }}>CORRECT</span>
@@ -339,7 +339,7 @@ export default function FlashPage() {
               ].map((s, i) => (
                 <div key={i} style={{ padding: '18px 8px', background: 'rgba(0,0,0,0.3)', borderRight: i < 2 ? '1px solid rgba(255,255,255,0.08)' : 'none', textAlign: 'center' }}>
                   <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.8rem', letterSpacing: '2px', color: COLOR, textShadow: `0 0 10px ${COLOR}66` }}>{s.val}</div>
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.3)', marginTop: '4px' }}>{s.label}</div>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.7)', marginTop: '4px' }}>{s.label}</div>
                 </div>
               ))}
             </div>
@@ -348,7 +348,7 @@ export default function FlashPage() {
               <button onClick={startGame} style={{ flex: 1, padding: '13px', background: `linear-gradient(90deg, ${COLOR_ALT}, ${COLOR})`, border: 'none', cursor: 'pointer', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '4px', color: '#fff', boxShadow: `0 0 16px ${COLOR}33` }}>
                 {t('play.replay')}
               </button>
-              <Link href="/quiz" style={{ flex: 1, padding: '13px', background: 'none', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.45)', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '3px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Link href="/quiz" style={{ flex: 1, padding: '13px', background: 'none', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.7)', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '3px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {t('play.modes_btn')}
               </Link>
             </div>
@@ -364,13 +364,13 @@ export default function FlashPage() {
                     const isMe = flashPseudo && entry.player_name === flashPseudo
                     return (
                       <div key={entry.rank} style={{ display: 'grid', gridTemplateColumns: '28px 1fr auto', gap: '8px', padding: '6px 10px', alignItems: 'center', background: isMe ? `${COLOR}12` : 'rgba(255,255,255,0.02)', border: `1px solid ${isMe ? COLOR + '44' : 'rgba(255,255,255,0.05)'}` }}>
-                        <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', color: entry.rank === 1 ? '#ffd700' : entry.rank === 2 ? '#c0c0c0' : entry.rank === 3 ? '#cd7f32' : 'rgba(255,255,255,0.3)' }}>
+                        <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', color: entry.rank === 1 ? '#ffd700' : entry.rank === 2 ? '#c0c0c0' : entry.rank === 3 ? '#cd7f32' : 'rgba(255,255,255,0.6)' }}>
                           #{entry.rank}
                         </span>
-                        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '1px', color: isMe ? COLOR : 'rgba(255,255,255,0.6)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '1px', color: isMe ? COLOR : 'rgba(255,255,255,0.7)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {entry.player_name}
                         </span>
-                        <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', color: isMe ? COLOR : 'rgba(255,255,255,0.4)', textShadow: isMe ? `0 0 8px ${COLOR}` : 'none' }}>
+                        <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', color: isMe ? COLOR : 'rgba(255,255,255,0.6)', textShadow: isMe ? `0 0 8px ${COLOR}` : 'none' }}>
                           {entry.best_score}
                         </span>
                       </div>
@@ -378,7 +378,7 @@ export default function FlashPage() {
                   })}
                 </div>
                 {!flashPseudo && (
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.2)', marginTop: '8px' }}>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.65)', marginTop: '8px' }}>
                     Set your name on the Stats page to appear here.
                   </div>
                 )}
@@ -418,11 +418,11 @@ export default function FlashPage() {
           </div>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '2rem', letterSpacing: '2px', background: `linear-gradient(180deg, #fff, ${COLOR})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{score}</div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.3)' }}>CORRECT</div>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.7)' }}>CORRECT</div>
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1rem', letterSpacing: '3px', color: COLOR, textShadow: `0 0 8px ${COLOR}` }}>Q{qCount + 1}</div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.3)' }}>{maxTimeSecs}s MAX</div>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.7)' }}>{maxTimeSecs}s MAX</div>
           </div>
         </div>
 
@@ -481,7 +481,7 @@ export default function FlashPage() {
           </div>{/* end right column */}
         </div>
 
-        <Link href="/quiz" style={{ marginTop: '16px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
+        <Link href="/quiz" style={{ marginTop: '16px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.65)', textDecoration: 'none' }}>
           {t('play.change_mode')}
         </Link>
       </main>

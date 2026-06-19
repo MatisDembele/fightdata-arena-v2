@@ -82,7 +82,7 @@ export default async function Image() {
           fontFamily: "'Share Tech Mono', monospace",
           fontSize: 18,
           letterSpacing: '8px',
-          color: 'rgba(255,255,255,0.25)',
+          color: 'rgba(255,255,255,0.68)',
           marginTop: '14px',
         }}>
           STREET FIGHTER 6 // FRAME DATA LEARNING TOOL

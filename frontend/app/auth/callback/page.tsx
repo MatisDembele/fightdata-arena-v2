@@ -76,7 +76,7 @@ function CallbackInner() {
           letterSpacing: '3px', fontSize: '0.65rem',
         }}>CONNEXION ÉCHOUÉE</div>
         <div style={{
-          fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.4)',
+          fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.7)',
           fontSize: '0.6rem', letterSpacing: '1px', maxWidth: '420px', textAlign: 'center',
           lineHeight: 1.6, wordBreak: 'break-all',
         }}>{errorMsg}</div>
@@ -85,7 +85,7 @@ function CallbackInner() {
           style={{
             marginTop: '8px', padding: '8px 20px',
             background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
-            color: 'rgba(255,255,255,0.5)', cursor: 'pointer',
+            color: 'rgba(255,255,255,0.65)', cursor: 'pointer',
             fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '2px',
           }}
         >← RETOUR</button>
@@ -107,7 +107,7 @@ function CallbackInner() {
       }} />
       <div style={{
         fontFamily: "'Share Tech Mono', monospace",
-        color: 'rgba(255,255,255,0.3)',
+        color: 'rgba(255,255,255,0.7)',
         letterSpacing: '4px',
         fontSize: '0.6rem',
       }}>

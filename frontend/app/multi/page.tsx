@@ -162,7 +162,7 @@ function MultiLobbyContent() {
   const btnSecondary = (color: string): React.CSSProperties => ({
     background: 'none',
     border: `1px solid rgba(255,255,255,0.15)`,
-    color: 'rgba(255,255,255,0.4)',
+    color: 'rgba(255,255,255,0.7)',
     fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.1rem', letterSpacing: '4px',
     padding: '14px 0', cursor: 'pointer', transition: 'all 0.2s',
     flex: 1,
@@ -176,7 +176,7 @@ function MultiLobbyContent() {
 
           <div style={{ marginBottom: '40px', textAlign: 'center' }}>
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2rem, 6vw, 3rem)', letterSpacing: '8px', color: '#fff', textShadow: '0 0 20px rgba(255,224,0,0.3)', lineHeight: 1 }}>{t('multi.title')}</div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.2)', marginTop: '8px' }}>{t('multi.subtitle')}</div>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.65)', marginTop: '8px' }}>{t('multi.subtitle')}</div>
           </div>
 
           {/* Pseudo */}
@@ -204,7 +204,7 @@ function MultiLobbyContent() {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.25)' }}>{t('multi.choose_avatar')}</div>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.68)' }}>{t('multi.choose_avatar')}</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '4px' }}>
                 {FIGHTERS.map(slug => {
                   const isSelected = avatar === slug
@@ -224,7 +224,7 @@ function MultiLobbyContent() {
                     >
                       {portrait
                         ? <img src={portrait} alt={slug} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                        : <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)' }}>{slug[0].toUpperCase()}</span>
+                        : <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>{slug[0].toUpperCase()}</span>
                       }
                     </button>
                   )
@@ -259,11 +259,11 @@ function MultiLobbyContent() {
 
           {/* Public rooms browser */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.3)', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '8px' }}>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.7)', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '8px' }}>
               {t('multi.public_rooms')}{publicRooms.length > 0 ? ` · ${publicRooms.length}` : ''}
             </div>
             {publicRooms.length === 0 ? (
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.62rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.25)', lineHeight: 1.6, padding: '6px 0' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.62rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.68)', lineHeight: 1.6, padding: '6px 0' }}>
                 {t('multi.no_public')}
               </div>
             ) : (
@@ -285,7 +285,7 @@ function MultiLobbyContent() {
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '2px', color: '#fff' }}>{r.code} <span style={{ color: '#00f0ff', fontSize: '0.8rem' }}>{r.count}/{r.max}</span></div>
-                      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.game_mode}</div>
+                      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.game_mode}</div>
                     </div>
                     <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '2px', color: '#00f0ff', flexShrink: 0 }}>{t('multi.join')} →</span>
                   </button>

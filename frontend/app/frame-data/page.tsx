@@ -286,7 +286,7 @@ function Phase({ name, frames, color, text }: { name: string; frames: string; co
       <div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', flexWrap: 'wrap' }}>
           <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.4rem', letterSpacing: '3px', color, textShadow: `0 0 12px ${color}66` }}>{name}</span>
-          <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '2px', color: 'rgba(255,255,255,0.4)' }}>{frames}</span>
+          <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '2px', color: 'rgba(255,255,255,0.7)' }}>{frames}</span>
         </div>
         <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1rem', fontWeight: 500, lineHeight: 1.55, color: 'rgba(255,255,255,0.72)', marginTop: '4px' }}>{text}</p>
       </div>
@@ -328,21 +328,21 @@ function PunishLab({ c }: { c: Content }) {
     fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: '1px',
     background: active ? `${ACCENT}26` : 'rgba(255,255,255,0.04)',
     border: `1px solid ${active ? ACCENT : 'rgba(255,255,255,0.1)'}`,
-    color: active ? '#fff' : 'rgba(255,255,255,0.55)',
+    color: active ? '#fff' : 'rgba(255,255,255,0.7)',
   })
 
   return (
     <div style={{ ...card }}>
       <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.3rem', letterSpacing: '3px', color: '#fff', marginBottom: '18px' }}>{c.lab_t}</div>
 
-      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.5)', marginBottom: '8px' }}>{c.lab_their}</div>
+      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.65)', marginBottom: '8px' }}>{c.lab_their}</div>
       <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '18px' }}>
         {[-2, -4, -6, -8, -10].map(v => (
           <button key={v} onClick={() => setOnBlock(v)} style={pill(onBlock === v)}>{v}</button>
         ))}
       </div>
 
-      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.5)', marginBottom: '8px' }}>{c.lab_your}</div>
+      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.65)', marginBottom: '8px' }}>{c.lab_your}</div>
       <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '20px' }}>
         {[4, 5, 6, 7, 8].map(v => (
           <button key={v} onClick={() => setStartup(v)} style={pill(startup === v)}>{v}F</button>
@@ -398,7 +398,7 @@ export default function FrameDataPage() {
             </div>
             <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2.6rem, 8vw, 4.5rem)', letterSpacing: '6px', lineHeight: 1, color: '#fff', textShadow: `0 0 14px ${ACCENT}, 0 0 38px ${ACCENT}66` }}>FRAME DATA</h1>
             <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: 'clamp(1.05rem, 2.2vw, 1.3rem)', fontWeight: 600, lineHeight: 1.55, color: '#fff', maxWidth: '600px', margin: '22px auto 0' }}>{c.hook}</p>
-            <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: 'clamp(0.98rem, 2vw, 1.1rem)', fontWeight: 500, lineHeight: 1.6, color: 'rgba(255,255,255,0.6)', maxWidth: '560px', margin: '14px auto 0' }}>{c.promise}</p>
+            <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: 'clamp(0.98rem, 2vw, 1.1rem)', fontWeight: 500, lineHeight: 1.6, color: 'rgba(255,255,255,0.7)', maxWidth: '560px', margin: '14px auto 0' }}>{c.promise}</p>
           </header>
 
           {/* 01 — The frame */}
@@ -411,7 +411,7 @@ export default function FrameDataPage() {
               {[{ n: '60', l: c.fps_l }, { n: '≈17 ms', l: c.ms_l }].map((x, i) => (
                 <div key={i} style={{ ...card, textAlign: 'center', padding: '20px 12px' }}>
                   <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2rem, 6vw, 2.8rem)', letterSpacing: '2px', color: ACCENT, textShadow: `0 0 14px ${ACCENT}88` }}>{x.n}</div>
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>{x.l}</div>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.65)', marginTop: '4px' }}>{x.l}</div>
                 </div>
               ))}
             </div>
@@ -438,11 +438,11 @@ export default function FrameDataPage() {
                 {TL.map(b => (
                   <div key={b.label} style={{ flex: `${b.f} 0 0`, textAlign: 'center', minWidth: 0 }}>
                     <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1rem', letterSpacing: '1px', color: b.color, textShadow: `0 0 10px ${b.color}66` }}>{b.f}F</div>
-                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.45)' }}>{b.label}</div>
+                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.7)' }}>{b.label}</div>
                   </div>
                 ))}
               </div>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.4)', marginTop: '12px', textAlign: 'center' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.7)', marginTop: '12px', textAlign: 'center' }}>
                 {c.caption} — {c.total_note} = {totalF}F
               </div>
             </div>

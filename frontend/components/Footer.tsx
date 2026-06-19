@@ -60,7 +60,7 @@ export default function Footer() {
           <div style={{
             fontFamily: "'Bebas Neue', sans-serif",
             fontSize: '1rem', letterSpacing: '5px',
-            color: 'rgba(255,255,255,0.6)',
+            color: 'rgba(255,255,255,0.7)',
           }}>{t('contact.title')} / FEEDBACK</div>
 
           {/* Category pills */}
@@ -84,7 +84,7 @@ export default function Footer() {
                   <span style={{
                     fontFamily: "'Rajdhani', sans-serif",
                     fontSize: '0.78rem', fontWeight: 600,
-                    color: isSel ? '#fff' : 'rgba(255,255,255,0.35)',
+                    color: isSel ? '#fff' : 'rgba(255,255,255,0.6)',
                   }}>{catLabel(key)}</span>
                 </button>
               )
@@ -117,7 +117,7 @@ export default function Footer() {
                 position: 'absolute', bottom: '8px', right: '10px',
                 fontFamily: "'Share Tech Mono', monospace",
                 fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)',
-                color: 'rgba(255,255,255,0.15)',
+                color: 'rgba(255,255,255,0.65)',
               }}>{message.length}/2000</div>
             )}
           </div>
@@ -138,7 +138,7 @@ export default function Footer() {
                 cursor: message.trim() && status !== 'sending' ? 'pointer' : 'default',
                 fontFamily: "'Bebas Neue', sans-serif",
                 fontSize: '0.85rem', letterSpacing: '4px',
-                color: status === 'sent' ? '#4ade80' : message.trim() ? '#fff' : 'rgba(255,255,255,0.18)',
+                color: status === 'sent' ? '#4ade80' : message.trim() ? '#fff' : 'rgba(255,255,255,0.6)',
                 boxShadow: message.trim() && status === 'idle' ? '0 0 16px rgba(255,45,120,0.25)' : 'none',
                 transition: 'all 0.2s',
               }}
@@ -167,13 +167,13 @@ export default function Footer() {
       }}>
         <div style={{
           fontFamily: "'Share Tech Mono', monospace",
-          fontSize: '0.4rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.12)',
+          fontSize: '0.4rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.65)',
         }}>
           © 2025 FIGHT DATA ARENA — DATA FROM ULTIMATEFRAMEDATA.COM
         </div>
         <div style={{
           fontFamily: "'Share Tech Mono', monospace",
-          fontSize: '0.4rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.1)',
+          fontSize: '0.4rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.65)',
         }}>
           MADE WITH ❤️ FOR THE SF6 COMMUNITY
         </div>

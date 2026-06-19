@@ -144,7 +144,7 @@ function DuelQuiz() {
       <>
         <Navbar />
         <main style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 60px)' }}>
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.3)', letterSpacing: '4px', fontSize: '0.7rem' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.7)', letterSpacing: '4px', fontSize: '0.7rem' }}>
             LOADING...
           </div>
         </main>
@@ -164,14 +164,14 @@ function DuelQuiz() {
               <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2.5rem, 8vw, 4rem)', letterSpacing: '10px', lineHeight: 1, background: `linear-gradient(135deg, ${COLOR}, ${COLOR_ALT})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: `drop-shadow(0 0 18px ${COLOR}55)` }}>
                 DUEL
               </div>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.3)', marginTop: '8px' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.7)', marginTop: '8px' }}>
                 {t('quiz.mode_duel_sub')}
               </div>
             </div>
 
             {/* Seed */}
             <div style={{ padding: '14px 18px', background: `${COLOR}10`, border: `1px solid ${COLOR}28`, display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.25)' }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.68)' }}>
                 {t('play.duel_intro_seed')}
               </div>
               <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.4rem', letterSpacing: '6px', color: COLOR, textShadow: `0 0 14px ${COLOR}88` }}>
@@ -190,7 +190,7 @@ function DuelQuiz() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <Icon name="duel" size={20} color={COLOR} />
                   <div>
-                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.3)', marginBottom: '3px' }}>
+                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.7)', marginBottom: '3px' }}>
                       {t('play.duel_challenger')}
                     </div>
                     <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1rem', letterSpacing: '3px', color: '#fff' }}>
@@ -200,7 +200,7 @@ function DuelQuiz() {
                 </div>
               </div>
             ) : (
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.2)', lineHeight: 1.6 }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.65)', lineHeight: 1.6 }}>
                 {t('play.duel_no_challenger')}
               </div>
             )}
@@ -208,7 +208,7 @@ function DuelQuiz() {
             {/* Length picker — hidden when responding to a challenge */}
             {!isChallengerLink && (
               <div>
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.25)', marginBottom: '8px' }}>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.68)', marginBottom: '8px' }}>
                   {t('play.duel_pick_length')}
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
@@ -224,7 +224,7 @@ function DuelQuiz() {
                           border: `1px solid ${sel ? COLOR : 'rgba(255,255,255,0.1)'}`,
                           cursor: 'pointer', transition: 'all 0.18s',
                           fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.1rem', letterSpacing: '3px',
-                          color: sel ? COLOR : 'rgba(255,255,255,0.28)',
+                          color: sel ? COLOR : 'rgba(255,255,255,0.7)',
                           boxShadow: sel ? `0 0 10px ${COLOR}33` : 'none',
                         }}
                       >
@@ -243,7 +243,7 @@ function DuelQuiz() {
               {t('play.start')} {duelLen}Q
             </button>
 
-            <Link href="/quiz" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.2)', textDecoration: 'none', textAlign: 'center' }}>
+            <Link href="/quiz" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.65)', textDecoration: 'none', textAlign: 'center' }}>
               {t('play.change_mode')}
             </Link>
           </div>
@@ -274,7 +274,7 @@ function DuelQuiz() {
                 <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.7rem', letterSpacing: '2px', background: `linear-gradient(180deg, #fff, ${COLOR})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                   {stat.val}
                 </div>
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.28)' }}>{stat.label}</div>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.7)' }}>{stat.label}</div>
               </div>
             ))}
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '4px', background: `linear-gradient(90deg, ${COLOR}, ${COLOR_ALT})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
@@ -322,7 +322,7 @@ function DuelQuiz() {
                     ? t('play.feedback_correct_startup', { n: question.answer })
                     : t('play.feedback_wrong_startup', { n: question.answer })}
                   {question.on_block_value && (
-                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.4)', marginTop: '6px' }}>
+                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.7)', marginTop: '6px' }}>
                       {question.move_name} — {question.answer}f startup · {question.on_block_value} on block
                     </div>
                   )}
@@ -336,7 +336,7 @@ function DuelQuiz() {
             </div>
           </div>
 
-          <Link href="/quiz" style={{ marginTop: '16px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
+          <Link href="/quiz" style={{ marginTop: '16px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.65)', textDecoration: 'none' }}>
             {t('play.change_mode')}
           </Link>
         </main>
@@ -365,7 +365,7 @@ function DuelQuiz() {
         <div className="animate-fadeInUp" style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center', textAlign: 'center' }}>
 
           <div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-4)', color: 'rgba(255,255,255,0.3)', marginBottom: '12px' }}>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-4)', color: 'rgba(255,255,255,0.7)', marginBottom: '12px' }}>
               DUEL — SEED {seed}
             </div>
             <div style={{
@@ -387,13 +387,13 @@ function DuelQuiz() {
                 background: youWin ? 'rgba(74,222,128,0.06)' : 'rgba(0,0,0,0.3)',
                 border: `1px solid ${youWin ? '#4ade8055' : 'rgba(255,255,255,0.08)'}`,
               }}>
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.3)', marginBottom: '8px' }}>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.7)', marginBottom: '8px' }}>
                   {t('play.duel_you')}
                 </div>
                 <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '2rem', letterSpacing: '2px', color: youWin ? '#4ade80' : '#fff', textShadow: youWin ? '0 0 14px #4ade8066' : 'none' }}>
                   {finalScore}/{total}
                 </div>
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.35)', marginTop: '4px' }}>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.7)', marginTop: '4px' }}>
                   {finalAcc}%
                 </div>
               </div>
@@ -405,13 +405,13 @@ function DuelQuiz() {
                 background: youLose ? 'rgba(255,45,120,0.06)' : 'rgba(0,0,0,0.3)',
                 border: `1px solid ${youLose ? '#ff2d7855' : 'rgba(255,255,255,0.08)'}`,
               }}>
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.3)', marginBottom: '8px' }}>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.7)', marginBottom: '8px' }}>
                   {from || t('play.duel_challenger')}
                 </div>
                 <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '2rem', letterSpacing: '2px', color: youLose ? '#ff2d78' : '#fff', textShadow: youLose ? '0 0 14px #ff2d7866' : 'none' }}>
                   {p1score}/{total}
                 </div>
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.35)', marginTop: '4px' }}>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.7)', marginTop: '4px' }}>
                   {p1acc}%
                 </div>
               </div>
@@ -424,7 +424,7 @@ function DuelQuiz() {
               ].map((stat, i) => (
                 <div key={i} style={{ padding: '20px 12px', background: 'rgba(0,0,0,0.3)', borderRight: i === 0 ? '1px solid rgba(255,255,255,0.08)' : 'none', textAlign: 'center' }}>
                   <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(1.6rem, 6vw, 2.4rem)', letterSpacing: '2px', color: rank.color, textShadow: `0 0 12px ${rank.color}88` }}>{stat.val}</div>
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.3)', marginTop: '6px' }}>{stat.label}</div>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.7)', marginTop: '6px' }}>{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -440,14 +440,14 @@ function DuelQuiz() {
             </button>
             <button
               onClick={() => { setIdx(0); setScore(0); setSelected(null); setAnswerState('idle'); setPhase('playing') }}
-              style={{ flex: '1 1 0', padding: '13px 12px', background: 'none', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.45)' }}
+              style={{ flex: '1 1 0', padding: '13px 12px', background: 'none', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.95rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.7)' }}
             >
               {t('play.replay')}
             </button>
           </div>
 
           <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
-            <Link href="/quiz" style={{ flex: '1 1 0', padding: '10px', background: 'none', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.25)', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Link href="/quiz" style={{ flex: '1 1 0', padding: '10px', background: 'none', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.68)', fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {t('play.modes_btn')}
             </Link>
             <Link href={`/quiz/duel?seed=${generateSeed()}&len=${duelLen}`} style={{ flex: '1 1 0', padding: '10px', background: 'none', border: `1px solid ${COLOR}33`, color: COLOR, fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

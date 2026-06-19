@@ -11,7 +11,7 @@ export default function PrivacyPage() {
 
           <div>
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '2.2rem', letterSpacing: '6px', color: '#fff' }}>POLITIQUE DE CONFIDENTIALITÉ</div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.25)', marginTop: '6px' }}>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.68)', marginTop: '6px' }}>
               Fight Data Arena — Dernière mise à jour : juin 2026
             </div>
           </div>
@@ -61,12 +61,12 @@ Pour toute demande : dembelematis@gmail.com`,
           ].map(({ title, body }) => (
             <div key={title} style={{ borderLeft: '2px solid rgba(88,101,242,0.4)', paddingLeft: '20px' }}>
               <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: '#5865F2', marginBottom: '10px' }}>{title}</div>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.5)', lineHeight: 1.9, whiteSpace: 'pre-line' }}>{body}</div>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.65)', lineHeight: 1.9, whiteSpace: 'pre-line' }}>{body}</div>
             </div>
           ))}
 
           <div style={{ marginTop: '8px' }}>
-            <Link href="/" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.3)', textDecoration: 'none' }}>
+            <Link href="/" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>
               ← RETOUR À L'ACCUEIL
             </Link>
           </div>

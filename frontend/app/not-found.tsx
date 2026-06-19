@@ -15,7 +15,7 @@ export default function NotFound() {
       <div style={{
         fontFamily: "'Share Tech Mono', monospace",
         fontSize: '0.65rem', letterSpacing: '5px',
-        color: 'rgba(255,255,255,0.3)', marginTop: '12px', marginBottom: '40px',
+        color: 'rgba(255,255,255,0.7)', marginTop: '12px', marginBottom: '40px',
       }}>PAGE NOT FOUND</div>
       <Link href="/" style={{
         background: 'none', border: '1px solid #ffe000', color: '#ffe000',

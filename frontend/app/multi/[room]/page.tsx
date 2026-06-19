@@ -411,7 +411,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         <div style={{ fontFamily: "'Share Tech Mono', monospace", color: COLOR_LOS, letterSpacing: '3px', fontSize: '0.8rem' }}>{error}</div>
         <div style={{ display: 'flex', gap: '12px' }}>
           <button onClick={() => router.push('/multi')} style={backBtnStyle}>{t('room.lobby')}</button>
-          <button onClick={() => router.push('/')} style={{ ...backBtnStyle, border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.4)', textShadow: 'none' }}>{t('room.home')}</button>
+          <button onClick={() => router.push('/')} style={{ ...backBtnStyle, border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)', textShadow: 'none' }}>{t('room.home')}</button>
         </div>
       </div>
     )
@@ -453,14 +453,14 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
                 <div style={{ width: avatarSize, height: avatarSize, overflow: 'hidden', border: `2px solid ${name ? c : 'rgba(255,255,255,0.06)'}`, background: 'rgba(0,0,0,0.4)', flexShrink: 0, borderRadius: slug?.startsWith('http') ? '50%' : '0' }}>
                   {portrait
                     ? <img src={portrait} alt={name ?? ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.4rem', color: 'rgba(255,255,255,0.08)' }}>?</div>
+                    : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.4rem', color: 'rgba(255,255,255,0.65)' }}>?</div>
                   }
                 </div>
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.52rem' : '0.42rem', letterSpacing: '1px', color: name ? (isMe ? c : 'rgba(255,255,255,0.5)') : 'rgba(255,255,255,0.1)', textAlign: 'center', maxWidth: '90%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.52rem' : '0.42rem', letterSpacing: '1px', color: name ? (isMe ? c : 'rgba(255,255,255,0.65)') : 'rgba(255,255,255,0.1)', textAlign: 'center', maxWidth: '90%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {name ? (isMe ? t('room.you') : name.toUpperCase().slice(0, 8)) : t('multi.slot_empty')}
                 </div>
                 {name && (
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.42rem' : '0.35rem', letterSpacing: '1px', color: isReady ? COLOR_WIN : 'rgba(255,255,255,0.18)' }}>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.42rem' : '0.35rem', letterSpacing: '1px', color: isReady ? COLOR_WIN : 'rgba(255,255,255,0.6)' }}>
                     {isReady ? t('multi.ready') : t('multi.not_ready')}
                   </div>
                 )}
@@ -472,16 +472,16 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
 
       const settingsPanel = isHost ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: isDesktop ? '14px' : '10px', padding: isDesktop ? '20px 20px' : '14px 16px', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.58rem' : '0.48rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.58rem' : '0.48rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.65)' }}>
             {t('multi.game_mode')}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
             {MULTI_MODES.map(m => (
               <button key={m.id} onClick={() => sendSetMode(m.id)} style={{
                 padding: isDesktop ? '10px 4px' : '7px 4px', fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '0.88rem' : '0.8rem', letterSpacing: '2px',
-                border: `1px solid ${gameMode === m.id ? m.color : 'rgba(255,255,255,0.1)'}`,
+                border: `1px solid ${gameMode === m.id ? m.color : 'rgba(255,255,255,0.65)'}`,
                 background: gameMode === m.id ? `${m.color}15` : 'transparent',
-                color: gameMode === m.id ? m.color : 'rgba(255,255,255,0.3)',
+                color: gameMode === m.id ? m.color : 'rgba(255,255,255,0.7)',
                 cursor: 'pointer', transition: 'all 0.2s',
                 textShadow: gameMode === m.id ? `0 0 8px ${m.color}55` : 'none',
               }}>
@@ -489,7 +489,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
               </button>
             ))}
           </div>
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.58rem' : '0.48rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', marginTop: '4px' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.58rem' : '0.48rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.65)', marginTop: '4px' }}>
             {t('multi.num_questions')}
           </div>
           <div style={{ display: 'flex', gap: '6px' }}>
@@ -498,7 +498,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
                 flex: 1, padding: isDesktop ? '10px' : '8px', fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1rem' : '0.9rem', letterSpacing: '2px',
                 border: `1px solid ${totalQuestions === n ? '#00f0ff' : 'rgba(255,255,255,0.1)'}`,
                 background: totalQuestions === n ? 'rgba(0,240,255,0.1)' : 'transparent',
-                color: totalQuestions === n ? '#00f0ff' : 'rgba(255,255,255,0.3)',
+                color: totalQuestions === n ? '#00f0ff' : 'rgba(255,255,255,0.6)',
                 cursor: 'pointer', transition: 'all 0.2s',
               }}>
                 {n}
@@ -508,7 +508,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         </div>
       ) : (
         <div style={{ display: 'flex', gap: '10px', justifyContent: isDesktop ? 'flex-start' : 'center' }}>
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.62rem' : '0.52rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', padding: isDesktop ? '8px 14px' : '4px 10px', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.62rem' : '0.52rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.65)', padding: isDesktop ? '8px 14px' : '4px 10px', border: '1px solid rgba(255,255,255,0.07)' }}>
             {totalQuestions} Q
           </div>
           <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.62rem' : '0.52rem', letterSpacing: '3px', color: modeConfig.color, padding: isDesktop ? '8px 14px' : '4px 10px', border: `1px solid ${modeConfig.color}33` }}>
@@ -524,7 +524,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
               flex: 1, padding: isDesktop ? '15px' : '13px', fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1.05rem' : '0.95rem', letterSpacing: '4px',
               border: `1px solid ${amReady ? COLOR_WIN : 'rgba(255,255,255,0.18)'}`,
               background: amReady ? `${COLOR_WIN}12` : 'rgba(255,255,255,0.03)',
-              color: amReady ? COLOR_WIN : 'rgba(255,255,255,0.4)',
+              color: amReady ? COLOR_WIN : 'rgba(255,255,255,0.6)',
               cursor: 'pointer', transition: 'all 0.2s',
               textShadow: amReady ? `0 0 8px ${COLOR_WIN}66` : 'none',
             }}>
@@ -535,7 +535,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
               flex: 1, padding: isDesktop ? '15px' : '13px', fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1.05rem' : '0.95rem', letterSpacing: '4px',
               border: `1px solid ${canStart ? (allReady ? COLOR_WIN : COLOR) : 'rgba(255,255,255,0.07)'}`,
               background: canStart ? (allReady ? `${COLOR_WIN}12` : `${COLOR}12`) : 'transparent',
-              color: canStart ? (allReady ? COLOR_WIN : COLOR) : 'rgba(255,255,255,0.15)',
+              color: canStart ? (allReady ? COLOR_WIN : COLOR) : 'rgba(255,255,255,0.6)',
               cursor: canStart ? 'pointer' : 'default',
               transition: 'all 0.3s',
               textShadow: canStart ? `0 0 10px ${allReady ? COLOR_WIN : COLOR}66` : 'none',
@@ -547,7 +547,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
           <button onClick={copyLink} style={{
             padding: isDesktop ? '15px 18px' : '13px 14px', background: 'none',
             border: `1px solid ${linkCopied ? COLOR_WIN : 'rgba(255,255,255,0.1)'}`,
-            color: linkCopied ? COLOR_WIN : 'rgba(255,255,255,0.3)',
+            color: linkCopied ? COLOR_WIN : 'rgba(255,255,255,0.6)',
             fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.56rem' : '0.48rem', letterSpacing: '2px',
             cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap',
           }}>
@@ -557,7 +557,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
       )
 
       const readyCount = players.length >= 2 ? (
-        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.52rem' : '0.44rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.18)', textAlign: 'center' }}>
+        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.52rem' : '0.44rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.65)', textAlign: 'center' }}>
           {t('multi.ready_count', { n: readyPlayers.length, total: players.length })}
           {!isHost && !amReady && ' — ' + t('multi.waiting_host')}
         </div>
@@ -571,7 +571,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '2.4rem' : '1.8rem', letterSpacing: '6px', color: '#fff' }}>
               ROOM — <span style={{ color: COLOR, textShadow: `0 0 12px ${COLOR}` }}>{room}</span>
             </div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.6rem' : '0.48rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.2)', marginTop: '4px' }}>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.6rem' : '0.48rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.65)', marginTop: '4px' }}>
               {t('room.give_code')}
             </div>
           </div>
@@ -632,7 +632,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
             })}
           </div>
 
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-4)', color: 'rgba(255,255,255,0.15)', position: 'relative', zIndex: 1 }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-4)', color: 'rgba(255,255,255,0.65)', position: 'relative', zIndex: 1 }}>
             ROOM {room} — {gameMode.toUpperCase()} — {totalQuestions} Q
           </div>
         </div>
@@ -688,7 +688,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
       const feedbackEl = (
         <>
           {phase === 'playing' && (
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '2px', color: answeredCount > 0 ? COLOR : 'rgba(255,255,255,0.2)', textAlign: 'center', transition: 'color 0.3s' }}>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '2px', color: answeredCount > 0 ? COLOR : 'rgba(255,255,255,0.6)', textAlign: 'center', transition: 'color 0.3s' }}>
               {statusText}
             </div>
           )}
@@ -701,7 +701,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
                   <span style={{
                     fontFamily: "'Bebas Neue', sans-serif",
                     fontSize: isDesktop ? '1.8rem' : '1.6rem', letterSpacing: '3px',
-                    color: isCorrect ? COLOR : 'rgba(255,255,255,0.2)',
+                    color: isCorrect ? COLOR : 'rgba(255,255,255,0.6)',
                     textShadow: isCorrect ? `0 0 16px ${COLOR}` : 'none',
                   }}>
                     {isCorrect ? `+${myPts}` : '0'} PTS
@@ -773,7 +773,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
       const avatarSize = isDesktop ? '44px' : '36px'
       return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isDesktop ? '24px' : '20px', width: '100%', maxWidth: isDesktop ? '620px' : '380px' }}>
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.65rem' : '0.55rem', letterSpacing: '5px', color: 'rgba(255,255,255,0.3)' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.65rem' : '0.55rem', letterSpacing: '5px', color: 'rgba(255,255,255,0.7)' }}>
             Q{questionNumber}/{totalQuestions} — {t('room.leaderboard')}
           </div>
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -791,19 +791,19 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
                   border: `1px solid ${isLeader ? 'rgba(255,224,0,0.4)' : 'rgba(255,255,255,0.07)'}`,
                   transition: 'all 0.3s',
                 }}>
-                  <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1.3rem' : '1.1rem', color: isLeader ? COLOR : 'rgba(255,255,255,0.25)', width: '24px', textAlign: 'center' }}>
+                  <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1.3rem' : '1.1rem', color: isLeader ? COLOR : 'rgba(255,255,255,0.6)', width: '24px', textAlign: 'center' }}>
                     {rank + 1}
                   </div>
                   <div style={{ width: avatarSize, height: avatarSize, overflow: 'hidden', border: `2px solid ${isLeader ? COLOR : 'rgba(255,255,255,0.15)'}`, flexShrink: 0, borderRadius: isDiscord ? '50%' : '0' }}>
                     {portrait ? <img src={portrait} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1rem' : '0.9rem', letterSpacing: '2px', color: isLeader ? COLOR : isMe ? '#fff' : 'rgba(255,255,255,0.6)', textShadow: isLeader ? `0 0 10px ${COLOR}` : 'none' }}>
+                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1rem' : '0.9rem', letterSpacing: '2px', color: isLeader ? COLOR : isMe ? '#fff' : 'rgba(255,255,255,0.7)', textShadow: isLeader ? `0 0 10px ${COLOR}` : 'none' }}>
                       {isMe ? t('room.you') : name.toUpperCase().slice(0, 12)}
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1.7rem' : '1.4rem', letterSpacing: '2px', color: isLeader ? COLOR : 'rgba(255,255,255,0.5)', textShadow: isLeader ? `0 0 12px ${COLOR}` : 'none' }}>{score}</div>
+                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1.7rem' : '1.4rem', letterSpacing: '2px', color: isLeader ? COLOR : 'rgba(255,255,255,0.65)', textShadow: isLeader ? `0 0 12px ${COLOR}` : 'none' }}>{score}</div>
                     {pts > 0 && <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem', letterSpacing: '2px', color: 'rgba(255,224,0,0.5)' }}>+{pts}</div>}
                   </div>
                 </div>
@@ -838,7 +838,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
                 background: isMe ? `${COLOR}0a` : isFirst ? `${COLOR_WIN}06` : 'rgba(255,255,255,0.02)',
                 border: `1px solid ${isMe ? `${COLOR}30` : isFirst ? `${COLOR_WIN}20` : 'rgba(255,255,255,0.06)'}`,
               }}>
-                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '0.95rem' : '0.85rem', color: 'rgba(255,255,255,0.4)', width: '28px', flexShrink: 0 }}>{rank <= 2 ? <Icon name="medal" size={isDesktop ? 22 : 19} color={PODIUM[rank]} /> : medalText}</span>
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '0.95rem' : '0.85rem', color: 'rgba(255,255,255,0.7)', width: '28px', flexShrink: 0 }}>{rank <= 2 ? <Icon name="medal" size={isDesktop ? 22 : 19} color={PODIUM[rank]} /> : medalText}</span>
                 <div style={{ width: avatarSize, height: avatarSize, overflow: 'hidden', border: `2px solid ${isMe ? COLOR : 'rgba(255,255,255,0.12)'}`, flexShrink: 0, borderRadius: isDiscord ? '50%' : '0' }}>
                   {portrait ? <img src={portrait} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
                 </div>
@@ -846,11 +846,11 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
                   <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '0.95rem' : '0.85rem', letterSpacing: '2px', color: isMe ? COLOR : 'rgba(255,255,255,0.65)', textShadow: isMe ? `0 0 8px ${COLOR}` : 'none' }}>
                     {isMe ? t('room.you') : name.toUpperCase().slice(0, 12)}
                   </div>
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.2)', marginTop: '2px' }}>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-1)', color: 'rgba(255,255,255,0.65)', marginTop: '2px' }}>
                     {acc}% {t('room.precision')}
                   </div>
                 </div>
-                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1.5rem' : '1.3rem', letterSpacing: '2px', color: isFirst ? COLOR_WIN : isMe ? COLOR : 'rgba(255,255,255,0.4)', textShadow: isFirst ? `0 0 10px ${COLOR_WIN}` : 'none' }}>
+                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1.5rem' : '1.3rem', letterSpacing: '2px', color: isFirst ? COLOR_WIN : isMe ? COLOR : 'rgba(255,255,255,0.6)', textShadow: isFirst ? `0 0 10px ${COLOR_WIN}` : 'none' }}>
                   {score}
                 </div>
               </div>
@@ -861,7 +861,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
 
       const voteGrid = (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-4)', color: 'rgba(255,255,255,0.22)', textAlign: isDesktop ? 'left' : 'center' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-4)', color: 'rgba(255,255,255,0.65)', textAlign: isDesktop ? 'left' : 'center' }}>
             {myVote
               ? t('multi.vote_count', { n: Object.keys(playerVotes).length, total: players.length })
               : t('multi.vote_mode')}
@@ -878,9 +878,9 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
                   disabled={!!myVote}
                   style={{
                     position: 'relative', padding: isDesktop ? '14px 6px' : '11px 6px',
-                    border: `1px solid ${isMyVote ? m.color : hasVotes ? `${m.color}44` : 'rgba(255,255,255,0.09)'}`,
+                    border: `1px solid ${isMyVote ? m.color : hasVotes ? `${m.color}44` : 'rgba(255,255,255,0.6)'}`,
                     background: isMyVote ? `${m.color}18` : hasVotes ? `${m.color}08` : 'transparent',
-                    color: isMyVote ? m.color : hasVotes ? `${m.color}cc` : 'rgba(255,255,255,0.22)',
+                    color: isMyVote ? m.color : hasVotes ? `${m.color}cc` : 'rgba(255,255,255,0.6)',
                     fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '0.92rem' : '0.85rem', letterSpacing: '2px',
                     cursor: myVote ? 'default' : 'pointer', transition: 'all 0.2s',
                     textShadow: isMyVote ? `0 0 10px ${m.color}66` : 'none',
@@ -902,7 +902,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
             })}
           </div>
           {myVote && (
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.18)', textAlign: 'center' }}>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.65)', textAlign: 'center' }}>
               {t('multi.vote_waiting')}
             </div>
           )}
@@ -923,7 +923,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
             }}>
               {isDraw ? t('room.draw') : isWin ? t('room.victory') : t('room.defeat')}
             </div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.62rem' : '0.55rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.25)', marginTop: '8px' }}>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.62rem' : '0.55rem', letterSpacing: '4px', color: 'rgba(255,255,255,0.68)', marginTop: '8px' }}>
               {isDraw ? t('room.draw_msg') : isWin ? t('room.well_played') : t('room.better_luck')}
             </div>
           </div>
@@ -943,7 +943,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
             </>
           )}
 
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.58rem' : '0.52rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.18)' }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.58rem' : '0.52rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.65)' }}>
             {t('room.questions_mode', { n: totalQuestions, mode: gameMode.toUpperCase() })}
           </div>
 
@@ -951,7 +951,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
 
           <div style={{ display: 'flex', gap: '14px' }}>
             <button onClick={() => router.push('/multi')} style={backBtnStyle}>{t('room.lobby')}</button>
-            <button onClick={() => router.push('/')} style={{ ...backBtnStyle, border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.4)', textShadow: 'none' }}>{t('room.home')}</button>
+            <button onClick={() => router.push('/')} style={{ ...backBtnStyle, border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)', textShadow: 'none' }}>{t('room.home')}</button>
           </div>
 
         </div>
@@ -1031,13 +1031,13 @@ function Scoreboard({ scores, playerName, avatars, color, youLabel }: { scores: 
         const isDiscord = slug.startsWith('http')
         return (
           <div key={name} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <div style={{ width: '22px', height: '22px', overflow: 'hidden', border: `1px solid ${isMe ? color : 'rgba(255,255,255,0.2)'}`, flexShrink: 0, borderRadius: isDiscord ? '50%' : '0' }}>
+            <div style={{ width: '22px', height: '22px', overflow: 'hidden', border: `1px solid ${isMe ? color : 'rgba(255,255,255,0.65)'}`, flexShrink: 0, borderRadius: isDiscord ? '50%' : '0' }}>
               {portrait
                 ? <img src={portrait} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>{name[0]}</span>
+                : <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.6rem', color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>{name[0]}</span>
               }
             </div>
-            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.1rem', letterSpacing: '1px', color: isMe ? color : 'rgba(255,255,255,0.35)', textShadow: isMe ? `0 0 8px ${color}` : 'none' }}>{score}</div>
+            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.1rem', letterSpacing: '1px', color: isMe ? color : 'rgba(255,255,255,0.7)', textShadow: isMe ? `0 0 8px ${color}` : 'none' }}>{score}</div>
           </div>
         )
       })}
