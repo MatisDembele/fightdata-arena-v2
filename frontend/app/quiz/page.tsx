@@ -50,7 +50,7 @@ export default function QuizSelectPage() {
   const router = useRouter()
   const { t } = useLanguage()
 
-  const [activeStat, setActiveStat]     = useState<StatId>('startup')
+  const [activeStat, setActiveStat]     = useState<StatId | null>(null)
   const [showFighters, setShowFighters] = useState(false)
   const [showCustom, setShowCustom]     = useState(false)
   const [fighters, setFighters]         = useState<Fighter[]>([])
@@ -58,7 +58,9 @@ export default function QuizSelectPage() {
   const [loadingF, setLoadingF]         = useState(false)
   const [selectedFighters, setSelectedFighters] = useState<string[]>([])
 
-  const stat = STATS.find(s => s.id === activeStat)!
+  // No stat chosen yet → the modes stay locked (greyed out) until the user picks one.
+  const stat = activeStat ? STATS.find(s => s.id === activeStat)! : null
+  const accentColor = stat?.color ?? '#9b1fff'
 
   async function openPicker(type: 'fighter' | 'custom') {
     if (fighters.length === 0) {
@@ -72,6 +74,7 @@ export default function QuizSelectPage() {
   }
 
   function handleVariantClick(v: VariantId) {
+    if (!stat) return
     if (v === 'fighter') { openPicker('fighter'); return }
     if (v === 'custom')  { openPicker('custom');  return }
     if (v === 'classic') { router.push(`/quiz/play?mode=${stat.classicMode}`); return }
@@ -93,8 +96,8 @@ export default function QuizSelectPage() {
     fontFamily: "'Share Tech Mono', monospace", fontSize: '0.8rem', letterSpacing: '2px',
   }
 
-  // ── Fighter picker ──
-  if (showFighters) {
+  // ── Fighter picker ── (only reachable once a stat is chosen, so `stat` is non-null here)
+  if (showFighters && stat) {
     return (
       <>
         <Navbar />
@@ -137,8 +140,8 @@ export default function QuizSelectPage() {
     )
   }
 
-  // ── Custom picker ──
-  if (showCustom) {
+  // ── Custom picker ── (only reachable once a stat is chosen, so `stat` is non-null here)
+  if (showCustom && stat) {
     return (
       <>
         <Navbar />
@@ -215,7 +218,7 @@ export default function QuizSelectPage() {
             fontFamily: "'Bebas Neue', sans-serif",
             fontSize: 'clamp(2rem, 5vw, 3rem)',
             letterSpacing: '8px', color: '#fff', margin: 0,
-            textShadow: `0 0 20px ${stat.color}`,
+            textShadow: `0 0 20px ${accentColor}`,
             transition: 'text-shadow 0.4s',
           }}>{t('quiz.choose_mode')}</h1>
           <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-sm)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.4)', marginTop: '6px' }}>
@@ -259,11 +262,17 @@ export default function QuizSelectPage() {
             })}
           </div>
 
-          {/* ── Stat description ── */}
+          {/* ── Stat description (or a hint to pick one first) ── */}
           <div style={{ padding: '12px 2px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)', marginBottom: '16px' }}>
-            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: stat.color, opacity: 0.85 }}>
-              {t(`quiz.stat_${stat.id}_desc` as DictKey)}
-            </span>
+            {stat ? (
+              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: stat.color, opacity: 0.85 }}>
+                {t(`quiz.stat_${stat.id}_desc` as DictKey)}
+              </span>
+            ) : (
+              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.45)' }}>
+                {t('quiz.pick_stat_first')}
+              </span>
+            )}
           </div>
 
           {/* ── Variants grid ── */}
@@ -273,44 +282,53 @@ export default function QuizSelectPage() {
             gap: '6px',
             marginBottom: '32px',
           }}>
-            {VARIANTS.map(v => (
-              <button
-                key={v.id}
-                type="button"
-                onClick={() => handleVariantClick(v.id)}
-                onMouseEnter={e => {
-                  const el = e.currentTarget as HTMLElement
-                  el.style.background = `${v.color}12`
-                  el.style.borderColor = v.color + '66'
-                  el.style.boxShadow = `0 0 18px ${v.color}18`
-                  const top = el.querySelector('.var-top') as HTMLElement | null
-                  if (top) top.style.opacity = '1'
-                }}
-                onMouseLeave={e => {
-                  const el = e.currentTarget as HTMLElement
-                  el.style.background = 'rgba(255,255,255,0.03)'
-                  el.style.borderColor = 'rgba(255,255,255,0.07)'
-                  el.style.boxShadow = 'none'
-                  const top = el.querySelector('.var-top') as HTMLElement | null
-                  if (top) top.style.opacity = '0'
-                }}
-                style={{
-                  font: 'inherit', textAlign: 'left',
-                  padding: '18px 16px',
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.07)',
-                  cursor: 'pointer',
-                  transition: 'all 0.18s',
-                  display: 'flex', flexDirection: 'column', gap: '8px',
-                  position: 'relative', overflow: 'hidden',
-                }}
-              >
-                <div className="var-top" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: `linear-gradient(90deg, transparent, ${v.color}, transparent)`, opacity: 0, transition: 'opacity 0.18s' }} />
-                <Icon name={v.id} size={22} color={v.color} />
-                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.8)' }}>{v.label}</div>
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.45)' }}>{t(`quiz.var_${v.id}_sub` as DictKey)}</div>
-              </button>
-            ))}
+            {VARIANTS.map(v => {
+              const locked = !stat
+              return (
+                <button
+                  key={v.id}
+                  type="button"
+                  disabled={locked}
+                  aria-disabled={locked}
+                  onClick={() => handleVariantClick(v.id)}
+                  onMouseEnter={e => {
+                    if (locked) return
+                    const el = e.currentTarget as HTMLElement
+                    el.style.background = `${v.color}12`
+                    el.style.borderColor = v.color + '66'
+                    el.style.boxShadow = `0 0 18px ${v.color}18`
+                    const top = el.querySelector('.var-top') as HTMLElement | null
+                    if (top) top.style.opacity = '1'
+                  }}
+                  onMouseLeave={e => {
+                    if (locked) return
+                    const el = e.currentTarget as HTMLElement
+                    el.style.background = 'rgba(255,255,255,0.03)'
+                    el.style.borderColor = 'rgba(255,255,255,0.07)'
+                    el.style.boxShadow = 'none'
+                    const top = el.querySelector('.var-top') as HTMLElement | null
+                    if (top) top.style.opacity = '0'
+                  }}
+                  style={{
+                    font: 'inherit', textAlign: 'left',
+                    padding: '18px 16px',
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.07)',
+                    cursor: locked ? 'not-allowed' : 'pointer',
+                    opacity: locked ? 0.4 : 1,
+                    filter: locked ? 'grayscale(0.7)' : 'none',
+                    transition: 'all 0.18s',
+                    display: 'flex', flexDirection: 'column', gap: '8px',
+                    position: 'relative', overflow: 'hidden',
+                  }}
+                >
+                  <div className="var-top" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: `linear-gradient(90deg, transparent, ${v.color}, transparent)`, opacity: 0, transition: 'opacity 0.18s' }} />
+                  <Icon name={v.id} size={22} color={v.color} />
+                  <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.8)' }}>{v.label}</div>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.45)' }}>{t(`quiz.var_${v.id}_sub` as DictKey)}</div>
+                </button>
+              )
+            })}
           </div>
 
           {/* ── Special modes ── */}

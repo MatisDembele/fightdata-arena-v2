@@ -32,6 +32,7 @@ const en = {
   // quiz mode picker
   'quiz.choose_mode':          'CHOOSE A MODE',
   'quiz.pick_stat_format':     'pick a stat, then a format',
+  'quiz.pick_stat_first':      '↑ pick a stat first to unlock the modes',
   'quiz.special_modes':        'SPECIAL MODES',
   'quiz.stat_startup_desc':    'Frames before active',
   'quiz.stat_onblock_desc':    'Advantage on block',
@@ -514,6 +515,7 @@ const fr: Record<DictKey, string> = {
   // quiz mode picker
   'quiz.choose_mode':          'CHOISIR UN MODE',
   'quiz.pick_stat_format':     'choisir une stat, puis un format',
+  'quiz.pick_stat_first':      '↑ choisis une stat pour débloquer les modes',
   'quiz.special_modes':        'MODES SPÉCIAUX',
   'quiz.stat_startup_desc':    'Frames avant activation',
   'quiz.stat_onblock_desc':    'Avantage au blocage',
@@ -989,6 +991,7 @@ const es: Record<DictKey, string> = {
   'home.mode_challenge': 'DESAFÍO',
   'quiz.choose_mode':          'ELEGIR UN MODO',
   'quiz.pick_stat_format':     'elige una stat, luego un formato',
+  'quiz.pick_stat_first':      '↑ elige una stat para desbloquear los modos',
   'quiz.special_modes':        'MODOS ESPECIALES',
   'quiz.stat_startup_desc':    'Frames antes de activarse',
   'quiz.stat_onblock_desc':    'Ventaja al bloqueo',
@@ -1432,6 +1435,7 @@ const ja: Record<DictKey, string> = {
   'home.mode_challenge': 'チャレンジ',
   'quiz.choose_mode':          'モードを選択',
   'quiz.pick_stat_format':     'ステータスを選んで形式を選択',
+  'quiz.pick_stat_first':      '↑ まずステータスを選ぶとモードが解放されます',
   'quiz.special_modes':        'スペシャルモード',
   'quiz.stat_startup_desc':    '発生フレーム',
   'quiz.stat_onblock_desc':    'ガード時有利',
