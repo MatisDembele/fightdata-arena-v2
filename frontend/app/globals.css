@@ -367,24 +367,6 @@ body {
   }
 }
 
-/* Footer — mobile: every block stacked. Tablet: 2x2. Desktop: brand + two link
-   columns + a wider feedback column, all top-aligned. */
-.footer-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 36px;
-}
-@media (min-width: 680px) {
-  .footer-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
-}
-@media (min-width: 1040px) {
-  .footer-grid {
-    grid-template-columns: 1.5fr 1fr 1fr 1.8fr;
-    gap: 48px;
-    align-items: start;
-  }
-}
-
 /* Home page mode cards */
 .home-modes-row {
   display: flex;
