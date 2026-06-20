@@ -4,13 +4,14 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
+import Container from '@/components/Container'
 import Icon, { type IconName } from '@/components/Icon'
 import { getFighters } from '@/lib/api'
 import { getFighterPortrait, getFighterColor } from '@/lib/portraits'
 import type { Fighter } from '@/types'
 import { useLanguage, type DictKey } from '@/lib/i18n'
 
-type StatId = 'startup' | 'onblock' | 'onhit' | 'recovery' | 'damage' | 'active'
+type StatId = 'startup' | 'onblock' | 'onhit' | 'recovery' | 'damage' | 'active' | 'punish'
 type VariantId = 'classic' | 'survival' | 'hardcore' | 'input' | 'fighter' | 'custom'
 
 // id doubles as the Icon name and the i18n description key (quiz.stat_<id>_desc)
@@ -25,6 +26,7 @@ const STATS: {
   { id: 'recovery', label: 'RECOVERY', color: '#3b82f6', colorAlt: '#1d4ed8', classicMode: 'recovery' },
   { id: 'damage',   label: 'DAMAGE',   color: '#f59e0b', colorAlt: '#d97706', classicMode: 'damage'   },
   { id: 'active',   label: 'ACTIVE',   color: '#a855f7', colorAlt: '#7c3aed', classicMode: 'active'   },
+  { id: 'punish',   label: 'PUNISH',   color: '#ffe000', colorAlt: '#e0a000', classicMode: 'punish'   },
 ]
 
 // id doubles as the Icon name and the i18n sub key (quiz.var_<id>_sub)
@@ -231,9 +233,10 @@ export default function QuizSelectPage() {
         minHeight: 'calc(100vh - 60px)',
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'flex-start',
-        padding: '40px 20px 60px',
+        padding: '40px 0 60px',
         overflowY: 'auto',
       }}>
+        <Container variant="tool">
 
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
@@ -249,10 +252,10 @@ export default function QuizSelectPage() {
           </p>
         </div>
 
-        <div style={{ width: '100%', maxWidth: '720px', display: 'flex', flexDirection: 'column', gap: '26px' }}>
+        <div className="quiz-layout">
 
           {/* ── STEP 1 — choose a stat (highlighted until one is picked) ── */}
-          <section style={{
+          <section className="quiz-area-stat" style={{
             background: 'rgba(255,255,255,0.04)',
             border: `1px solid ${stat ? 'rgba(255,255,255,0.1)' : accentColor + '66'}`,
             boxShadow: stat ? 'none' : `0 0 26px ${accentColor}22`,
@@ -284,7 +287,7 @@ export default function QuizSelectPage() {
           </section>
 
           {/* ── STEP 2 — choose a mode (locked until a stat is picked) ── */}
-          <section>
+          <section className="quiz-area-mode">
             <StepLabel n="2" text={t('quiz.step_mode')} color={accentColor} state={stat ? 'active' : 'locked'} chip={stat?.label} />
 
             {!stat && (
@@ -321,7 +324,7 @@ export default function QuizSelectPage() {
           </section>
 
           {/* ── Special modes (independent of the stat) ── */}
-          <section>
+          <section className="quiz-area-special">
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
               <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.7)', whiteSpace: 'nowrap' }}>
                 {t('quiz.special_modes')}
@@ -347,6 +350,7 @@ export default function QuizSelectPage() {
           </section>
 
         </div>
+        </Container>
       </div>
     </>
   )

@@ -3,6 +3,7 @@ export const dynamic = 'force-static'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
+import Container from '@/components/Container'
 import { useLanguage } from '@/lib/i18n'
 import Icon, { type IconName } from '@/components/Icon'
 import { ACCENT } from '@/lib/colors'
@@ -134,8 +135,8 @@ export default function ChallengesPage() {
   return (
     <>
       <Navbar />
-      <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '48px 20px 80px', minHeight: 'calc(100vh - 60px)' }}>
-        <div style={{ width: '100%', maxWidth: '600px' }}>
+      <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '48px 0 80px', minHeight: 'calc(100vh - 60px)' }}>
+        <Container variant="tool">
 
           {/* Header */}
           <div style={{ marginBottom: '40px', textAlign: 'center' }}>
@@ -199,7 +200,7 @@ export default function ChallengesPage() {
           )}
 
           {/* Cards */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="challenges-cards">
 
             <ChallengeCard
               title="DAILY"
@@ -242,7 +243,7 @@ export default function ChallengesPage() {
             />
           </div>
 
-        </div>
+        </Container>
       </main>
     </>
   )

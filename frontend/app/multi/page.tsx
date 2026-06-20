@@ -2,6 +2,8 @@
 import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
+import Container from '@/components/Container'
+import Icon from '@/components/Icon'
 import { track } from '@vercel/analytics'
 import { useLanguage } from '@/lib/i18n'
 import { getFighterPortrait } from '@/lib/portraits'
@@ -171,13 +173,17 @@ function MultiLobbyContent() {
   return (
     <>
       <Navbar />
-      <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', padding: '48px 20px 60px', minHeight: 'calc(100vh - 60px)' }}>
-        <div style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+      <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', minHeight: 'calc(100vh - 60px)' }}>
+        <Container variant="tool" style={{ display: 'flex', flexDirection: 'column' }}>
 
-          <div style={{ marginBottom: '40px', textAlign: 'center' }}>
+          <div style={{ marginBottom: '32px', textAlign: 'center' }}>
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2rem, 6vw, 3rem)', letterSpacing: '8px', color: '#fff', textShadow: '0 0 20px rgba(255,224,0,0.3)', lineHeight: 1 }}>{t('multi.title')}</div>
             <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.65)', marginTop: '8px' }}>{t('multi.subtitle')}</div>
           </div>
+
+          <div className="multi-layout">
+          {/* Left: identity (name + avatar) */}
+          <div className="multi-setup" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
 
           {/* Pseudo */}
           <input
@@ -236,6 +242,11 @@ function MultiLobbyContent() {
             </div>
           )}
 
+          </div>{/* end multi-setup */}
+
+          {/* Right: actions */}
+          <div className="multi-actions" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+
           {error && (
             <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '2px', color: '#ff2d78', textAlign: 'center' }}>{error}</div>
           )}
@@ -244,15 +255,18 @@ function MultiLobbyContent() {
           <button
             onClick={handleQuick}
             disabled={searching}
+            onMouseEnter={e => { if (!searching) { e.currentTarget.style.filter = 'brightness(1.08)'; e.currentTarget.style.boxShadow = '0 0 30px rgba(255,224,0,0.45)' } }}
+            onMouseLeave={e => { e.currentTarget.style.filter = 'none'; e.currentTarget.style.boxShadow = '0 0 22px rgba(255,224,0,0.25)' }}
             style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px',
               background: 'linear-gradient(90deg, #ff6a00, #ffe000)', border: 'none',
-              padding: '14px 0', cursor: searching ? 'default' : 'pointer', opacity: searching ? 0.6 : 1,
+              padding: '16px 0', cursor: searching ? 'default' : 'pointer', opacity: searching ? 0.6 : 1,
               boxShadow: '0 0 22px rgba(255,224,0,0.25)', transition: 'all 0.2s',
             }}
           >
-            <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.3rem', letterSpacing: '4px', color: '#1a0a00' }}>
-              {searching ? t('multi.searching') : `⚡ ${t('multi.quick_match')}`}
+            <span style={{ display: 'flex', alignItems: 'center', gap: '9px', fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.35rem', letterSpacing: '4px', color: '#1a0a00' }}>
+              <Icon name="flash" size={19} color="#1a0a00" />
+              {searching ? t('multi.searching') : t('multi.quick_match')}
             </span>
             {!searching && <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color: 'rgba(0,0,0,0.55)' }}>{t('multi.quick_match_sub')}</span>}
           </button>
@@ -315,7 +329,9 @@ function MultiLobbyContent() {
             </div>
           )}
 
-        </div>
+          </div>{/* end multi-actions */}
+          </div>{/* end multi-layout */}
+        </Container>
       </main>
     </>
   )

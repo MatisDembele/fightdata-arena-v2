@@ -3,6 +3,7 @@ export const dynamic = 'force-static'
 import { useState, useEffect, useCallback, type ReactNode } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
+import Container from '@/components/Container'
 import { getGlobalLeaderboard, syncProfile, type GlobalLeaderboardEntry } from '@/lib/api'
 import { ACHIEVEMENTS, RARITY_COLOR, RARITY_LABEL, RARITIES, achDesc, type Rarity } from '@/lib/achievements'
 import { useLanguage, type DictKey } from '@/lib/i18n'
@@ -218,11 +219,34 @@ export default function ProfilePage() {
     { id: 'mistakes',     label: t('profile.error_bank'), badge: mistakesCount || undefined },
   ]
 
+  // BY MODE table for a given list of modes — reused to split into 2 columns on desktop.
+  const renderModeTable = (modes: string[]) => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 70px 56px', gap: '8px', padding: '8px 16px', background: 'rgba(255,255,255,0.04)' }}>
+        {(['MODE', t('profile.col_best'), t('profile.col_acc'), t('profile.col_games')] as string[]).map((h, i) => (
+          <div key={i} style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.7)', textAlign: i === 0 ? 'left' : 'center' }}>{h}</div>
+        ))}
+      </div>
+      {modes.map((m, i) => {
+        const best = modeBests[m]
+        const c = MODE_COLORS[m] || '#888'
+        return (
+          <div key={m} style={{ display: 'grid', gridTemplateColumns: '1fr 70px 70px 56px', gap: '8px', padding: isDesktop ? '10px 16px' : '9px 14px', background: i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '0.85rem' : '0.8rem', letterSpacing: '1px', color: c }}>{MODE_LABEL[m]}</div>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.6rem' : '0.55rem', color: best ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.32)', textAlign: 'center' }}>{best ? best.bestScore : '—'}</div>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.6rem' : '0.55rem', color: best && !HIGHSCORE_MODES.has(m) ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.32)', textAlign: 'center' }}>{best && !HIGHSCORE_MODES.has(m) ? `${best.bestAccuracy}%` : '—'}</div>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.6rem' : '0.55rem', color: best ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.32)', textAlign: 'center' }}>{best?.totalGames ?? '—'}</div>
+          </div>
+        )
+      })}
+    </div>
+  )
+
   return (
     <>
       <Navbar />
-      <main style={{ padding: isDesktop ? '32px 48px 80px' : '24px 16px 80px', minHeight: 'calc(100vh - 60px)' }}>
-        <div style={{ maxWidth: isDesktop ? '1160px' : '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <main style={{ padding: isDesktop ? '32px 0 80px' : '24px 0 80px', minHeight: 'calc(100vh - 60px)' }}>
+        <Container variant="data" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
           {/* ── HERO ── */}
           <div style={{
@@ -401,28 +425,14 @@ export default function ProfilePage() {
               </Section>
 
               {/* By mode + Global LB */}
-              <div style={isDesktop ? { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '28px', alignItems: 'start' } : { display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                <Section title={t('profile.by_mode')} color={color} isDesktop={isDesktop}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 70px 56px', gap: '8px', padding: '8px 16px', background: 'rgba(255,255,255,0.04)' }}>
-                      {(['MODE', t('profile.col_best'), t('profile.col_acc'), t('profile.col_games')] as string[]).map((h, i) => (
-                        <div key={i} style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.7)', textAlign: i === 0 ? 'left' : 'center' }}>{h}</div>
-                      ))}
-                    </div>
-                    {QUIZ_MODES.map((m, i) => {
-                      const best = modeBests[m]
-                      const c = MODE_COLORS[m] || '#888'
-                      return (
-                        <div key={m} style={{ display: 'grid', gridTemplateColumns: '1fr 70px 70px 56px', gap: '8px', padding: isDesktop ? '10px 16px' : '9px 14px', background: i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                          <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '0.85rem' : '0.8rem', letterSpacing: '1px', color: c }}>{MODE_LABEL[m]}</div>
-                          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.6rem' : '0.55rem', color: best ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.32)', textAlign: 'center' }}>{best ? best.bestScore : '—'}</div>
-                          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.6rem' : '0.55rem', color: best && !HIGHSCORE_MODES.has(m) ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.32)', textAlign: 'center' }}>{best && !HIGHSCORE_MODES.has(m) ? `${best.bestAccuracy}%` : '—'}</div>
-                          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.6rem' : '0.55rem', color: best ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.32)', textAlign: 'center' }}>{best?.totalGames ?? '—'}</div>
-                        </div>
-                      )
-                    })}
+              <Section title={t('profile.by_mode')} color={color} isDesktop={isDesktop}>
+                {isDesktop ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'start' }}>
+                    {renderModeTable(QUIZ_MODES.slice(0, Math.ceil(QUIZ_MODES.length / 2)))}
+                    {renderModeTable(QUIZ_MODES.slice(Math.ceil(QUIZ_MODES.length / 2)))}
                   </div>
-                </Section>
+                ) : renderModeTable(QUIZ_MODES)}
+              </Section>
 
                 {globalLb.length > 0 && (
                   <Section title={t('stats.global_leaderboard')} color="#ffd700" isDesktop={isDesktop}>
@@ -453,7 +463,6 @@ export default function ProfilePage() {
                     </div>
                   </Section>
                 )}
-              </div>
 
               {/* Delete account */}
               {user && token && (
@@ -666,7 +675,7 @@ export default function ProfilePage() {
             </Section>
           )}
 
-        </div>
+        </Container>
       </main>
     </>
   )

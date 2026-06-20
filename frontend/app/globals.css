@@ -269,6 +269,54 @@ body {
   .home-boards .home-board { flex: 0 0 auto; width: 100%; max-width: 100%; }
 }
 
+/* Quiz mode picker — mobile: stacked (stat → mode → special). Desktop: two-pane
+   so the whole picker fits one screen without scrolling — STAT + SPECIAL on the
+   left, the bigger MODE grid on the right (spanning both rows). */
+.quiz-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 22px;
+}
+@media (min-width: 900px) {
+  .quiz-layout {
+    grid-template-columns: 0.82fr 1.18fr;
+    grid-template-areas: "stat mode" "special mode";
+    align-items: start;
+    column-gap: 26px;
+  }
+  .quiz-area-stat    { grid-area: stat; }
+  .quiz-area-mode    { grid-area: mode; }
+  .quiz-area-special { grid-area: special; }
+}
+
+/* Multi lobby — mobile: stacked. Desktop: identity (name + avatar) on the left,
+   actions (quick match / rooms / private) on the right — fits one screen. */
+.multi-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+@media (min-width: 900px) {
+  .multi-layout {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "setup actions";
+    align-items: start;
+    column-gap: 36px;
+  }
+  .multi-setup   { grid-area: setup; }
+  .multi-actions { grid-area: actions; }
+}
+
+/* Challenges — mobile: DAILY then WEEKLY stacked. Desktop: side by side. */
+.challenges-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+@media (min-width: 900px) {
+  .challenges-cards { grid-template-columns: 1fr 1fr; align-items: start; gap: 28px; }
+}
+
 /* Home page mode cards */
 .home-modes-row {
   display: flex;
