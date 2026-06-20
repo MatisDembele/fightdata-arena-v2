@@ -1,6 +1,6 @@
 'use client'
 export const dynamic = 'force-static'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
@@ -368,6 +368,31 @@ export default function FrameDataPage() {
   const { lang } = useLanguage()
   const c = CONTENT[(['en', 'fr', 'es', 'ja'].includes(lang) ? lang : 'en') as Lang]
 
+  // Table of contents + scroll-spy: highlight the chapter currently in view.
+  const TOC = [
+    { id: 'fd-01', n: '01', label: c.s1_t },
+    { id: 'fd-02', n: '02', label: c.s2_t },
+    { id: 'fd-03', n: '03', label: c.s3_t },
+    { id: 'fd-04', n: '04', label: c.s4_t },
+    { id: 'fd-cheat', n: '★', label: c.cs_t },
+  ]
+  const [activeId, setActiveId] = useState('fd-01')
+  useEffect(() => {
+    const onScroll = () => {
+      // The active chapter is the last whose top has scrolled past the navbar.
+      let current = TOC[0].id
+      for (const { id } of TOC) {
+        const el = document.getElementById(id)
+        if (el && el.getBoundingClientRect().top <= 120) current = id
+      }
+      setActiveId(current)
+    }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang])
+
   // Frame meter example: 5f startup · 3f active · 12f recovery
   const TL = [
     { label: 'STARTUP', f: 5, color: COL.startup },
@@ -392,21 +417,18 @@ export default function FrameDataPage() {
         <div className="frame-doc">
           {/* Sticky table of contents (desktop only) — uses the empty left gutter. */}
           <nav className="frame-toc">
-            {[
-              { id: 'fd-01', n: '01', label: c.s1_t },
-              { id: 'fd-02', n: '02', label: c.s2_t },
-              { id: 'fd-03', n: '03', label: c.s3_t },
-              { id: 'fd-04', n: '04', label: c.s4_t },
-              { id: 'fd-cheat', n: '★', label: c.cs_t },
-            ].map(item => (
-              <a key={item.id} href={`#${item.id}`}
-                onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.62)')}
-                style={{ display: 'flex', gap: '10px', alignItems: 'baseline', padding: '7px 0', textDecoration: 'none', color: 'rgba(255,255,255,0.62)', fontFamily: "'Rajdhani', sans-serif", fontSize: '0.92rem', fontWeight: 600, letterSpacing: '0.3px', transition: 'color 0.15s' }}>
-                <span style={{ fontFamily: "'Bebas Neue', sans-serif", color: ACCENT, fontSize: '0.85rem', letterSpacing: '1px', flexShrink: 0 }}>{item.n}</span>
-                {item.label}
-              </a>
-            ))}
+            {TOC.map(item => {
+              const active = activeId === item.id
+              return (
+                <a key={item.id} href={`#${item.id}`}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
+                  onMouseLeave={e => (e.currentTarget.style.color = active ? '#fff' : 'rgba(255,255,255,0.5)')}
+                  style={{ display: 'flex', gap: '10px', alignItems: 'baseline', padding: '7px 0', textDecoration: 'none', color: active ? '#fff' : 'rgba(255,255,255,0.5)', fontFamily: "'Rajdhani', sans-serif", fontSize: '0.92rem', fontWeight: active ? 700 : 600, letterSpacing: '0.3px', transition: 'color 0.15s, transform 0.15s', transform: active ? 'translateX(3px)' : 'none' }}>
+                  <span style={{ fontFamily: "'Bebas Neue', sans-serif", color: ACCENT, fontSize: '0.85rem', letterSpacing: '1px', flexShrink: 0, opacity: active ? 1 : 0.5, textShadow: active ? `0 0 10px ${ACCENT}99` : 'none' }}>{item.n}</span>
+                  {item.label}
+                </a>
+              )
+            })}
           </nav>
 
           <div style={{ maxWidth: '760px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 'clamp(36px, 7vh, 60px)', paddingBottom: '80px' }}>
