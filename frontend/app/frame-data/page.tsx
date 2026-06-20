@@ -380,7 +380,7 @@ export default function FrameDataPage() {
   return (
     <>
       <Navbar />
-      <main style={{ position: 'relative', minHeight: 'calc(100vh - 60px)', overflow: 'hidden', padding: 'clamp(32px, 6vh, 64px) 20px 0' }}>
+      <main style={{ position: 'relative', minHeight: 'calc(100vh - 60px)', padding: 'clamp(32px, 6vh, 64px) 20px 0' }}>
         <div style={{
           position: 'absolute', inset: 0, zIndex: 0,
           background: `
@@ -389,7 +389,27 @@ export default function FrameDataPage() {
             linear-gradient(160deg, #0d0010 0%, #14001f 60%, #0d0015 100%)`,
         }} />
 
-        <div style={{ position: 'relative', zIndex: 1, maxWidth: '760px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 'clamp(36px, 7vh, 60px)', paddingBottom: '80px' }}>
+        <div className="frame-doc">
+          {/* Sticky table of contents (desktop only) — uses the empty left gutter. */}
+          <nav className="frame-toc">
+            {[
+              { id: 'fd-01', n: '01', label: c.s1_t },
+              { id: 'fd-02', n: '02', label: c.s2_t },
+              { id: 'fd-03', n: '03', label: c.s3_t },
+              { id: 'fd-04', n: '04', label: c.s4_t },
+              { id: 'fd-cheat', n: '★', label: c.cs_t },
+            ].map(item => (
+              <a key={item.id} href={`#${item.id}`}
+                onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.62)')}
+                style={{ display: 'flex', gap: '10px', alignItems: 'baseline', padding: '7px 0', textDecoration: 'none', color: 'rgba(255,255,255,0.62)', fontFamily: "'Rajdhani', sans-serif", fontSize: '0.92rem', fontWeight: 600, letterSpacing: '0.3px', transition: 'color 0.15s' }}>
+                <span style={{ fontFamily: "'Bebas Neue', sans-serif", color: ACCENT, fontSize: '0.85rem', letterSpacing: '1px', flexShrink: 0 }}>{item.n}</span>
+                {item.label}
+              </a>
+            ))}
+          </nav>
+
+          <div style={{ maxWidth: '760px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 'clamp(36px, 7vh, 60px)', paddingBottom: '80px' }}>
 
           {/* Hero */}
           <header className="animate-fadeInUp" style={{ textAlign: 'center' }}>
@@ -402,7 +422,7 @@ export default function FrameDataPage() {
           </header>
 
           {/* 01 — The frame */}
-          <section style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <section id="fd-01" style={{ display: 'flex', flexDirection: 'column', gap: '16px', scrollMarginTop: '80px' }}>
             <SectionHead n="01" title={c.s1_t} />
             <p style={lead}>{c.s1_lead}</p>
             <Callout icon="📖">{c.s1_analogy}</Callout>
@@ -419,7 +439,7 @@ export default function FrameDataPage() {
           </section>
 
           {/* 02 — The 3 phases */}
-          <section style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <section id="fd-02" style={{ display: 'flex', flexDirection: 'column', gap: '16px', scrollMarginTop: '80px' }}>
             <SectionHead n="02" title={c.s2_t} />
             <p style={lead}>{c.s2_lead}</p>
             <Callout icon="🥊">{c.s2_analogy}</Callout>
@@ -456,7 +476,7 @@ export default function FrameDataPage() {
           </section>
 
           {/* 03 — Frame advantage */}
-          <section style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <section id="fd-03" style={{ display: 'flex', flexDirection: 'column', gap: '16px', scrollMarginTop: '80px' }}>
             <SectionHead n="03" title={c.s3_t} />
             <p style={lead}>{c.s3_lead}</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
@@ -472,7 +492,7 @@ export default function FrameDataPage() {
           </section>
 
           {/* 04 — Punish */}
-          <section style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <section id="fd-04" style={{ display: 'flex', flexDirection: 'column', gap: '16px', scrollMarginTop: '80px' }}>
             <SectionHead n="04" title={c.s4_t} />
             <p style={lead}>{c.s4_lead}</p>
             <Callout color={COL.startup} icon="⚡"><strong>{c.s4_rule}</strong></Callout>
@@ -480,7 +500,7 @@ export default function FrameDataPage() {
           </section>
 
           {/* Cheat sheet */}
-          <section style={{ ...card, background: `${ACCENT}0f`, border: `1px solid ${ACCENT}44`, display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <section id="fd-cheat" style={{ ...card, background: `${ACCENT}0f`, border: `1px solid ${ACCENT}44`, display: 'flex', flexDirection: 'column', gap: '14px', scrollMarginTop: '80px' }}>
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(1.4rem, 3.5vw, 1.9rem)', letterSpacing: '3px', color: '#fff', textShadow: `0 0 16px ${ACCENT}66` }}>{c.cs_t}</div>
             {[c.cs1, c.cs2, c.cs3, c.cs4].map((line, i) => (
               <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
@@ -500,6 +520,7 @@ export default function FrameDataPage() {
           </section>
 
         </div>
+        </div>{/* end frame-doc */}
       </main>
       <Footer />
     </>

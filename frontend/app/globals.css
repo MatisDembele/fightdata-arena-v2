@@ -340,6 +340,29 @@ body {
   .result-recap { padding-top: 8px; }
 }
 
+/* Frame-data article — the prose column stays narrow for readability; on wide
+   screens a sticky table of contents fills the otherwise-empty left gutter. */
+.frame-doc { position: relative; z-index: 1; }
+.frame-toc { display: none; }
+@media (min-width: 1100px) {
+  .frame-doc {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 760px);
+    justify-content: center;
+    column-gap: 56px;
+    align-items: start;
+  }
+  .frame-toc {
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 88px;
+    padding-top: 6px;
+    border-left: 1px solid rgba(255,255,255,0.08);
+    padding-left: 16px;
+  }
+}
+
 /* Home page mode cards */
 .home-modes-row {
   display: flex;
