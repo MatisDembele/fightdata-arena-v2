@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
+import PageHeader from '@/components/PageHeader'
 import Icon, { type IconName } from '@/components/Icon'
 import { getFighters } from '@/lib/api'
 import { getFighterPortrait, getFighterColor } from '@/lib/portraits'
@@ -239,18 +240,7 @@ export default function QuizSelectPage() {
         <Container variant="tool">
 
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <h1 style={{
-            fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: 'clamp(2rem, 5vw, 3rem)',
-            letterSpacing: '8px', color: '#fff', margin: 0,
-            textShadow: `0 0 20px ${accentColor}`,
-            transition: 'text-shadow 0.4s',
-          }}>{t('quiz.choose_mode')}</h1>
-          <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-sm)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.7)', marginTop: '8px' }}>
-            {t('quiz.pick_stat_format')}
-          </p>
-        </div>
+        <PageHeader title={t('quiz.choose_mode')} subtitle={t('quiz.pick_stat_format')} accent={accentColor} />
 
         <div className="quiz-layout">
 

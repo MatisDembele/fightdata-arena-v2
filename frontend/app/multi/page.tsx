@@ -3,6 +3,7 @@ import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
+import PageHeader from '@/components/PageHeader'
 import Icon from '@/components/Icon'
 import { track } from '@vercel/analytics'
 import { useLanguage } from '@/lib/i18n'
@@ -173,13 +174,10 @@ function MultiLobbyContent() {
   return (
     <>
       <Navbar />
-      <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', minHeight: 'calc(100vh - 60px)' }}>
+      <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 0 60px', minHeight: 'calc(100vh - 60px)' }}>
         <Container variant="tool" style={{ display: 'flex', flexDirection: 'column' }}>
 
-          <div style={{ marginBottom: '32px', textAlign: 'center' }}>
-            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2rem, 6vw, 3rem)', letterSpacing: '8px', color: '#fff', textShadow: '0 0 20px rgba(255,224,0,0.3)', lineHeight: 1 }}>{t('multi.title')}</div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.65)', marginTop: '8px' }}>{t('multi.subtitle')}</div>
-          </div>
+          <PageHeader title={t('multi.title')} subtitle={t('multi.subtitle')} accent="rgba(255,224,0,0.3)" />
 
           <div className="multi-layout">
           {/* Left: identity (name + avatar) */}

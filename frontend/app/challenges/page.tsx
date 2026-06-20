@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
+import PageHeader from '@/components/PageHeader'
 import { useLanguage } from '@/lib/i18n'
 import Icon, { type IconName } from '@/components/Icon'
 import { ACCENT } from '@/lib/colors'
@@ -135,18 +136,11 @@ export default function ChallengesPage() {
   return (
     <>
       <Navbar />
-      <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '48px 0 80px', minHeight: 'calc(100vh - 60px)' }}>
+      <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 0 60px', minHeight: 'calc(100vh - 60px)' }}>
         <Container variant="tool">
 
           {/* Header */}
-          <div style={{ marginBottom: '40px', textAlign: 'center' }}>
-            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2rem, 6vw, 3rem)', letterSpacing: '8px', color: '#fff', textShadow: '0 0 20px rgba(255,224,0,0.3)', lineHeight: 1 }}>
-              CHALLENGES
-            </div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.65)', marginTop: '8px' }}>
-              FIGHT DATA ARENA // TIME-BASED CHALLENGES
-            </div>
-          </div>
+          <PageHeader title="CHALLENGES" subtitle="FIGHT DATA ARENA // TIME-BASED CHALLENGES" accent="rgba(255,224,0,0.3)" />
 
           {/* Streak Hero */}
           {streak > 0 && (

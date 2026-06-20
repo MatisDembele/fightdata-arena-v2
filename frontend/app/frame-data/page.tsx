@@ -3,6 +3,7 @@ export const dynamic = 'force-static'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
+import PageHeader from '@/components/PageHeader'
 import Footer from '@/components/Footer'
 import { useLanguage } from '@/lib/i18n'
 
@@ -405,7 +406,7 @@ export default function FrameDataPage() {
   return (
     <>
       <Navbar />
-      <main style={{ minHeight: 'calc(100vh - 60px)', padding: 'clamp(32px, 6vh, 64px) 20px 0' }}>
+      <main style={{ minHeight: 'calc(100vh - 60px)', padding: '40px 20px 0' }}>
         <div className="frame-doc">
           {/* Sticky table of contents (desktop only) — uses the empty left gutter. */}
           <nav className="frame-toc">
@@ -425,12 +426,9 @@ export default function FrameDataPage() {
 
           <div style={{ maxWidth: '760px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 'clamp(36px, 7vh, 60px)', paddingBottom: '80px' }}>
 
-          {/* Hero — same header treatment as quiz: title + mono subtitle, single glow */}
+          {/* Hero — shared page header (aligned with quiz) + article intro */}
           <header className="animate-fadeInUp" style={{ textAlign: 'center' }}>
-            <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2rem, 6vw, 3rem)', letterSpacing: '8px', lineHeight: 1, color: '#fff', margin: 0, textShadow: `0 0 20px ${ACCENT}` }}>FRAME DATA</h1>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.65)', marginTop: '8px' }}>
-              {c.read_time}
-            </div>
+            <PageHeader title="FRAME DATA" subtitle={c.read_time} accent={ACCENT} style={{ marginBottom: 0 }} />
             <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: 'clamp(1.05rem, 2.2vw, 1.3rem)', fontWeight: 600, lineHeight: 1.55, color: '#fff', maxWidth: '600px', margin: '22px auto 0' }}>{c.hook}</p>
             <p style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: 'clamp(0.98rem, 2vw, 1.1rem)', fontWeight: 500, lineHeight: 1.6, color: 'rgba(255,255,255,0.7)', maxWidth: '560px', margin: '14px auto 0' }}>{c.promise}</p>
           </header>
