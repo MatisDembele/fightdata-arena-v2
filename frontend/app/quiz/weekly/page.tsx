@@ -12,6 +12,7 @@ import QuestionCard, { makeChoiceStyle } from '@/components/QuestionCard'
 import Icon from '@/components/Icon'
 import { playCorrect, playWrong } from '@/lib/sounds'
 import { primaryGifSrc } from '@/lib/gif'
+import { answerPoints } from '@/lib/constants'
 
 const COLOR     = '#ff6a00'
 const COLOR_ALT = '#d97706'
@@ -25,7 +26,8 @@ const TOTAL_Q = 20
 interface WeeklyResult {
   week: string
   answers: boolean[]
-  score: number
+  score: number      // number correct (0-20)
+  points?: number    // time-based score shown on the leaderboard
 }
 
 function formatTime(s: number): string {
@@ -60,8 +62,8 @@ function getStoredResult(): WeeklyResult | null {
   } catch { return null }
 }
 
-function saveResult(answers: boolean[], score: number): void {
-  localStorage.setItem('fda_weekly_result', JSON.stringify({ week: mondayStr(), answers, score }))
+function saveResult(answers: boolean[], score: number, points: number): void {
+  localStorage.setItem('fda_weekly_result', JSON.stringify({ week: mondayStr(), answers, score, points }))
 }
 
 function WeeklyPage() {
@@ -71,7 +73,8 @@ function WeeklyPage() {
   const [answers, setAnswers]     = useState<boolean[]>([])
   const [selected, setSelected]   = useState<string | null>(null)
   const [state, setState]         = useState<AnswerState>('idle')
-  const [score, setScore]         = useState(0)
+  const [score, setScore]         = useState(0)   // number correct
+  const [points, setPoints]       = useState(0)   // time-based score (leaderboard)
   const [copied, setCopied]       = useState(false)
   const [loading, setLoading]     = useState(false)
   const [loadError, setLoadError] = useState(false)
@@ -84,6 +87,8 @@ function WeeklyPage() {
   const [newAchievements, setNewAchievements] = useState<Achievement[]>([])
   function dismissAchievement(id: string) { setNewAchievements(prev => prev.filter(a => a.id !== id)) }
   const answersRef   = useRef<boolean[]>([])
+  const pointsRef    = useRef<number>(0)
+  const qStartRef    = useRef<number>(0)   // timestamp the current question became answerable
   const startTimeRef = useRef<number>(0)
   const elapsedRef   = useRef<number | null>(null)
   const { t } = useLanguage()
@@ -95,6 +100,7 @@ function WeeklyPage() {
       setAlreadyPlayed(result)
       setAnswers(result.answers)
       setScore(result.score)
+      setPoints(result.points ?? 0)
       setPhase('finished')
     }
   }, [])
@@ -145,6 +151,9 @@ function WeeklyPage() {
 
   const startPlaying = () => {
     startTimeRef.current = Date.now()
+    qStartRef.current = Date.now()
+    pointsRef.current = 0
+    setPoints(0)
     setTimeLeft(TIME_PER_Q)
     loadQuestions()
     setPhase('playing')
@@ -155,11 +164,23 @@ function WeeklyPage() {
     const correct = choice === questions[idx]?.answer
     setSelected(choice)
     setState(correct ? 'correct' : 'wrong')
-    if (correct) { playCorrect(); setScore(s => s + 1) } else playWrong()
+    if (correct) {
+      // Time-based points, faster answer = more (mirrors the multiplayer mode).
+      const pts = answerPoints(qStartRef.current ? Date.now() - qStartRef.current : 0)
+      pointsRef.current += pts
+      setPoints(p => p + pts)
+      playCorrect(); setScore(s => s + 1)
+    } else playWrong()
     const next = [...answersRef.current, correct]
     answersRef.current = next
     setAnswers(next)
   }
+
+  // Stamp when each question becomes answerable, so points reward answer speed.
+  useEffect(() => {
+    if (phase !== 'playing' || state !== 'idle' || !questions[idx]) return
+    qStartRef.current = Date.now()
+  }, [phase, state, idx, questions])
 
   useEffect(() => {
     if (phase !== 'playing') return
@@ -202,20 +223,23 @@ function WeeklyPage() {
     if (idx + 1 >= questions.length) {
       const finalAnswers = answersRef.current
       const finalScore   = finalAnswers.filter(Boolean).length
+      const finalPoints  = pointsRef.current
       const accuracy     = Math.round(finalScore / finalAnswers.length * 100)
       const elapsed      = startTimeRef.current ? Math.round((Date.now() - startTimeRef.current) / 100) / 10 : undefined
       elapsedRef.current = elapsed ?? null
-      saveResult(finalAnswers, finalScore)
-      track('weekly_played', { score: finalScore, accuracy })
+      saveResult(finalAnswers, finalScore, finalPoints)
+      track('weekly_played', { score: finalScore, points: finalPoints, accuracy })
       setScore(finalScore)
+      setPoints(finalPoints)
       // Achievements
       const newly = checkAndUnlock({ weeklyScore: finalScore })
       if (newly.length > 0) setNewAchievements(newly)
+      // The points total ranks players; the mondial board still uses correct count.
       const pseudo = localStorage.getItem('fda_pseudo')?.trim()
       if (pseudo) {
         setLbName(pseudo)
         setLbSubmitted(true)
-        submitWeeklyScore(pseudo, finalScore, accuracy, elapsed).catch(() => {})
+        submitWeeklyScore(pseudo, finalPoints, accuracy, elapsed).catch(() => {})
         submitGlobalScore(pseudo, finalScore, finalAnswers.length).catch(() => {})
       }
       setPhase('finished')
@@ -233,7 +257,7 @@ function WeeklyPage() {
     setLbSubmitting(true)
     try {
       const acc = answers.length ? Math.round(score / answers.length * 100) : 0
-      await submitWeeklyScore(name, score, acc, elapsedRef.current ?? undefined)
+      await submitWeeklyScore(name, points, acc, elapsedRef.current ?? undefined)
       localStorage.setItem('fda_pseudo', name)
       setLbSubmitted(true)
       fetchLeaderboard()
@@ -251,7 +275,7 @@ function WeeklyPage() {
     const lines = [
       `FIGHT DATA ARENA — WEEKLY W${wk}`,
       ...rows,
-      `${score}/${TOTAL_Q}`,
+      `${points} pts (${score}/${TOTAL_Q})`,
       'fightdata.app/quiz/weekly',
     ]
     try {
@@ -321,8 +345,13 @@ function WeeklyPage() {
             )}
           </div>
 
-          <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(3rem, 10vw, 5rem)', letterSpacing: '4px', color: '#fff', textShadow: `0 0 30px ${COLOR}88`, lineHeight: 1 }}>
-            {score}<span style={{ fontSize: '0.5em', color: COLOR }}>/{TOTAL_Q}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(3rem, 10vw, 5rem)', letterSpacing: '4px', color: '#fff', textShadow: `0 0 30px ${COLOR}88`, lineHeight: 1 }}>
+              {points}<span style={{ fontSize: '0.3em', color: COLOR, letterSpacing: '3px' }}> PTS</span>
+            </div>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-sm)', letterSpacing: '2px', color: 'rgba(255,255,255,0.7)' }}>
+              {score}/{TOTAL_Q} {t('daily.correct')}
+            </div>
           </div>
 
           {/* Answer grid — 2 rows of 10 */}
@@ -438,7 +467,7 @@ function WeeklyPage() {
                       <span style={{
                         fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '1px',
                         color: isMe ? COLOR : 'rgba(255,255,255,0.65)', textAlign: 'right',
-                      }}>{entry.score}/{TOTAL_Q}</span>
+                      }}>{entry.score}</span>
                     </div>
                   )
                 })}
@@ -467,7 +496,7 @@ function WeeklyPage() {
             <div style={{ height: '100%', width: `${(idx / TOTAL_Q) * 100}%`, background: `linear-gradient(90deg, ${COLOR_ALT}, ${COLOR})`, transition: 'width 0.3s' }} />
           </div>
           {[
-            { val: score,                        label: t('daily.score') },
+            { val: points,                       label: t('daily.score') },
             { val: `${idx + 1}/${TOTAL_Q}`,      label: t('daily.question') },
             { val: `${answers.filter(Boolean).length}/${answers.length || 0}`, label: t('daily.correct') },
           ].map(s => (

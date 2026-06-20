@@ -36,6 +36,13 @@ export const MODE_COLORS_ALT: Record<string, string> = {
   recovery:  '#1d4ed8',
 }
 
+// Time-based per-question score, mirroring the multiplayer formula
+// (app/main.py): up to 1000 points decaying with answer time, and a correct
+// answer is always worth at least 100. A wrong/timed-out answer scores 0.
+export function answerPoints(elapsedMs: number): number {
+  return Math.max(100, Math.round(1000 - elapsedMs / 10))
+}
+
 export interface Rank {
   label: string
   color: string

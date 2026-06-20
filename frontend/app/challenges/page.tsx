@@ -9,8 +9,8 @@ import { ACCENT } from '@/lib/colors'
 import { getDailyLeaderboard, getWeeklyLeaderboard, type LeaderboardEntry } from '@/lib/api'
 import { getRank, type Rank } from '@/lib/constants'
 
-interface DailyResult  { date: string;  answers: boolean[]; score: number }
-interface WeeklyResult { week: string;  answers: boolean[]; score: number }
+interface DailyResult  { date: string;  answers: boolean[]; score: number; points?: number }
+interface WeeklyResult { week: string;  answers: boolean[]; score: number; points?: number }
 interface DailyStreak  { streak: number; last_played: string }
 
 function todayStr(): string {
@@ -208,6 +208,7 @@ export default function ChallengesPage() {
               colorAlt="#00b894"
               played={!!dailyResult}
               score={dailyResult?.score ?? null}
+              points={dailyResult?.points ?? null}
               total={10}
               accuracy={dailyAcc}
               answers={dailyResult?.answers ?? null}
@@ -227,6 +228,7 @@ export default function ChallengesPage() {
               colorAlt="#d97706"
               played={!!weeklyResult}
               score={weeklyResult?.score ?? null}
+              points={weeklyResult?.points ?? null}
               total={20}
               accuracy={weeklyAcc}
               answers={weeklyResult?.answers ?? null}
@@ -253,6 +255,7 @@ interface CardProps {
   colorAlt: string
   played: boolean
   score: number | null
+  points: number | null
   total: number
   accuracy: number | null
   answers: boolean[] | null
@@ -265,7 +268,7 @@ interface CardProps {
   pseudo: string
 }
 
-function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accuracy, answers, streakLabel, resetLabel, href, icon, leaderboard, rank, pseudo }: CardProps) {
+function ChallengeCard({ title, sub, color, colorAlt, played, score, points, total, accuracy, answers, streakLabel, resetLabel, href, icon, leaderboard, rank, pseudo }: CardProps) {
   const { t } = useLanguage()
   const lbTitle = title === 'DAILY'
     ? t('challenge.top_daily',  { n: Math.min(leaderboard.length, 5) })
@@ -328,12 +331,13 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
             {played && score !== null ? (
               <>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '2.5rem', letterSpacing: '2px', lineHeight: 1, color: color, textShadow: `0 0 16px ${color}66` }}>
-                    {score}<span style={{ fontSize: '1rem', opacity: 0.5 }}>/{total}</span>
+                  <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: points != null ? '2rem' : '2.5rem', letterSpacing: '2px', lineHeight: 1, color: color, textShadow: `0 0 16px ${color}66` }}>
+                    {points != null ? points : score}
+                    <span style={{ fontSize: '1rem', opacity: 0.5, letterSpacing: points != null ? '2px' : '0' }}>{points != null ? ' PTS' : `/${total}`}</span>
                   </div>
-                  {accuracy !== null && (
+                  {(points != null || accuracy !== null) && (
                     <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.7)', marginTop: '2px' }}>
-                      {accuracy}% {t('stats.accuracy').toLowerCase()}
+                      {points != null ? `${score}/${total}` : ''}{points != null && accuracy !== null ? ' · ' : ''}{accuracy !== null ? `${accuracy}% ${t('stats.accuracy').toLowerCase()}` : ''}
                     </div>
                   )}
                   {rank && (
@@ -407,7 +411,7 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
                   <span style={{
                     fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.78rem', letterSpacing: '1px',
                     color: isMe ? color : 'rgba(255,255,255,0.7)', textAlign: 'right',
-                  }}>{entry.score}/{total}</span>
+                  }}>{entry.score}</span>
                 </div>
               )
             })}
@@ -436,7 +440,7 @@ function ChallengeCard({ title, sub, color, colorAlt, played, score, total, accu
                     {myEntry.elapsed_seconds != null ? formatTime(myEntry.elapsed_seconds) : '—'}
                   </span>
                   <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.78rem', letterSpacing: '1px', color: color, textAlign: 'right' }}>
-                    {myEntry.score}/{total}
+                    {myEntry.score}
                   </span>
                 </div>
               </>

@@ -13,6 +13,7 @@ import { checkAndUnlock, updateLifetime, type Achievement } from '@/lib/achievem
 import AchievementToast from '@/components/AchievementToast'
 import Icon from '@/components/Icon'
 import { primaryGifSrc } from '@/lib/gif'
+import { answerPoints } from '@/lib/constants'
 
 const COLOR     = '#00ff88'
 const COLOR_ALT = '#00b894'
@@ -24,7 +25,8 @@ type AnswerState = 'idle' | 'correct' | 'wrong'
 interface DailyResult {
   date: string
   answers: boolean[]
-  score: number
+  score: number      // number correct (0-10)
+  points?: number    // time-based score shown on the leaderboard
 }
 
 interface DailyStreak {
@@ -74,7 +76,7 @@ function getStoredStreak(): DailyStreak {
   } catch { return { streak: 0, last_played: '' } }
 }
 
-function saveResultAndStreak(answers: boolean[], score: number): DailyStreak {
+function saveResultAndStreak(answers: boolean[], score: number, points: number): DailyStreak {
   const today = todayStr()
 
   // Compute streak BEFORE writing anything to avoid desync on crash
@@ -90,7 +92,7 @@ function saveResultAndStreak(answers: boolean[], score: number): DailyStreak {
   const streakData: DailyStreak = { streak: newStreak, last_played: today }
 
   // Write both synchronously — minimizes desync window
-  localStorage.setItem('fda_daily_result', JSON.stringify({ date: today, answers, score }))
+  localStorage.setItem('fda_daily_result', JSON.stringify({ date: today, answers, score, points }))
   localStorage.setItem('fda_daily_streak', JSON.stringify(streakData))
   const hist = JSON.parse(localStorage.getItem('fda_daily_history') || '{}') as Record<string, {score:number;total:number}>
   hist[today] = { score, total: answers.length }
@@ -105,7 +107,8 @@ function DailyPage() {
   const [answers, setAnswers]     = useState<boolean[]>([])
   const [selected, setSelected]   = useState<string | null>(null)
   const [state, setState]         = useState<AnswerState>('idle')
-  const [score, setScore]         = useState(0)
+  const [score, setScore]         = useState(0)   // number correct
+  const [points, setPoints]       = useState(0)   // time-based score (leaderboard)
   const [streak, setStreak]       = useState(0)
   const [copied, setCopied]       = useState(false)
   const [loading, setLoading]     = useState(false)
@@ -119,6 +122,8 @@ function DailyPage() {
   const [newAchievements, setNewAchievements] = useState<Achievement[]>([])
   function dismissAchievement(id: string) { setNewAchievements(prev => prev.filter(a => a.id !== id)) }
   const answersRef   = useRef<boolean[]>([])
+  const pointsRef    = useRef<number>(0)
+  const qStartRef    = useRef<number>(0)   // timestamp the current question became answerable
   const startTimeRef = useRef<number>(0)
   const elapsedRef   = useRef<number | null>(null)
   const { t } = useLanguage()
@@ -130,6 +135,7 @@ function DailyPage() {
       setAlreadyPlayed(result)
       setAnswers(result.answers)
       setScore(result.score)
+      setPoints(result.points ?? 0)
       setStreak(getStoredStreak().streak)
       setPhase('finished')
     }
@@ -193,6 +199,9 @@ function DailyPage() {
 
   const startPlaying = () => {
     startTimeRef.current = Date.now()
+    qStartRef.current = Date.now()
+    pointsRef.current = 0
+    setPoints(0)
     setTimeLeft(TIME_PER_Q)
     loadQuestions()
     setPhase('playing')
@@ -203,11 +212,23 @@ function DailyPage() {
     const correct = choice === questions[idx]?.answer
     setSelected(choice)
     setState(correct ? 'correct' : 'wrong')
-    if (correct) { playCorrect(); setScore(s => s + 1) } else playWrong()
+    if (correct) {
+      // Time-based points, faster answer = more (mirrors the multiplayer mode).
+      const pts = answerPoints(qStartRef.current ? Date.now() - qStartRef.current : 0)
+      pointsRef.current += pts
+      setPoints(p => p + pts)
+      playCorrect(); setScore(s => s + 1)
+    } else playWrong()
     const next = [...answersRef.current, correct]
     answersRef.current = next
     setAnswers(next)
   }
+
+  // Stamp when each question becomes answerable, so points reward answer speed.
+  useEffect(() => {
+    if (phase !== 'playing' || state !== 'idle' || !questions[idx]) return
+    qStartRef.current = Date.now()
+  }, [phase, state, idx, questions])
 
   useEffect(() => {
     if (phase !== 'playing') return
@@ -250,19 +271,22 @@ function DailyPage() {
     if (idx + 1 >= questions.length) {
       const finalAnswers = answersRef.current
       const finalScore   = finalAnswers.filter(Boolean).length
+      const finalPoints  = pointsRef.current
       const accuracy     = Math.round(finalScore / finalAnswers.length * 100)
       const elapsed      = startTimeRef.current ? Math.round((Date.now() - startTimeRef.current) / 100) / 10 : undefined
       elapsedRef.current = elapsed ?? null
-      const streakData   = saveResultAndStreak(finalAnswers, finalScore)
-      track('daily_played', { score: finalScore, accuracy })
+      const streakData   = saveResultAndStreak(finalAnswers, finalScore, finalPoints)
+      track('daily_played', { score: finalScore, points: finalPoints, accuracy })
       setStreak(streakData.streak)
       setScore(finalScore)
-      // Auto-submit to leaderboard if pseudo already set
+      setPoints(finalPoints)
+      // Auto-submit to leaderboard if pseudo already set — the points total is
+      // what ranks players (the mondial board still uses the raw correct count).
       const pseudo = localStorage.getItem('fda_pseudo')?.trim()
       if (pseudo) {
         setLbName(pseudo)
         setLbSubmitted(true)
-        submitDailyScore(pseudo, finalScore, accuracy, elapsed).catch(() => {})
+        submitDailyScore(pseudo, finalPoints, accuracy, elapsed).catch(() => {})
         // Daily also feeds the global (mondial) leaderboard — once per day to avoid double-counting
         if (localStorage.getItem('fda_daily_global_date') !== todayStr()) {
           submitGlobalScore(pseudo, finalScore, finalAnswers.length).catch(() => {})
@@ -284,7 +308,7 @@ function DailyPage() {
     setLbSubmitting(true)
     try {
       const acc = answers.length ? Math.round(score / answers.length * 100) : 0
-      await submitDailyScore(name, score, acc, elapsedRef.current ?? undefined)
+      await submitDailyScore(name, points, acc, elapsedRef.current ?? undefined)
       // Daily also feeds the global (mondial) leaderboard — once per day to avoid double-counting
       if (localStorage.getItem('fda_daily_global_date') !== todayStr()) {
         submitGlobalScore(name, score, answers.length).catch(() => {})
@@ -305,7 +329,7 @@ function DailyPage() {
     const date   = formatDate()
     const lines  = [
       `FIGHT DATA ARENA — DAILY ${date}`,
-      `${emojis}  ${score}/10`,
+      `${emojis}  ${points} pts (${score}/10)`,
     ]
     if (streak >= 2) lines.push(t('daily.streak', { n: streak }))
     lines.push('fightdata.app/quiz/daily')
@@ -376,8 +400,13 @@ function DailyPage() {
               </div>
             )}
           </div>
-          <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(3rem, 10vw, 5rem)', letterSpacing: '4px', color: '#fff', textShadow: `0 0 30px ${COLOR}88`, lineHeight: 1 }}>
-            {score}<span style={{ fontSize: '0.5em', color: COLOR }}>/10</span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(3rem, 10vw, 5rem)', letterSpacing: '4px', color: '#fff', textShadow: `0 0 30px ${COLOR}88`, lineHeight: 1 }}>
+              {points}<span style={{ fontSize: '0.3em', color: COLOR, letterSpacing: '3px' }}> PTS</span>
+            </div>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-sm)', letterSpacing: '2px', color: 'rgba(255,255,255,0.7)' }}>
+              {score}/10 {t('daily.correct')}
+            </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center' }}>
             {[answers.slice(0, 5), answers.slice(5, 10)].map((row, ri) => (
@@ -497,7 +526,7 @@ function DailyPage() {
                       <span style={{
                         fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '1px',
                         color: isMe ? COLOR : 'rgba(255,255,255,0.65)', textAlign: 'right',
-                      }}>{entry.score}/10</span>
+                      }}>{entry.score}</span>
                     </div>
                   )
                 })}
@@ -523,7 +552,7 @@ function DailyPage() {
         <div className="score-bar" style={{ marginBottom: '24px' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: `linear-gradient(90deg, transparent, ${COLOR}, transparent)` }} />
           {[
-            { val: score,           label: t('daily.score') },
+            { val: points,          label: t('daily.score') },
             { val: `${idx + 1}/${questions.length}`, label: t('daily.question') },
             { val: `${answers.filter(Boolean).length}/${answers.length || 0}`, label: t('daily.correct') },
           ].map(s => (

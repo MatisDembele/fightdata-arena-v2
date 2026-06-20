@@ -39,7 +39,8 @@ def _this_week() -> str:
 def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(get_db)):
     check_rate(request)
     name = validate_name(payload.player_name)
-    if not (0 <= payload.score <= 20 and 0 <= payload.accuracy <= 100):
+    # score is now a time-based point total (≈ up to 1000 per question × 20).
+    if not (0 <= payload.score <= 20000 and 0 <= payload.accuracy <= 100):
         raise HTTPException(400, "Invalid score")
 
     week = _this_week()

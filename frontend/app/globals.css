@@ -220,10 +220,54 @@ body {
   justify-content: center;
 }
 
-/* Home hero — extra top room on mobile so the fixed top-right cluster
-   (language + connect/profile) never overlaps the title. */
-.home-hero-content { padding-top: 40px; }
-@media (max-width: 768px) { .home-hero-content { padding-top: 72px; } }
+/* Home hero — the carousel and description keep their original (live-site)
+   positions: space-between distributes [title, description, carousel, spacer]
+   over one screen, and the phantom spacer reserves the bottom where the old
+   how-it-works row sat. The leaderboard is a separate section (outside this
+   one-screen wrapper) pulled up to just below the central band so it never
+   overlaps it. overflow:visible + the negative margin let it scroll. */
+.home-hero-wrap { height: 100vh; overflow: visible; }
+.home-hero-content {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 40px;    /* extra top room so the fixed top-right cluster never overlaps the title */
+  padding-bottom: 48px;
+}
+.home-hero-spacer { flex: 0 0 auto; width: 100%; height: 5vh; }
+
+/* Daily/weekly leaderboards. margin-top pulls the row up to just below the band
+   (bottom edge at 75vh) — a constant gap at any window height, so it never
+   overlaps the band. */
+.home-boards {
+  display: flex;
+  gap: clamp(12px, 3vw, 28px);
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 760px;
+  margin: -23vh auto 0;
+  padding: 0 16px 24px;
+  position: relative;
+  z-index: 11;          /* above the band/footer-fade it is pulled over */
+}
+.home-board { flex: 1 1 260px; max-width: 340px; }
+
+/* Mobile — taller spacer (the old row was two lines); boards stacked; scroll. */
+@media (max-width: 768px) {
+  .home-hero-content { padding-top: 72px; padding-bottom: 28px; }
+  .home-hero-spacer { height: 11vh; }
+  .home-boards {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: center;
+    max-width: 440px;
+    padding-bottom: 36px;
+  }
+  .home-boards .home-board { flex: 0 0 auto; width: 100%; max-width: 100%; }
+}
 
 /* Home page mode cards */
 .home-modes-row {

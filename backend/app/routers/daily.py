@@ -38,7 +38,8 @@ def _today() -> str:
 def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(get_db)):
     check_rate(request)
     name = validate_name(payload.player_name)
-    if not (0 <= payload.score <= 10 and 0 <= payload.accuracy <= 100):
+    # score is now a time-based point total (≈ up to 1000 per question × 10).
+    if not (0 <= payload.score <= 10000 and 0 <= payload.accuracy <= 100):
         raise HTTPException(400, "Invalid score")
 
     today = _today()

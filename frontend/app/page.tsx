@@ -161,6 +161,42 @@ export default function Home() {
     }
   }
 
+  // Daily/weekly leaderboard columns + a single renderer reused per breakpoint
+  // (desktop shows both side by side; mobile splits DAILY and WEEKLY apart).
+  const LB_COLS = [
+    { title: 'DAILY',  data: dailyLb,  color: '#00ff88', href: '/quiz/daily',  empty: 'daily.leaderboard_empty'  },
+    { title: 'WEEKLY', data: weeklyLb, color: '#ffd700', href: '/quiz/weekly', empty: 'weekly.leaderboard_empty' },
+  ] as const
+  const board = (col: (typeof LB_COLS)[number]) => (
+    <Link
+      key={col.title}
+      href={col.href}
+      className="home-board"
+      style={{
+        textDecoration: 'none',
+        background: 'rgba(0,0,0,0.32)', border: `1px solid ${col.color}33`,
+        padding: '11px 14px 12px', display: 'flex', flexDirection: 'column', gap: '6px',
+        transition: 'all 0.2s',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = `${col.color}77`; e.currentTarget.style.background = `${col.color}0d` }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = `${col.color}33`; e.currentTarget.style.background = 'rgba(0,0,0,0.32)' }}
+    >
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+        <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.05rem', letterSpacing: '3px', color: col.color, textShadow: `0 0 10px ${col.color}66` }}>{col.title}</span>
+        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.55)' }}>›</span>
+      </div>
+      {col.data.length === 0 ? (
+        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.45)', padding: '4px 0' }}>{t(col.empty)}</div>
+      ) : col.data.slice(0, 5).map(e => (
+        <div key={e.rank} style={{ display: 'grid', gridTemplateColumns: '20px 1fr auto', gap: '8px', alignItems: 'center' }}>
+          <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', color: e.rank === 1 ? '#ffd700' : e.rank === 2 ? '#c0c0c0' : e.rank === 3 ? '#cd7f32' : 'rgba(255,255,255,0.55)' }}>#{e.rank}</span>
+          <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.62rem', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.78)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.player_name}</span>
+          <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '1px', color: col.color }}>{e.score}</span>
+        </div>
+      ))}
+    </Link>
+  )
+
   return (
     <>
     {authError && (
@@ -180,7 +216,7 @@ export default function Home() {
         <button onClick={() => setAuthError(null)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', fontSize: '1rem', lineHeight: 1, flexShrink: 0 }}>✕</button>
       </div>
     )}
-    <div style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
+    <div className="home-hero-wrap" style={{ position: 'relative' }}>
 
       {/* Top-right: language selector + auth (profile card / connect button) */}
       <div style={{ position: 'fixed', top: '16px', right: '20px', zIndex: 100, display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
@@ -323,12 +359,7 @@ export default function Home() {
       </div>
 
       {/* Contenu */}
-      <div className="home-hero-content" style={{
-        position: 'relative', zIndex: 10,
-        height: '100vh', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'space-between',
-        paddingBottom: '48px',
-      }}>
+      <div className="home-hero-content" style={{ position: 'relative', zIndex: 10 }}>
 
         {/* Titre */}
         <div style={{ textAlign: 'center' }} className="animate-fadeInUp">
@@ -449,40 +480,10 @@ export default function Home() {
           >»</button>
         </div>
 
-        {/* Daily & weekly leaderboards */}
-        <div style={{ display: 'flex', gap: 'clamp(12px, 3vw, 28px)', justifyContent: 'center', flexWrap: 'wrap', width: '100%', maxWidth: '760px', padding: '0 16px' }}>
-          {([
-            { title: 'DAILY',  data: dailyLb,  color: '#00ff88', href: '/quiz/daily',  empty: 'daily.leaderboard_empty'  },
-            { title: 'WEEKLY', data: weeklyLb, color: '#ffd700', href: '/quiz/weekly', empty: 'weekly.leaderboard_empty' },
-          ] as const).map(col => (
-            <Link
-              key={col.title}
-              href={col.href}
-              style={{
-                flex: '1 1 260px', maxWidth: '340px', textDecoration: 'none',
-                background: 'rgba(0,0,0,0.32)', border: `1px solid ${col.color}33`,
-                padding: '11px 14px 12px', display: 'flex', flexDirection: 'column', gap: '6px',
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = `${col.color}77`; e.currentTarget.style.background = `${col.color}0d` }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = `${col.color}33`; e.currentTarget.style.background = 'rgba(0,0,0,0.32)' }}
-            >
-              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-                <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.05rem', letterSpacing: '3px', color: col.color, textShadow: `0 0 10px ${col.color}66` }}>{col.title}</span>
-                <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.55)' }}>›</span>
-              </div>
-              {col.data.length === 0 ? (
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.45)', padding: '4px 0' }}>{t(col.empty)}</div>
-              ) : col.data.slice(0, 5).map(e => (
-                <div key={e.rank} style={{ display: 'grid', gridTemplateColumns: '20px 1fr auto', gap: '8px', alignItems: 'center' }}>
-                  <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.8rem', color: e.rank === 1 ? '#ffd700' : e.rank === 2 ? '#c0c0c0' : e.rank === 3 ? '#cd7f32' : 'rgba(255,255,255,0.55)' }}>#{e.rank}</span>
-                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.62rem', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.78)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.player_name}</span>
-                  <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.85rem', letterSpacing: '1px', color: col.color }}>{e.score}/10</span>
-                </div>
-              ))}
-            </Link>
-          ))}
-        </div>
+        {/* Phantom spacer the size of the old how-it-works row, so space-between
+            keeps the carousel and description at their original (live-site)
+            positions; the leaderboard below is pulled up over this area. */}
+        <div className="home-hero-spacer" aria-hidden="true" />
 
       </div>
 
@@ -493,6 +494,15 @@ export default function Home() {
         zIndex: 5, pointerEvents: 'none',
       }} />
     </div>
+
+    {/* Leaderboard (all sizes) — sits OUTSIDE the one-screen hero and is pulled up
+        to just below the central band so it never overlaps it (constant gap at any
+        window height). PC/tablet: the two boards side by side. Mobile: stacked
+        (DAILY then WEEKLY) — scroll to reach what doesn't fit. */}
+    <div className="home-boards">
+      {LB_COLS.map(board)}
+    </div>
+
     <Footer />
     </>
   )
