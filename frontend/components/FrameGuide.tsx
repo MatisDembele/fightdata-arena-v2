@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useLanguage } from '@/lib/i18n'
 
 const TOTAL = 4
@@ -58,6 +59,7 @@ export default function FrameGuide() {
   const [open, setOpen] = useState(false)
   const [step, setStep] = useState(0)
   const { t } = useLanguage()
+  const path = usePathname()
 
   const launch = () => { setStep(0); setOpen(true) }
 
@@ -147,6 +149,14 @@ export default function FrameGuide() {
         )
     }
   }
+
+  // The frame-data tutorial only belongs on the calm "planning" pages where the
+  // bottom-right corner is clear: the landing page, the quiz hub and challenges.
+  // It was a floating "?" overlapping content everywhere else — unrelated data
+  // pages (profile, multi, utilities), the question card during an active quiz,
+  // and redundant on /frame-data itself, which IS the lesson.
+  const relevant = path === '/' || path === '/quiz' || path === '/challenges'
+  if (!relevant) return null
 
   return (
     <>
