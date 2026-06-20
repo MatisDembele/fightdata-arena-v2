@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
+import Container from '@/components/Container'
 import { getWeeklyQuiz, submitWeeklyScore, getWeeklyLeaderboard, submitGlobalScore, type LeaderboardEntry } from '@/lib/api'
 import { checkAndUnlock, type Achievement } from '@/lib/achievements'
 import AchievementToast from '@/components/AchievementToast'
@@ -332,8 +333,10 @@ function WeeklyPage() {
   if (phase === 'finished') return (
     <>
       <Navbar />
-      <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', minHeight: 'calc(100vh - 60px)' }}>
-        <div style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '28px', alignItems: 'center', textAlign: 'center' }}>
+      <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', minHeight: 'calc(100vh - 60px)' }}>
+        <Container variant="tool" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div className="result-layout">
+        <div className="result-recap">
           <div>
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2rem, 6vw, 3rem)', letterSpacing: '6px', color: COLOR, textShadow: `0 0 20px ${COLOR}`, lineHeight: 1 }}>
               {t('weekly.title')}
@@ -387,9 +390,10 @@ function WeeklyPage() {
           }}>
             {copied ? t('weekly.copied') : t('weekly.copy_result')}
           </button>
+          </div>{/* end result-recap */}
 
           {/* Leaderboard */}
-          <div style={{ width: '100%', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div className="result-board" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-4)', color: COLOR }}>
               {t('weekly.leaderboard')}
             </div>
@@ -474,11 +478,12 @@ function WeeklyPage() {
               </div>
             )}
           </div>
+          </div>{/* end result-layout */}
 
-          <Link href="/quiz" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.65)', textDecoration: 'none' }}>
+          <Link href="/quiz" style={{ flexShrink: 0, marginTop: '8px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.65)', textDecoration: 'none' }}>
             {t('play.change_mode')}
           </Link>
-        </div>
+        </Container>
       </main>
     </>
   )

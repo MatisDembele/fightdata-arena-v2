@@ -317,6 +317,29 @@ body {
   .challenges-cards { grid-template-columns: 1fr 1fr; align-items: start; gap: 28px; }
 }
 
+/* Daily/weekly result — mobile: recap then leaderboard stacked & centred.
+   Desktop: recap on the left, leaderboard on the right. */
+.result-layout {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  align-items: center;
+  text-align: center;
+}
+.result-recap { display: flex; flex-direction: column; gap: 28px; align-items: center; }
+.result-board { text-align: left; }
+@media (min-width: 900px) {
+  .result-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    gap: 48px;
+    text-align: left;
+  }
+  .result-recap { padding-top: 8px; }
+}
+
 /* Home page mode cards */
 .home-modes-row {
   display: flex;
