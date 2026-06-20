@@ -97,7 +97,9 @@ function QuizPlay() {
   const hasDataTypePicker = mode === 'fighter' || isCustom || isHardcore || isSurvival || isInput
 
   const dtParam = params.get('dataType') as 'startup'|'active'|'recovery'|'onblock'|'onhit'|'damage'|'punish' | null
-  const [dataType, setDataType] = useState<'startup'|'active'|'recovery'|'onblock'|'onhit'|'damage'|'punish'>(dtParam ?? 'startup')
+  // The stat to train is chosen up-front on /quiz and travels in the URL; it is
+  // not re-picked here (the explainer shows it; "change stat" links back to /quiz).
+  const [dataType] = useState<'startup'|'active'|'recovery'|'onblock'|'onhit'|'damage'|'punish'>(dtParam ?? 'startup')
 
   // Effective question type (data-type modes override via dataType state)
   const mqm = isMistakes ? mistakeQuestionMode.current : ''
@@ -686,55 +688,8 @@ function QuizPlay() {
               <StatExplainer stat={sessionStat} color={modeColor} open={explainerOpen} onToggle={toggleExplainer} t={t} />
             )}
 
-            {/* Data type picker — FIGHTER / CUSTOM / HARDCORE / SURVIVAL */}
-            {hasDataTypePicker && (
-              <div>
-                <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.65)', marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '10px' }}>
-                  {t('play.datatype_picker')}
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {([
-                    { group: t('play.datatype_frames'),      types: [
-                      { id: 'startup',  label: 'STARTUP' },
-                      { id: 'active',   label: 'ACTIVE' },
-                      { id: 'recovery', label: 'RECOVERY' },
-                    ]},
-                    { group: t('play.datatype_advantage'),   types: [
-                      { id: 'onblock',  label: 'ON BLOCK' },
-                      { id: 'onhit',    label: 'ON HIT' },
-                    ]},
-                    { group: t('play.datatype_application'), types: [
-                      { id: 'punish',   label: 'PUNISSABLE/SAFE' },
-                      { id: 'damage',   label: 'DAMAGE' },
-                    ]},
-                  ] as { group: string; types: { id: typeof dataType; label: string }[] }[]).map(({ group, types }) => (
-                    <div key={group} style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-2xs)', letterSpacing: 'var(--ls-2)', color: 'rgba(255,255,255,0.65)', minWidth: '80px' }}>
-                        {group}
-                      </span>
-                      {types.map(({ id, label }) => {
-                        const isSel = dataType === id
-                        return (
-                          <button key={id} onClick={() => setDataType(id)} style={{
-                            padding: '5px 12px',
-                            background: isSel ? `${modeColor}20` : 'rgba(255,255,255,0.03)',
-                            border: `1px solid ${isSel ? modeColor : 'rgba(255,255,255,0.08)'}`,
-                            color: isSel ? modeColor : 'rgba(255,255,255,0.7)',
-                            cursor: 'pointer',
-                            fontFamily: "'Share Tech Mono', monospace",
-                            fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-2)',
-                            boxShadow: isSel ? `0 0 10px ${modeColor}22` : 'none',
-                            transition: 'all 0.15s',
-                          }}>
-                            {label}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* The stat (what to train) is chosen up-front on /quiz — no redundant
+                re-pick here. The explainer above shows which one is active. */}
 
             {/* Jump-attacks toggle — off by default */}
             {!isMistakes && (
