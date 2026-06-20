@@ -4,6 +4,7 @@ import { todayStr } from '@/lib/dates'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
+import ConnectPrompt from '@/components/ConnectPrompt'
 import { getDailyQuiz, submitDailyScore, getDailyLeaderboard, submitGlobalScore, type LeaderboardEntry } from '@/lib/api'
 import type { QuizQuestion } from '@/types'
 import { track } from '@vercel/analytics'
@@ -451,6 +452,7 @@ function DailyPage() {
 
           {/* Leaderboard */}
           <div className="result-board" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <ConnectPrompt />
             <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-4)', color: COLOR }}>
               {t('daily.leaderboard')}
             </div>

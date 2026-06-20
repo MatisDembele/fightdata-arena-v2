@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
+import ConnectPrompt from '@/components/ConnectPrompt'
 import { getWeeklyQuiz, submitWeeklyScore, getWeeklyLeaderboard, submitGlobalScore, type LeaderboardEntry } from '@/lib/api'
 import { checkAndUnlock, type Achievement } from '@/lib/achievements'
 import AchievementToast from '@/components/AchievementToast'
@@ -394,6 +395,7 @@ function WeeklyPage() {
 
           {/* Leaderboard */}
           <div className="result-board" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <ConnectPrompt />
             <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-4)', color: COLOR }}>
               {t('weekly.leaderboard')}
             </div>
