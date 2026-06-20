@@ -503,6 +503,10 @@ export default function Home() {
       {LB_COLS.map(board)}
     </div>
 
+    {/* Full-width fade so the colourful (fixed) background melts into the dark
+        footer instead of leaving a bright empty band between them. */}
+    <div className="home-footer-fade" aria-hidden="true" />
+
     <Footer />
     </>
   )
