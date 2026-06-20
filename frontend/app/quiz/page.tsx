@@ -32,11 +32,11 @@ const STATS: {
 
 // id doubles as the Icon name and the i18n sub key (quiz.var_<id>_sub)
 const VARIANTS: { id: VariantId; label: string; color: string }[] = [
+  { id: 'fighter',  label: 'FIGHTER',  color: '#00f0ff' },
   { id: 'classic',  label: 'CLASSIC',  color: '#e2e8f0' },
   { id: 'survival', label: 'SURVIVAL', color: '#4ade80' },
   { id: 'hardcore', label: 'HARDCORE', color: '#ff6a00' },
   { id: 'input',    label: 'INPUT',    color: '#9b1fff' },
-  { id: 'fighter',  label: 'FIGHTER',  color: '#00f0ff' },
   { id: 'custom',   label: 'CUSTOM',   color: '#22c55e' },
 ]
 
@@ -289,24 +289,35 @@ export default function QuizSelectPage() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginTop: '14px' }}>
               {VARIANTS.map(v => {
-                const locked = !stat
+                const locked  = !stat
+                const wide    = v.id === 'fighter' || v.id === 'custom'   // full-width entry points
+                const primary = v.id === 'fighter'                         // the headline choice
+                const restBg  = primary ? `${v.color}10` : 'rgba(255,255,255,0.05)'
+                const restBd  = primary ? `${v.color}55` : 'rgba(255,255,255,0.12)'
+                const restSh  = primary ? `0 0 18px ${v.color}1f` : 'none'
                 return (
                   <button
                     key={v.id} type="button" disabled={locked} aria-disabled={locked}
                     onClick={() => handleVariantClick(v.id)}
                     onMouseEnter={e => { if (locked) return; const el = e.currentTarget; el.style.background = `${v.color}14`; el.style.borderColor = v.color + '88'; el.style.boxShadow = `0 0 18px ${v.color}22` }}
-                    onMouseLeave={e => { if (locked) return; const el = e.currentTarget; el.style.background = 'rgba(255,255,255,0.05)'; el.style.borderColor = 'rgba(255,255,255,0.12)'; el.style.boxShadow = 'none' }}
+                    onMouseLeave={e => { if (locked) return; const el = e.currentTarget; el.style.background = restBg; el.style.borderColor = restBd; el.style.boxShadow = restSh }}
                     style={{
                       font: 'inherit', textAlign: 'left', padding: '16px',
-                      background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)',
+                      gridColumn: wide ? '1 / -1' : 'auto',
+                      background: restBg, border: `1px solid ${restBd}`, boxShadow: restSh,
                       cursor: locked ? 'not-allowed' : 'pointer',
                       opacity: locked ? 0.45 : 1, filter: locked ? 'grayscale(0.8)' : 'none',
-                      transition: 'all 0.18s', display: 'flex', flexDirection: 'column', gap: '7px',
+                      transition: 'all 0.18s',
+                      display: 'flex', flexDirection: wide ? 'row' : 'column',
+                      alignItems: wide ? 'center' : 'stretch', gap: wide ? '14px' : '7px',
                     }}
                   >
-                    <Icon name={v.id} size={22} color={v.color} />
-                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.05rem', letterSpacing: '3px', color: '#fff' }}>{v.label}</div>
-                    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.7)' }}>{t(`quiz.var_${v.id}_sub` as DictKey)}</div>
+                    <Icon name={v.id} size={wide ? 28 : 22} color={v.color} />
+                    <div style={{ flex: wide ? 1 : undefined, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: wide ? '1.2rem' : '1.05rem', letterSpacing: '3px', color: '#fff' }}>{v.label}</div>
+                      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: '1px', color: 'rgba(255,255,255,0.7)' }}>{t(`quiz.var_${v.id}_sub` as DictKey)}</div>
+                    </div>
+                    {wide && <span aria-hidden style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.3rem', color: v.color, paddingRight: '2px' }}>→</span>}
                   </button>
                 )
               })}
