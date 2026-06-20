@@ -142,30 +142,67 @@ export function GifSection({ gifUrl, gifPath, moveName, color, fallback = 'HITBO
   )
 }
 
+// Single source of truth for the quiz "question card" layout, shared by the main
+// quiz (play), the daily and the weekly. On desktop it's a side-by-side grid
+// (GIF left, question + choices + feedback right); on mobile a single column that
+// fits the no-scroll playing area (the GIF flexes to share height). Multiplayer
+// keeps its own dedicated display.
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(false)
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 1024)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isDesktop
+}
+
 interface QuestionCardProps {
   gifUrl?: string
   gifPath?: string
   moveName: string
   color: string
+  /** Move input notation + section — shown in the GIF area when there's no hitbox GIF. */
+  input?: string
+  section?: string
+  /** Full-width header (mode label / timer / fighter…). */
   header: ReactNode
   questionText: ReactNode
+  /** Answer area (MCQ buttons, input field, punish finder…). */
   choices: ReactNode
   feedback: ReactNode
   style?: CSSProperties
 }
 
 export default function QuestionCard({
-  gifUrl, gifPath, moveName, color,
+  gifUrl, gifPath, moveName, color, input, section,
   header, questionText, choices, feedback,
   style,
 }: QuestionCardProps) {
+  const isDesktop = useIsDesktop()
   return (
-    <div style={{ width: '100%', maxWidth: '500px', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)', ...style }}>
-      {header}
-      <GifSection gifUrl={gifUrl} gifPath={gifPath} moveName={moveName} color={color} />
-      <div style={{ padding: '16px 18px 12px' }}>{questionText}</div>
-      <div style={{ padding: '0 18px' }}>{choices}</div>
-      <div style={{ padding: '12px 18px 18px' }}>{feedback}</div>
+    <div style={{
+      width: '100%', maxWidth: isDesktop ? '900px' : '500px',
+      maxHeight: '100%', height: isDesktop ? undefined : '100%',
+      boxSizing: 'border-box',
+      background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(16px)',
+      border: '1px solid rgba(255,255,255,0.08)',
+      display: isDesktop ? 'grid' : 'flex',
+      flexDirection: isDesktop ? undefined : 'column',
+      overflowX: 'hidden', overflowY: 'auto',
+      gridTemplateColumns: isDesktop ? '45% 55%' : undefined,
+      ...style,
+    }}>
+      <div style={{ gridColumn: isDesktop ? '1 / -1' : undefined }}>{header}</div>
+      <GifSection gifUrl={gifUrl} gifPath={gifPath} moveName={moveName} color={color} input={input} section={section} flexible={!isDesktop} />
+      <div style={isDesktop
+        ? { display: 'flex', flexDirection: 'column', justifyContent: 'center', borderLeft: '1px solid rgba(255,255,255,0.06)' }
+        : { flexShrink: 0 }}>
+        <div style={{ padding: '12px 18px 8px' }}>{questionText}</div>
+        <div style={{ padding: '0 18px' }}>{choices}</div>
+        <div style={{ padding: '10px 18px 12px' }}>{feedback}</div>
+      </div>
     </div>
   )
 }

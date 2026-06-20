@@ -489,8 +489,8 @@ function WeeklyPage() {
   return (
     <>
       <Navbar />
-      <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '28px 20px', minHeight: 'calc(100vh - 60px)' }}>
-        <div className="score-bar" style={{ marginBottom: '24px' }}>
+      <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px 16px', height: 'calc(100dvh - 60px)', overflow: 'hidden', boxSizing: 'border-box' }}>
+        <div className="score-bar">
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: `linear-gradient(90deg, transparent, ${COLOR}, transparent)` }} />
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '2px', background: 'rgba(255,255,255,0.05)' }}>
             <div style={{ height: '100%', width: `${(idx / TOTAL_Q) * 100}%`, background: `linear-gradient(90deg, ${COLOR_ALT}, ${COLOR})`, transition: 'width 0.3s' }} />
@@ -511,6 +511,7 @@ function WeeklyPage() {
           ))}
         </div>
 
+        <div style={{ flex: '1 1 auto', minHeight: 0, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {loading ? (
           <div style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.7)', letterSpacing: '4px' }}>
             {t('daily.loading')}
@@ -532,6 +533,8 @@ function WeeklyPage() {
             gifPath={question.gif_path}
             moveName={question.move_name}
             color={COLOR}
+            input={question.input}
+            section={question.section}
             header={
               <div style={{ padding: '11px 18px', background: `${COLOR}12`, borderBottom: `1px solid ${COLOR}28`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '0.9rem', letterSpacing: '4px', background: `linear-gradient(90deg, ${COLOR}, ${COLOR_ALT})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
@@ -589,7 +592,8 @@ function WeeklyPage() {
             }
           />
         )}
-        <Link href="/quiz" style={{ marginTop: '16px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.65)', textDecoration: 'none' }}>
+        </div>
+        <Link href="/quiz" style={{ flexShrink: 0, marginTop: '10px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.65)', textDecoration: 'none' }}>
           {t('play.change_mode')}
         </Link>
       </main>
