@@ -35,6 +35,7 @@ class Room:
         self.code = code
         self.game_mode: str = "startup"
         self.max_questions: int = 10
+        self.exclude_jumps: bool = False
         self.players: dict[str, WebSocket] = {}
         self.scores: dict[str, int] = {}
         self.current_question: Optional[dict] = None
@@ -178,7 +179,14 @@ async def _next_question(room: Room, db: Session):
         "onhit":    generate_random_onhit_question,
         "recovery": generate_random_recovery_question,
     }
-    q = _generators.get(room.game_mode, generate_random_question)(db)
+    gen = _generators.get(room.game_mode, generate_random_question)
+    q = gen(db)
+    if room.exclude_jumps:
+        # Re-roll past jump attacks server-side so every player gets the same move.
+        for _ in range(15):
+            if q and not (q.section and "jump" in q.section.lower()):
+                break
+            q = gen(db)
     if not q:
         await _broadcast(room, {"type": "error", "message": "Impossible de générer une question."})
         return

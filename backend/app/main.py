@@ -192,6 +192,7 @@ async def websocket_endpoint(
             "scores": dict(room.scores),
             "game_mode": room.game_mode,
             "max_questions": room.max_questions,
+            "exclude_jumps": room.exclude_jumps,
             "host": room.host,
         })
     else:
@@ -202,6 +203,7 @@ async def websocket_endpoint(
             "avatars": avatars,
             "game_mode": room.game_mode,
             "max_questions": room.max_questions,
+            "exclude_jumps": room.exclude_jumps,
             "host": room.host,
             "ready_players": list(room.ready_players),
         })
@@ -247,6 +249,7 @@ async def websocket_endpoint(
                     "type": "settings_update",
                     "game_mode": room.game_mode,
                     "max_questions": room.max_questions,
+                    "exclude_jumps": room.exclude_jumps,
                 })
 
             elif data.get("type") == "set_questions":
@@ -259,6 +262,18 @@ async def websocket_endpoint(
                     "type": "settings_update",
                     "game_mode": room.game_mode,
                     "max_questions": room.max_questions,
+                    "exclude_jumps": room.exclude_jumps,
+                })
+
+            elif data.get("type") == "set_exclude_jumps":
+                if player_name != room.host:
+                    continue
+                room.exclude_jumps = bool(data.get("value", False))
+                await _broadcast(room, {
+                    "type": "settings_update",
+                    "game_mode": room.game_mode,
+                    "max_questions": room.max_questions,
+                    "exclude_jumps": room.exclude_jumps,
                 })
 
             elif data.get("type") == "start_game":
@@ -354,6 +369,7 @@ async def websocket_endpoint(
                         "host": room.host,
                         "game_mode": room.game_mode,
                         "max_questions": room.max_questions,
+                        "exclude_jumps": room.exclude_jumps,
                     })
 
     except WebSocketDisconnect:

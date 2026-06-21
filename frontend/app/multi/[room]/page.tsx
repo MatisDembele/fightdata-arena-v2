@@ -104,6 +104,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
   const [linkCopied, setLinkCopied]           = useState(false)
   const [error, setError]                     = useState('')
   const [gameMode, setGameMode]               = useState('startup')
+  const [excludeJumps, setExcludeJumps]       = useState(false)
   const [modeVotes, setModeVotes]     = useState<Record<string, number>>({})
   const [playerVotes, setPlayerVotes] = useState<Record<string, string>>({})
   const [myVote, setMyVote]           = useState<string | null>(null)
@@ -129,6 +130,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         if (msg.avatars) setAvatars(msg.avatars)
         if (msg.game_mode) setGameMode(msg.game_mode)
         if (msg.max_questions) setTotalQuestions(msg.max_questions)
+        if (typeof msg.exclude_jumps === 'boolean') setExcludeJumps(msg.exclude_jumps)
         if (msg.host) setHost(msg.host)
         if (msg.ready_players) setReadyPlayers(msg.ready_players)
         setPhase('waiting')
@@ -148,6 +150,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
       if (msg.type === 'settings_update') {
         if (msg.game_mode) setGameMode(msg.game_mode)
         if (msg.max_questions) setTotalQuestions(msg.max_questions)
+        if (typeof msg.exclude_jumps === 'boolean') setExcludeJumps(msg.exclude_jumps)
       }
 
       if (msg.type === 'vs') {
@@ -263,6 +266,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
         if (msg.scores) setScores(msg.scores)
         if (msg.game_mode) setGameMode(msg.game_mode)
         if (msg.max_questions) setTotalQuestions(msg.max_questions)
+        if (typeof msg.exclude_jumps === 'boolean') setExcludeJumps(msg.exclude_jumps)
         if (msg.host) setHost(msg.host)
         setReconnecting(false)
         setPhase('leaderboard')
@@ -327,6 +331,10 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
 
   function sendSetQuestions(n: number) {
     wsRef.current?.send(JSON.stringify({ type: 'set_questions', n }))
+  }
+
+  function sendSetExcludeJumps(value: boolean) {
+    wsRef.current?.send(JSON.stringify({ type: 'set_exclude_jumps', value }))
   }
 
   function sendStartGame() {
@@ -505,6 +513,26 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
               </button>
             ))}
           </div>
+
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.58rem' : '0.48rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.65)', marginTop: '4px' }}>
+            {t('play.jumps_label')}
+          </div>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            {[{ exclude: false, label: t('play.yes') }, { exclude: true, label: t('play.no') }].map(({ exclude, label }) => {
+              const isSel = excludeJumps === exclude
+              return (
+                <button key={label} onClick={() => sendSetExcludeJumps(exclude)} style={{
+                  flex: 1, padding: isDesktop ? '10px' : '8px', fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '1rem' : '0.9rem', letterSpacing: '2px',
+                  border: `1px solid ${isSel ? '#00f0ff' : 'rgba(255,255,255,0.1)'}`,
+                  background: isSel ? 'rgba(0,240,255,0.1)' : 'transparent',
+                  color: isSel ? '#00f0ff' : 'rgba(255,255,255,0.6)',
+                  cursor: 'pointer', transition: 'all 0.2s',
+                }}>
+                  {label}
+                </button>
+              )
+            })}
+          </div>
         </div>
       ) : (
         <div style={{ display: 'flex', gap: '10px', justifyContent: isDesktop ? 'flex-start' : 'center' }}>
@@ -514,6 +542,11 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
           <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.62rem' : '0.52rem', letterSpacing: '3px', color: modeConfig.color, padding: isDesktop ? '8px 14px' : '4px 10px', border: `1px solid ${modeConfig.color}33` }}>
             {modeConfig.label}
           </div>
+          {excludeJumps && (
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.62rem' : '0.52rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.65)', padding: isDesktop ? '8px 14px' : '4px 10px', border: '1px solid rgba(255,255,255,0.12)' }}>
+              ✕ {t('play.jumps_label')}
+            </div>
+          )}
         </div>
       )
 
