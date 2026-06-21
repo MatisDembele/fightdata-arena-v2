@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react'
 import Navbar from '@/components/Navbar'
+import FrameStepper from '@/components/FrameStepper'
 import { getFighters, getFighterMoves } from '@/lib/api'
 import { getFighterPortrait, getFighterColor } from '@/lib/portraits'
 import type { Fighter, Move } from '@/types'
@@ -34,6 +35,7 @@ export default function FightersPage() {
   const [search,         setSearch]         = useState('')
   const [moveSearch,     setMoveSearch]     = useState('')
   const [activeSection,  setActiveSection]  = useState('ALL')
+  const [stepMove,       setStepMove]       = useState<Move | null>(null)
 
   useEffect(() => {
     getFighters()
@@ -144,9 +146,16 @@ export default function FightersPage() {
                 {/* Data rows */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
                   {filtered.map((move, i) => (
-                    <div key={i} style={{ display: 'grid', gridTemplateColumns: COLS.map(c => c.width).join(' '), gap: '1px', padding: '8px 12px', background: i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                    <div
+                      key={i}
+                      onClick={() => setStepMove(move)}
+                      title="View hitbox frame by frame"
+                      style={{ display: 'grid', gridTemplateColumns: COLS.map(c => c.width).join(' '), gap: '1px', padding: '8px 12px', background: i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent', borderBottom: '1px solid rgba(255,255,255,0.03)', cursor: 'pointer', transition: 'background 0.12s' }}
+                      onMouseEnter={e => { e.currentTarget.style.background = `${color}14` }}
+                      onMouseLeave={e => { e.currentTarget.style.background = i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent' }}
+                    >
                       <div style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '0.8rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {move.move_name}
+                        <span style={{ color, marginRight: '6px', fontSize: '0.6rem' }}>▶</span>{move.move_name}
                       </div>
                       <Cell val={move.startup} />
                       <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', letterSpacing: '1px', color: onBlockColor(move.on_block), textAlign: 'center' }}>
@@ -168,6 +177,9 @@ export default function FightersPage() {
             )}
           </div>
         </main>
+        {stepMove && (
+          <FrameStepper key={`${selected.slug}-${stepMove.move_name}`} char={selected.slug} move={stepMove} color={color} onClose={() => setStepMove(null)} />
+        )}
       </>
     )
   }

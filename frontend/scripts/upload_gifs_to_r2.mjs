@@ -45,7 +45,11 @@ async function walk(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name)
     if (entry.isDirectory()) out.push(...await walk(full))
-    else if (entry.name.toLowerCase().endsWith('.webp')) out.push(full)
+    else {
+      const n = entry.name.toLowerCase()
+      // animated webp + sprite sheets (*.sheet.webp) + frame-stepper metadata (*.frames.json)
+      if (n.endsWith('.webp') || n.endsWith('.frames.json')) out.push(full)
+    }
   }
   return out
 }
@@ -58,10 +62,10 @@ async function objectExists(key) {
 async function main() {
   const files = await walk(GIF_DIR)
   if (files.length === 0) {
-    console.error(`No .webp found in ${GIF_DIR}. Run the GIF→WebP conversion first.`)
+    console.error(`No .webp / .frames.json found in ${GIF_DIR}. Run the GIF→WebP conversion first.`)
     process.exit(1)
   }
-  console.log(`Found ${files.length} WebP files. Uploading to R2 bucket "${R2_BUCKET}"…`)
+  console.log(`Found ${files.length} asset files. Uploading to R2 bucket "${R2_BUCKET}"…`)
 
   let i = 0, done = 0, skipped = 0, failed = 0
   async function worker() {
@@ -71,9 +75,10 @@ async function main() {
       try {
         if (!FORCE && await objectExists(key)) { skipped++; continue }
         const body = await readFile(file)
+        const ctype = key.endsWith('.json') ? 'application/json' : 'image/webp'
         await s3.send(new PutObjectCommand({
           Bucket: R2_BUCKET, Key: key, Body: body,
-          ContentType: 'image/webp',
+          ContentType: ctype,
           CacheControl: 'public, max-age=31536000, immutable',
         }))
         done++
