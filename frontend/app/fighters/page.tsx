@@ -17,7 +17,9 @@ const COL_COLOR = '#00f0ff'
 // Portrait PNG is 575px wide; the slanted parallelogram inside is 338px wide. To tile
 // the slants edge-to-edge the cards step by 338/575 of their width, i.e. overlap the rest.
 const CARDW = 150                                  // rendered card width (px)
-const OVERLAP = Math.round(CARDW * (1 - 338 / 575)) // ≈ 62px
+const SEAMLESS = Math.round(CARDW * (1 - 338 / 575)) // overlap that makes slants touch (≈62)
+const GAP = 14                                      // breathing room between cards
+const OVERLAP = SEAMLESS - GAP                      // less overlap => a slanted gap shows
 // Fallback shape (used only when a portrait fails to load).
 const SLANT = 16 // px
 const PARALLELOGRAM = `polygon(${SLANT}px 0, 100% 0, calc(100% - ${SLANT}px) 100%, 0 100%)`
@@ -221,7 +223,7 @@ export default function FightersPage() {
           ) : (
             // SF6 character-select tiling: parallelograms interlock (each card's left
             // slant nests into the previous card's right slant via a -SLANT margin).
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', rowGap: '6px', columnGap: 0, paddingLeft: `${OVERLAP}px` }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', rowGap: '14px', columnGap: 0, paddingLeft: `${OVERLAP}px` }}>
               {filteredFighters.map(fighter => {
                 const portrait = getFighterPortrait(fighter.slug)
                 const fc = getFighterColor(fighter.slug)
