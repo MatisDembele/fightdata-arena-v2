@@ -6,9 +6,9 @@ import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
 import PageHeader from '@/components/PageHeader'
+import FighterCards from '@/components/FighterCards'
 import Icon, { type IconName } from '@/components/Icon'
 import { getFighters } from '@/lib/api'
-import { getFighterPortrait, getFighterColor } from '@/lib/portraits'
 import type { Fighter } from '@/types'
 import { useLanguage, type DictKey } from '@/lib/i18n'
 
@@ -139,26 +139,10 @@ export default function QuizSelectPage() {
             {loadingF ? (
               <div style={{ textAlign: 'center', padding: '40px', fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.7)', letterSpacing: '4px' }}>{t('quiz.loading')}</div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '6px' }}>
-                {filtered.map(fighter => {
-                  const portrait = getFighterPortrait(fighter.slug)
-                  const color    = getFighterColor(fighter.slug)
-                  return (
-                    <Link
-                      key={fighter.slug}
-                      href={`/quiz/play?mode=fighter&slug=${fighter.slug}&dataType=${stat.id}`}
-                      style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden', transition: 'all 0.15s', cursor: 'pointer' }}
-                      onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = color; el.style.boxShadow = `0 0 12px ${color}33`; el.style.background = `${color}12` }}
-                      onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'rgba(255,255,255,0.07)'; el.style.boxShadow = 'none'; el.style.background = 'rgba(255,255,255,0.03)' }}
-                    >
-                      <div style={{ width: '100%', height: '90px', background: `linear-gradient(180deg, ${color}28, ${color}0d)`, overflow: 'hidden' }}>
-                        {portrait && <img src={portrait} alt={fighter.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />}
-                      </div>
-                      <div style={{ padding: '6px 4px', fontFamily: "'Rajdhani', sans-serif", fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.75)', textAlign: 'center' }}>{fighter.name}</div>
-                    </Link>
-                  )
-                })}
-              </div>
+              <FighterCards
+                fighters={filtered}
+                onPick={s => router.push(`/quiz/play?mode=fighter&slug=${s}&dataType=${stat.id}`)}
+              />
             )}
           </div>
         </div>
@@ -184,28 +168,12 @@ export default function QuizSelectPage() {
               <div style={{ textAlign: 'center', padding: '40px', fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.7)', letterSpacing: '4px' }}>{t('quiz.loading')}</div>
             ) : (
               <>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '6px', paddingBottom: '80px' }}>
-                  {fighters.filter(f => f.name.toLowerCase().includes(search.toLowerCase())).map(fighter => {
-                    const portrait = getFighterPortrait(fighter.slug)
-                    const color    = getFighterColor(fighter.slug)
-                    const isSel    = selectedFighters.includes(fighter.slug)
-                    return (
-                      <button
-                        key={fighter.slug}
-                        type="button"
-                        aria-pressed={isSel}
-                        onClick={() => setSelectedFighters(prev => prev.includes(fighter.slug) ? prev.filter(s => s !== fighter.slug) : [...prev, fighter.slug])}
-                        style={{ font: 'inherit', textAlign: 'inherit', padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', background: isSel ? `${color}20` : 'rgba(255,255,255,0.03)', border: `1px solid ${isSel ? color : 'rgba(255,255,255,0.65)'}`, boxShadow: isSel ? `0 0 12px ${color}44` : 'none', overflow: 'hidden', transition: 'all 0.15s', cursor: 'pointer' }}
-                      >
-                        <div style={{ width: '100%', height: '90px', background: `linear-gradient(180deg, ${color}28, ${color}0d)`, overflow: 'hidden', position: 'relative' }}>
-                          {portrait && <img src={portrait} alt={fighter.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />}
-                          {isSel && <div style={{ position: 'absolute', top: '4px', right: '4px', width: '18px', height: '18px', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', color: '#000', fontWeight: 700 }}>✓</div>}
-                        </div>
-                        <div style={{ padding: '6px 4px', fontFamily: "'Rajdhani', sans-serif", fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', color: isSel ? color : 'rgba(255,255,255,0.75)', textAlign: 'center' }}>{fighter.name}</div>
-                      </button>
-                    )
-                  })}
-                </div>
+                <FighterCards
+                  fighters={fighters.filter(f => f.name.toLowerCase().includes(search.toLowerCase()))}
+                  selected={selectedFighters}
+                  onPick={s => setSelectedFighters(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])}
+                  style={{ paddingBottom: '80px' }}
+                />
                 <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '14px 20px', background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(12px)', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
                   {selectedFighters.length < 2 ? (
                     <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 'var(--fs-xs)', letterSpacing: 'var(--ls-3)', color: 'rgba(255,255,255,0.7)' }}>{t('quiz.custom_min')}</span>
