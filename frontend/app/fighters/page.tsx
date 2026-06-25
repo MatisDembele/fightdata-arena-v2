@@ -11,6 +11,10 @@ import type { Fighter, Move } from '@/types'
 
 const COL_COLOR = '#00f0ff'
 
+// SF6 character-select look: right-leaning parallelogram cards.
+const SLANT = 16 // px
+const PARALLELOGRAM = `polygon(${SLANT}px 0, 100% 0, calc(100% - ${SLANT}px) 100%, 0 100%)`
+
 // Frame-data columns. The startup / active / recovery triplet is colour-keyed to the
 // hitbox stepper's phase timeline so the table and the gif read as one system.
 type Col = { key: keyof Move; label: string; w: string; color?: string; kind?: 'name' | 'onblock' }
@@ -208,20 +212,24 @@ export default function FightersPage() {
           {loadingList ? (
             <div style={{ textAlign: 'center', padding: '60px', fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.7)', letterSpacing: '4px' }}>LOADING…</div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(118px, 1fr))', gap: '8px' }}>
+            // SF6 character-select tiling: parallelograms interlock (each card's left
+            // slant nests into the previous card's right slant via a -SLANT margin).
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', rowGap: '8px', columnGap: 0, paddingLeft: `${SLANT}px` }}>
               {filteredFighters.map(fighter => {
                 const portrait = getFighterPortrait(fighter.slug)
                 const fc = getFighterColor(fighter.slug)
                 return (
-                  <button key={fighter.slug} onClick={() => selectFighter(fighter)}
-                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.15s', padding: 0 }}
-                    onMouseEnter={e => { const el = e.currentTarget; el.style.borderColor = fc; el.style.boxShadow = `0 0 14px ${fc}40`; el.style.background = `${fc}14` }}
-                    onMouseLeave={e => { const el = e.currentTarget; el.style.borderColor = 'rgba(255,255,255,0.07)'; el.style.boxShadow = 'none'; el.style.background = 'rgba(255,255,255,0.03)' }}>
-                    <div style={{ width: '100%', height: '96px', background: `linear-gradient(180deg, ${fc}28, ${fc}0d)`, overflow: 'hidden' }}>
-                      {portrait && <img src={portrait} alt={fighter.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />}
-                    </div>
-                    <div style={{ padding: '7px 4px', fontFamily: "'Rajdhani', sans-serif", fontSize: '0.74rem', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.8)', textAlign: 'center' }}>
-                      {fighter.name}
+                  <button key={fighter.slug} onClick={() => selectFighter(fighter)} aria-label={fighter.name}
+                    style={{ position: 'relative', width: '132px', marginLeft: `-${SLANT}px`, clipPath: PARALLELOGRAM, WebkitClipPath: PARALLELOGRAM, background: 'rgba(255,255,255,0.16)', border: 'none', padding: '2px', cursor: 'pointer', transition: 'background 0.15s, filter 0.15s' }}
+                    onMouseEnter={e => { const el = e.currentTarget; el.style.background = fc; el.style.filter = `drop-shadow(0 0 14px ${fc}77)`; el.style.zIndex = '3' }}
+                    onMouseLeave={e => { const el = e.currentTarget; el.style.background = 'rgba(255,255,255,0.16)'; el.style.filter = 'none'; el.style.zIndex = 'auto' }}>
+                    <div style={{ clipPath: PARALLELOGRAM, WebkitClipPath: PARALLELOGRAM, background: '#0c0612', display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ height: '120px', background: `linear-gradient(160deg, ${fc}33, ${fc}0a)`, overflow: 'hidden' }}>
+                        {portrait && <img src={portrait} alt="" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />}
+                      </div>
+                      <div style={{ padding: '8px 18px 10px', fontFamily: "'Rajdhani', sans-serif", fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.85)', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', background: 'rgba(0,0,0,0.35)' }}>
+                        {fighter.name}
+                      </div>
                     </div>
                   </button>
                 )
