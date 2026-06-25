@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from 'react'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
 import PageHeader from '@/components/PageHeader'
+import FighterCards from '@/components/FighterCards'
 import FrameStepper from '@/components/FrameStepper'
 import { getFighters, getFighterMoves } from '@/lib/api'
 import { getFighterPortrait, getFighterColor } from '@/lib/portraits'
@@ -10,19 +11,6 @@ import { PHASE_COLOR } from '@/lib/sheet'
 import type { Fighter, Move } from '@/types'
 
 const COL_COLOR = '#00f0ff'
-
-// SF6 character-select look. The portrait PNGs are ALREADY slanted parallelograms
-// (character + name baked in, transparent margins around the slant), so we just
-// show the image and overlap them so the slants sit edge-to-edge.
-// Portrait PNG is 575px wide; the slanted parallelogram inside is 338px wide. To tile
-// the slants edge-to-edge the cards step by 338/575 of their width, i.e. overlap the rest.
-const CARDW = 150                                  // rendered card width (px)
-const SEAMLESS = Math.round(CARDW * (1 - 338 / 575)) // overlap that makes slants touch (≈62)
-const GAP = 14                                      // breathing room between cards
-const OVERLAP = SEAMLESS - GAP                      // less overlap => a slanted gap shows
-// Fallback shape (used only when a portrait fails to load).
-const SLANT = 16 // px
-const PARALLELOGRAM = `polygon(${SLANT}px 0, 100% 0, calc(100% - ${SLANT}px) 100%, 0 100%)`
 
 // Frame-data columns. The startup / active / recovery triplet is colour-keyed to the
 // hitbox stepper's phase timeline so the table and the gif read as one system.
@@ -223,27 +211,10 @@ export default function FightersPage() {
           ) : (
             // SF6 character-select tiling: parallelograms interlock (each card's left
             // slant nests into the previous card's right slant via a -SLANT margin).
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', rowGap: '14px', columnGap: 0, paddingLeft: `${OVERLAP}px` }}>
-              {filteredFighters.map(fighter => {
-                const portrait = getFighterPortrait(fighter.slug)
-                const fc = getFighterColor(fighter.slug)
-                return (
-                  <button key={fighter.slug} onClick={() => selectFighter(fighter)} aria-label={fighter.name}
-                    style={{ position: 'relative', width: `${CARDW}px`, marginLeft: `-${OVERLAP}px`, background: 'none', border: 'none', padding: 0, cursor: 'pointer', lineHeight: 0, transition: 'filter 0.15s' }}
-                    onMouseEnter={e => { const el = e.currentTarget; el.style.filter = `drop-shadow(0 0 12px ${fc}cc) brightness(1.12)`; el.style.zIndex = '3' }}
-                    onMouseLeave={e => { const el = e.currentTarget; el.style.filter = 'none'; el.style.zIndex = 'auto' }}>
-                    {/* the portrait PNG is already a slanted card with the name baked in */}
-                    {portrait ? (
-                      <img src={portrait} alt="" loading="lazy" style={{ display: 'block', width: '100%', height: 'auto' }} onError={e => { (e.target as HTMLImageElement).style.visibility = 'hidden' }} />
-                    ) : (
-                      <div style={{ clipPath: PARALLELOGRAM, WebkitClipPath: PARALLELOGRAM, height: '150px', background: `linear-gradient(160deg, ${fc}44, ${fc}12)`, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 20px 10px' }}>
-                        <span style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '0.74rem', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', color: '#fff', lineHeight: 1.2 }}>{fighter.name}</span>
-                      </div>
-                    )}
-                  </button>
-                )
-              })}
-            </div>
+            <FighterCards
+              fighters={filteredFighters}
+              onPick={s => { const f = fighters.find(x => x.slug === s); if (f) selectFighter(f) }}
+            />
           )}
         </Container>
       </main>
