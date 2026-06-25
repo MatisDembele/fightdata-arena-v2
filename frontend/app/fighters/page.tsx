@@ -11,7 +11,14 @@ import type { Fighter, Move } from '@/types'
 
 const COL_COLOR = '#00f0ff'
 
-// SF6 character-select look: right-leaning parallelogram cards.
+// SF6 character-select look. The portrait PNGs are ALREADY slanted parallelograms
+// (character + name baked in, transparent margins around the slant), so we just
+// show the image and overlap them so the slants sit edge-to-edge.
+// Portrait PNG is 575px wide; the slanted parallelogram inside is 338px wide. To tile
+// the slants edge-to-edge the cards step by 338/575 of their width, i.e. overlap the rest.
+const CARDW = 150                                  // rendered card width (px)
+const OVERLAP = Math.round(CARDW * (1 - 338 / 575)) // ≈ 62px
+// Fallback shape (used only when a portrait fails to load).
 const SLANT = 16 // px
 const PARALLELOGRAM = `polygon(${SLANT}px 0, 100% 0, calc(100% - ${SLANT}px) 100%, 0 100%)`
 
@@ -214,23 +221,23 @@ export default function FightersPage() {
           ) : (
             // SF6 character-select tiling: parallelograms interlock (each card's left
             // slant nests into the previous card's right slant via a -SLANT margin).
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', rowGap: '8px', columnGap: 0, paddingLeft: `${SLANT}px` }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', rowGap: '6px', columnGap: 0, paddingLeft: `${OVERLAP}px` }}>
               {filteredFighters.map(fighter => {
                 const portrait = getFighterPortrait(fighter.slug)
                 const fc = getFighterColor(fighter.slug)
                 return (
                   <button key={fighter.slug} onClick={() => selectFighter(fighter)} aria-label={fighter.name}
-                    style={{ position: 'relative', width: '132px', marginLeft: `-${SLANT}px`, clipPath: PARALLELOGRAM, WebkitClipPath: PARALLELOGRAM, background: 'rgba(255,255,255,0.16)', border: 'none', padding: '2px', cursor: 'pointer', transition: 'background 0.15s, filter 0.15s' }}
-                    onMouseEnter={e => { const el = e.currentTarget; el.style.background = fc; el.style.filter = `drop-shadow(0 0 14px ${fc}77)`; el.style.zIndex = '3' }}
-                    onMouseLeave={e => { const el = e.currentTarget; el.style.background = 'rgba(255,255,255,0.16)'; el.style.filter = 'none'; el.style.zIndex = 'auto' }}>
-                    <div style={{ clipPath: PARALLELOGRAM, WebkitClipPath: PARALLELOGRAM, background: '#0c0612', display: 'flex', flexDirection: 'column' }}>
-                      <div style={{ height: '120px', background: `linear-gradient(160deg, ${fc}33, ${fc}0a)`, overflow: 'hidden' }}>
-                        {portrait && <img src={portrait} alt="" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />}
+                    style={{ position: 'relative', width: `${CARDW}px`, marginLeft: `-${OVERLAP}px`, background: 'none', border: 'none', padding: 0, cursor: 'pointer', lineHeight: 0, transition: 'filter 0.15s' }}
+                    onMouseEnter={e => { const el = e.currentTarget; el.style.filter = `drop-shadow(0 0 12px ${fc}cc) brightness(1.12)`; el.style.zIndex = '3' }}
+                    onMouseLeave={e => { const el = e.currentTarget; el.style.filter = 'none'; el.style.zIndex = 'auto' }}>
+                    {/* the portrait PNG is already a slanted card with the name baked in */}
+                    {portrait ? (
+                      <img src={portrait} alt="" loading="lazy" style={{ display: 'block', width: '100%', height: 'auto' }} onError={e => { (e.target as HTMLImageElement).style.visibility = 'hidden' }} />
+                    ) : (
+                      <div style={{ clipPath: PARALLELOGRAM, WebkitClipPath: PARALLELOGRAM, height: '150px', background: `linear-gradient(160deg, ${fc}44, ${fc}12)`, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 20px 10px' }}>
+                        <span style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '0.74rem', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', color: '#fff', lineHeight: 1.2 }}>{fighter.name}</span>
                       </div>
-                      <div style={{ padding: '8px 18px 10px', fontFamily: "'Rajdhani', sans-serif", fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.85)', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', background: 'rgba(0,0,0,0.35)' }}>
-                        {fighter.name}
-                      </div>
-                    </div>
+                    )}
                   </button>
                 )
               })}
