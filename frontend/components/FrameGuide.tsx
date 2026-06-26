@@ -154,8 +154,8 @@ export default function FrameGuide() {
   // bottom-right corner is clear: the landing page, the quiz hub and challenges.
   // It was a floating "?" overlapping content everywhere else — unrelated data
   // pages (profile, multi, utilities), the question card during an active quiz,
-  // and redundant on /frame-data itself, which IS the lesson.
-  const relevant = path === '/' || path === '/quiz' || path === '/challenges'
+  // and redundant on /guide itself, which IS the lesson.
+  const relevant = path === '/' || path === '/quiz' || path === '/challenge'
   if (!relevant) return null
 
   return (

@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
         destination: 'https://ultimateframedata.com/sf6/',
         permanent: false,
       },
+      // Renamed routes — keep old URLs working (bookmarks/SEO) with a permanent (308) redirect.
+      { source: '/frame-data', destination: '/guide',     permanent: true },
+      { source: '/challenges', destination: '/challenge', permanent: true },
     ]
   },
 };

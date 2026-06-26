@@ -112,8 +112,8 @@ export default function Navbar() {
     { href: '/quiz',                             label: t('home.mode_quiz'),      color: '#ff2d78', colorAlt: '#9b1fff' },
     { href: 'https://ultimateframedata.com/sf6', label: t('home.mode_db'),        color: '#00f0ff', colorAlt: '#0050ff', external: true },
     { href: '/multi',                            label: t('home.mode_multi'),     color: '#ffe000', colorAlt: '#ff6a00' },
-    { href: '/challenges',                       label: t('home.mode_challenge'), color: '#00ff88', colorAlt: '#00b894' },
-    { href: '/frame-data',                       label: t('home.mode_learn'),     color: '#c084fc', colorAlt: '#7c3aed' },
+    { href: '/challenge',                        label: t('home.mode_challenge'), color: '#00ff88', colorAlt: '#00b894' },
+    { href: '/guide',                            label: t('home.mode_learn'),     color: '#c084fc', colorAlt: '#7c3aed' },
   ]
 
   const activeLink = links.find(link =>

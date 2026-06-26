@@ -125,13 +125,13 @@ export default function Home() {
     },
     {
       id: 'challenges', label: t('home.mode_challenge'), sub: t('home.challenges_sub'),
-      href: '/challenges', external: false,
+      href: '/challenge', external: false,
       color: '#00ff88', colorAlt: '#00b894',
       desc: t('home.challenges_desc'),
     },
     {
       id: 'framedata', label: t('home.mode_learn'), sub: t('home.learn_sub'),
-      href: '/frame-data', external: false,
+      href: '/guide', external: false,
       color: '#c084fc', colorAlt: '#7c3aed',
       desc: t('home.learn_desc'),
     },

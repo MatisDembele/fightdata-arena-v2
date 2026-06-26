@@ -3,7 +3,7 @@ import { usePathname } from 'next/navigation'
 
 const PAGE_COLORS: { prefix: string; color: string; colorAlt: string }[] = [
   { prefix: '/quiz',        color: '#ff2d78', colorAlt: '#9b1fff' },
-  { prefix: '/challenges',  color: '#00ff88', colorAlt: '#00b894' },
+  { prefix: '/challenge',   color: '#00ff88', colorAlt: '#00b894' },
   { prefix: '/multi',       color: '#ffe000', colorAlt: '#ff6a00' },
   { prefix: '/profile',     color: '#c084fc', colorAlt: '#7c3aed' },
 ]
