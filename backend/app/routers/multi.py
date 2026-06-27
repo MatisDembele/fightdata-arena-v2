@@ -38,6 +38,7 @@ class Room:
         self.max_questions: int = 10
         self.exclude_jumps: bool = False
         self.exclude_specials: bool = False
+        self.asked_moves: set[str] = set()                # coups déjà posés (anti-répétition)
         self.players: dict[str, WebSocket] = {}
         self.scores: dict[str, int] = {}
         self.current_question: Optional[dict] = None
@@ -109,6 +110,7 @@ def _reset_room(room: Room):
     room.current_question = None
     room.question_sent_at = 0.0
     room.mode_votes = {}
+    room.asked_moves = set()
     room.ready_players = set()
     room.game_started = False
 
@@ -183,23 +185,26 @@ async def _next_question(room: Room, db: Session):
         "active":   generate_random_active_question,
     }
     gen = _generators.get(room.game_mode, generate_random_question)
-    q = gen(db)
-    if room.exclude_jumps or room.exclude_specials:
-        # Re-roll server-side so every player gets the same move, en respectant
-        # les filtres (coups sautés / coups spéciaux) choisis par l'hôte.
-        def _excluded(qq) -> bool:
-            if not qq or not qq.section:
-                return False
-            s = qq.section.lower()
-            if room.exclude_jumps and "jump" in s:
-                return True
-            if room.exclude_specials and ("special" in s or "super" in s):
-                return True
+    # Re-roll serveur : on évite les coups déjà tombés dans la partie (anti-répétition)
+    # + les filtres (coups sautés / spéciaux) de l'hôte. Tout le monde a le même coup.
+    def _excluded(qq) -> bool:
+        if not qq:
             return False
-        for _ in range(20):
-            if not _excluded(q):
-                break
-            q = gen(db)
+        if qq.move_name in room.asked_moves:
+            return True
+        s = (qq.section or "").lower()
+        if room.exclude_jumps and "jump" in s:
+            return True
+        if room.exclude_specials and ("special" in s or "super" in s):
+            return True
+        return False
+    q = gen(db)
+    for _ in range(25):
+        if not _excluded(q):
+            break
+        q = gen(db)
+    if q:
+        room.asked_moves.add(q.move_name)
     if not q:
         await _broadcast(room, {"type": "error", "message": "Impossible de générer une question."})
         return

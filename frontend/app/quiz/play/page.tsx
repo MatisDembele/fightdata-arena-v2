@@ -201,7 +201,7 @@ function QuizPlay() {
   const fetchUnique = useCallback(async (): Promise<QuizQuestion> => {
     // Jump attacks are excluded by default; the mistakes bank replays as-is.
     const rejectJumps = !includeJumps && !isMistakes
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 12; i++) {
       const q = await fetchOne()
       const key = `${q.fighter_slug}:${q.move_name}`
       const isDup  = seenMovesRef.current.has(key)
