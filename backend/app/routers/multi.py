@@ -24,7 +24,7 @@ router = APIRouter()
 MAX_PLAYERS = 6
 RECONNECT_GRACE = 45.0  # seconds a dropped player keeps their slot/score
 VALID_QUESTIONS = (5, 10, 15, 20)
-GAME_MODES = ("startup", "punish", "damage", "onblock", "onhit", "recovery")
+GAME_MODES = ("startup", "punish", "damage", "onblock", "onhit", "active")
 
 
 def _make_code() -> str:
@@ -37,6 +37,7 @@ class Room:
         self.game_mode: str = "startup"
         self.max_questions: int = 10
         self.exclude_jumps: bool = False
+        self.exclude_specials: bool = False
         self.players: dict[str, WebSocket] = {}
         self.scores: dict[str, int] = {}
         self.current_question: Optional[dict] = None
@@ -183,10 +184,20 @@ async def _next_question(room: Room, db: Session):
     }
     gen = _generators.get(room.game_mode, generate_random_question)
     q = gen(db)
-    if room.exclude_jumps:
-        # Re-roll past jump attacks server-side so every player gets the same move.
-        for _ in range(15):
-            if q and not (q.section and "jump" in q.section.lower()):
+    if room.exclude_jumps or room.exclude_specials:
+        # Re-roll server-side so every player gets the same move, en respectant
+        # les filtres (coups sautés / coups spéciaux) choisis par l'hôte.
+        def _excluded(qq) -> bool:
+            if not qq or not qq.section:
+                return False
+            s = qq.section.lower()
+            if room.exclude_jumps and "jump" in s:
+                return True
+            if room.exclude_specials and ("special" in s or "super" in s):
+                return True
+            return False
+        for _ in range(20):
+            if not _excluded(q):
                 break
             q = gen(db)
     if not q:
