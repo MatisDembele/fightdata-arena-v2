@@ -13,6 +13,7 @@ from app.services.quiz_service import (
     generate_random_onblock_question,
     generate_random_onhit_question,
     generate_random_recovery_question,
+    generate_random_active_question,
 )
 
 # WebSocket endpoint is registered directly on the main app (main.py)
@@ -178,6 +179,7 @@ async def _next_question(room: Room, db: Session):
         "onblock":  generate_random_onblock_question,
         "onhit":    generate_random_onhit_question,
         "recovery": generate_random_recovery_question,
+        "active":   generate_random_active_question,
     }
     gen = _generators.get(room.game_mode, generate_random_question)
     q = gen(db)
