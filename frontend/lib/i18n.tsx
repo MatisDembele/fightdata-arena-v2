@@ -86,6 +86,7 @@ const en = {
   // quiz play
   'play.session_length':          'SESSION LENGTH',
   'play.jumps_label':             'JUMP ATTACKS',
+  'play.specials_label':          'SPECIAL MOVES',
   'play.jumps_sub':               'Include jumping moves in questions',
   'play.nogif_label':             'MOVES WITHOUT PREVIEW',
   'play.nogif_sub':               'Quiz specials/supers (shows input, no GIF)',
@@ -589,6 +590,7 @@ const fr: Record<DictKey, string> = {
   // quiz play
   'play.session_length':        'LONGUEUR DE SESSION',
   'play.jumps_label':           'COUPS SAUTÉS',
+  'play.specials_label':        'COUPS SPÉCIAUX',
   'play.jumps_sub':             'Inclure les coups sautés dans les questions',
   'play.nogif_label':           'COUPS SANS APERÇU',
   'play.nogif_sub':             'Quiz spéciaux/super (notation affichée, sans GIF)',
@@ -1083,6 +1085,7 @@ const es: Record<DictKey, string> = {
   'quiz.mode_damage_desc':     'Opción múltiple — adivina el valor exacto del daño de cada movimiento desde su hitbox GIF.',
   'play.session_length':          'DURACIÓN DE SESIÓN',
   'play.jumps_label':             'ATAQUES SALTANDO',
+  'play.specials_label':          'GOLPES ESPECIALES',
   'play.jumps_sub':               'Incluir ataques saltando en las preguntas',
   'play.nogif_label':             'GOLPES SIN VISTA PREVIA',
   'play.nogif_sub':               'Especiales/supers (muestra input, sin GIF)',
@@ -1547,6 +1550,7 @@ const ja: Record<DictKey, string> = {
   'quiz.mode_damage_desc':     '4択 — ヒットボックスGIFから技のダメージを当てよう。',
   'play.session_length':          'セッションの長さ',
   'play.jumps_label':             'ジャンプ攻撃',
+  'play.specials_label':          '必殺技',
   'play.jumps_sub':               '問題にジャンプ攻撃を含める',
   'play.nogif_label':             'プレビューなしの技',
   'play.nogif_sub':               '必殺技/スーパーを出題（入力表示、GIFなし）',

@@ -193,6 +193,7 @@ async def websocket_endpoint(
             "game_mode": room.game_mode,
             "max_questions": room.max_questions,
             "exclude_jumps": room.exclude_jumps,
+            "exclude_specials": room.exclude_specials,
             "host": room.host,
         })
     else:
@@ -204,6 +205,7 @@ async def websocket_endpoint(
             "game_mode": room.game_mode,
             "max_questions": room.max_questions,
             "exclude_jumps": room.exclude_jumps,
+            "exclude_specials": room.exclude_specials,
             "host": room.host,
             "ready_players": list(room.ready_players),
         })
@@ -250,6 +252,7 @@ async def websocket_endpoint(
                     "game_mode": room.game_mode,
                     "max_questions": room.max_questions,
                     "exclude_jumps": room.exclude_jumps,
+                    "exclude_specials": room.exclude_specials,
                 })
 
             elif data.get("type") == "set_questions":
@@ -263,6 +266,7 @@ async def websocket_endpoint(
                     "game_mode": room.game_mode,
                     "max_questions": room.max_questions,
                     "exclude_jumps": room.exclude_jumps,
+                    "exclude_specials": room.exclude_specials,
                 })
 
             elif data.get("type") == "set_exclude_jumps":
@@ -274,6 +278,19 @@ async def websocket_endpoint(
                     "game_mode": room.game_mode,
                     "max_questions": room.max_questions,
                     "exclude_jumps": room.exclude_jumps,
+                    "exclude_specials": room.exclude_specials,
+                })
+
+            elif data.get("type") == "set_exclude_specials":
+                if player_name != room.host:
+                    continue
+                room.exclude_specials = bool(data.get("value", False))
+                await _broadcast(room, {
+                    "type": "settings_update",
+                    "game_mode": room.game_mode,
+                    "max_questions": room.max_questions,
+                    "exclude_jumps": room.exclude_jumps,
+                    "exclude_specials": room.exclude_specials,
                 })
 
             elif data.get("type") == "start_game":
