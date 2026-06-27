@@ -2,6 +2,8 @@
 import { useEffect, useRef, useState, use } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
+import Container from '@/components/Container'
+import PageHeader from '@/components/PageHeader'
 import { useLanguage } from '@/lib/i18n'
 import { getFighterPortrait } from '@/lib/portraits'
 import { GifSection, makeChoiceStyle } from '@/components/QuestionCard'
@@ -629,17 +631,9 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
       ) : null
 
       return (
-        <div style={{ width: '100%', maxWidth: isDesktop ? '960px' : '560px', display: 'flex', flexDirection: 'column', gap: isDesktop ? '24px' : '20px' }}>
+        <Container variant="tool" style={{ display: 'flex', flexDirection: 'column', gap: isDesktop ? '24px' : '20px' }}>
 
-          {/* Header */}
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: isDesktop ? '2.4rem' : '1.8rem', letterSpacing: '6px', color: '#fff' }}>
-              ROOM — <span style={{ color: COLOR, textShadow: `0 0 12px ${COLOR}` }}>{room}</span>
-            </div>
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: isDesktop ? '0.6rem' : '0.48rem', letterSpacing: '3px', color: 'rgba(255,255,255,0.65)', marginTop: '4px' }}>
-              {t('room.give_code')}
-            </div>
-          </div>
+          <PageHeader title={`ROOM — ${room}`} subtitle={t('room.give_code')} accent={COLOR} style={{ marginBottom: 0 }} />
 
           {/* Desktop: 2-column — player grid left, settings right */}
           {isDesktop ? (
@@ -659,7 +653,7 @@ export default function MultiRoom({ params }: { params: Promise<{ room: string }
               {readyCount}
             </>
           )}
-        </div>
+        </Container>
       )
     }
 
