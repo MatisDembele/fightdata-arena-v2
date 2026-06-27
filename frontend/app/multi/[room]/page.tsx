@@ -37,7 +37,6 @@ const MULTI_MODES = [
   { id: 'startup',  label: 'STARTUP',  color: '#ff2d78', suffix: ' frames' },
   { id: 'damage',   label: 'DAMAGE',   color: '#f59e0b', suffix: ''        },
   { id: 'onblock',  label: 'ON BLOCK', color: '#c084fc', suffix: ''        },
-  { id: 'punish',   label: 'PUNISH',   color: '#ffe000', suffix: ''        },
   { id: 'onhit',    label: 'ON HIT',   color: '#4ade80', suffix: ''        },
   { id: 'recovery', label: 'RECOVERY', color: '#00f0ff', suffix: ' frames' },
   { id: 'active',   label: 'ACTIVE',   color: '#a855f7', suffix: ' frames' },
