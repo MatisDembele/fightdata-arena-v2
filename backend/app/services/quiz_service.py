@@ -28,34 +28,42 @@ def _move_candidates(
     return moves
 
 
-def _pick_distractors(correct: int, pool: set[int], rng: random.Random) -> list[int]:
-    """Return 3 distractor startup values close to `correct` (±3 frames first)."""
-    close = sorted(
-        [v for v in pool if v != correct and abs(v - correct) <= 3],
-        key=lambda v: abs(v - correct),
-    )
-    rng.shuffle(close)
-    chosen: list[int] = close[:3]
+def _spread_distractors(correct: int, pool: set[int], rng: random.Random, positive: bool = False) -> list[int]:
+    """3 leurres espacés ~proportionnellement à |correct|.
 
-    if len(chosen) < 3:
-        used = pool | set(chosen) | {correct}
-        for offset in [1, -1, 2, -2, 3, -3]:
-            if len(chosen) == 3:
-                break
-            c = correct + offset
-            if c > 0 and c not in used:
-                chosen.append(c)
-                used.add(c)
-
-    # Last resort: nearest real values from broader pool
-    if len(chosen) < 3:
-        for v in sorted(pool, key=lambda v: abs(v - correct)):
-            if len(chosen) == 3:
-                break
-            if v not in chosen and v != correct:
-                chosen.append(v)
-
+    Pour les grandes valeurs (ex. un -30 on-block de DP) on évite les choix
+    -29/-31 indistinguables (le joueur ne peut que pifer) ; pour les petites
+    valeurs l'écart reste serré (un 4f vs 5f reste pertinent). On colle à une
+    vraie valeur du pool si elle est proche de la cible, sinon on synthétise.
+    """
+    step = max(2, round(abs(correct) / 6))
+    cand = {v for v in pool if v != correct and (not positive or v > 0)}
+    used = {correct}
+    chosen: list[int] = []
+    targets = [correct + s for k in (1, 2, 3, 4) for s in (k * step, -k * step)]
+    for tgt in targets:
+        if len(chosen) == 3:
+            break
+        if positive and tgt <= 0:
+            continue
+        near = [v for v in cand if v not in used and abs(v - tgt) <= max(1, step // 2)]
+        v = min(near, key=lambda v: abs(v - tgt)) if near else tgt
+        if v not in used and (not positive or v > 0):
+            chosen.append(v)
+            used.add(v)
+    for off in (step, -step, 2 * step, -2 * step, 3 * step, -3 * step, 4 * step):
+        if len(chosen) == 3:
+            break
+        v = correct + off
+        if v not in used and (not positive or v > 0):
+            chosen.append(v)
+            used.add(v)
     return chosen[:3]
+
+
+def _pick_distractors(correct: int, pool: set[int], rng: random.Random) -> list[int]:
+    """Leurres pour les stats positives (startup / recovery / active)."""
+    return _spread_distractors(correct, pool, rng, positive=True)
 
 
 def _parse_damage(value: str | None) -> int | None:
@@ -280,28 +288,8 @@ def generate_daily_questions(db: Session, date_str: str) -> list[QuizQuestion]:
 
 
 def _pick_onblock_distractors(correct: int, pool: set[int], rng: random.Random) -> list[int]:
-    close = sorted(
-        [v for v in pool if v != correct and abs(v - correct) <= 4],
-        key=lambda v: abs(v - correct),
-    )
-    rng.shuffle(close)
-    chosen = close[:3]
-    if len(chosen) < 3:
-        used = pool | set(chosen) | {correct}
-        for offset in [2, -2, 4, -4, 6, -6, 1, -1, 3, -3, 8, -8]:
-            if len(chosen) == 3:
-                break
-            c = correct + offset
-            if c not in used:
-                chosen.append(c)
-                used.add(c)
-    if len(chosen) < 3:
-        for v in sorted(pool, key=lambda v: abs(v - correct)):
-            if len(chosen) == 3:
-                break
-            if v not in chosen and v != correct:
-                chosen.append(v)
-    return chosen[:3]
+    """Leurres signés (on-block / on-hit) — espacés selon la magnitude."""
+    return _spread_distractors(correct, pool, rng, positive=False)
 
 
 def _fmt_ob(v: int) -> str:
